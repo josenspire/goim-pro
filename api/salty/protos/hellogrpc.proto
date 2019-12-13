@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package hellogrpc;
+
+service Waiter {
+    // defined interface (struct can be reuse)
+    // methods
+    rpc DoMD5 (Req) returns (Res) {
+    }
+}
+
+// defined Req message struct
+message Req {
+    // type
+    string jsonStr = 1;
+}
+
+//defined Res message struct
+message Res {
+    string backJson = 1;
+}
