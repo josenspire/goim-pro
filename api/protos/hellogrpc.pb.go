@@ -130,7 +130,7 @@ var _ context.Context
 var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
-// is compatible with the grpc package it is being compiled against.
+// is compatible with the grpc_client package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
 // WaiterClient is the client API for Waiter service.

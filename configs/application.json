@@ -1,0 +1,18 @@
+{
+  "appProfile": {
+    "appHost": "127.0.0.1",
+    "appPort": "9090",
+    "appLogLevel": "DEBUG"
+  },
+  "mysqlProfile": {
+    "dbUserName": "root",
+    "dbPassword": "Password1!",
+    "dbUri": "127.0.0.1",
+    "dbPort": "3306",
+    "dbName": "goim",
+    "dbEngine": "InnoDB",
+    "dbMaxIdleConns": "10",
+    "dbMaxOpenConns": "30",
+    "dbEnableLogMode": "true"
+  }
+}

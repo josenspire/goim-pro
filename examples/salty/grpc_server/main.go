@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
-	"goim_pro/api/salty/protos"
+	"goim-pro/api/protos"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -13,13 +13,17 @@ import (
 
 type server struct{}
 
+const (
+	address = "localhost:9090"
+)
+
 func (s *server) DoMD5(ctx context.Context, in *protos.Req) (*protos.Res, error) {
 	fmt.Println("MD5方法请求的JSON: ", in.JsonStr)
 	return &protos.Res{BackJson: "MD5 :" + fmt.Sprintf("%x", md5.Sum([]byte(in.JsonStr)))}, nil
 }
 
 func main() {
-	lis, err := net.Listen("tcp", "localhost:9090")
+	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("监听失败: %v", err)
 	} else {

@@ -1,3 +1,3 @@
-## goim_pro
+## goim-pro
 
 Better IM server.
