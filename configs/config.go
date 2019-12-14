@@ -27,7 +27,7 @@ var (
 	defaultMysqlEngine        = "InnoDB"
 	defaultMysqlMaxIdleConns  = "10"
 	defaultMysqlMaxOpenConns  = "30"
-	defaultMysqlEnableLogMode = "true"
+	defaultMysqlEnableLogMode = true
 )
 
 type AppProfile struct {
@@ -95,9 +95,9 @@ func GetMysqlDbMaxOpenConns() (dbMaxOpenConns string) {
 	dbMaxOpenConns = mysqlConfigMap["dbMaxOpenConns"]
 	return buildConfigParameter(dbMaxOpenConns, defaultMysqlMaxOpenConns)
 }
-func GetMysqlDbEnableLogMode() (dbEnableLogMode string) {
-	dbEnableLogMode = mysqlConfigMap["dbEnableLogMode"]
-	return buildConfigParameter(dbEnableLogMode, defaultMysqlEnableLogMode)
+func GetMysqlDbEnableLogMode() bool {
+	dbEnableLogModeStr := mysqlConfigMap["dbEnableLogMode"]
+	return buildBoolParameter(dbEnableLogModeStr, defaultMysqlEnableLogMode)
 }
 
 func buildConfigParameter(originalValue string, defaultValue string) string {
@@ -107,34 +107,9 @@ func buildConfigParameter(originalValue string, defaultValue string) string {
 	return defaultValue
 }
 
-//func _GetAppConfigProfile() (appProfile *AppProfile, err error) {
-//	appConfigMap := myViper.GetStringMap("appProfile")
-//
-//	bytes, err := json.Marshal(appConfigMap)
-//	if err != nil {
-//		fmt.Printf("marshal app config fail: %v\n", err)
-//		return nil, err
-//	}
-//	err = json.Unmarshal(bytes, &appProfile)
-//	if err != nil {
-//		fmt.Printf("unmarshal app profile fail: %v\n", err)
-//		return nil, err
-//	}
-//	return
-//}
-//
-//func _GetMysqlConfigProfile() (mysqlProfile *MysqlProfile, err error) {
-//	mysqlConfigMap := myViper.GetStringMap("mysqlProfile")
-//
-//	bytes, err := json.Marshal(mysqlConfigMap)
-//	if err != nil {
-//		fmt.Printf("marshal mysql config fail: %v\n", err)
-//		return nil, err
-//	}
-//	err = json.Unmarshal(bytes, &mysqlProfile)
-//	if err != nil {
-//		fmt.Printf("unmarshal mysql profile fail: %v\n", err)
-//		return nil, err
-//	}
-//	return
-//}
+func buildBoolParameter(originalValue string, defaultValue bool) bool  {
+	if len(originalValue) > 0 {
+		return originalValue == "true"
+	}
+	return defaultValue
+}

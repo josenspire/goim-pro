@@ -4,6 +4,8 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	config "goim-pro/configs"
+	"strconv"
 	"sync"
 )
 
@@ -20,19 +22,6 @@ var (
 	dbErr error
 )
 
-// TODO: should be refactor to read from config file
-const (
-	dbUserName      = "root"
-	dbPassword      = "Password1!"
-	dbUri           = "127.0.0.1"
-	dbPort          = "3306"
-	dbName          = "goim"
-	dbEngine        = "InnoDB"
-	dbMaxIdleConns  = 10
-	dbMaxOpenConns  = 30
-	dbEnableLogMode = true
-)
-
 /* to get mysql connect from pool as single case */
 func GetMysqlConnection() *MysqlConnectionPool {
 	mysqlOnce.Do(func() {
@@ -43,6 +32,17 @@ func GetMysqlConnection() *MysqlConnectionPool {
 
 /* the method to init mysql connection pool */
 func (m *MysqlConnectionPool) InitConnectionPool() (bool, error) {
+	var (
+		dbUserName        = config.GetMysqlDbUserName()
+		dbPassword        = config.GetMysqlDbPassword()
+		dbUri             = config.GetMysqlDbUri()
+		dbPort            = config.GetMysqlDbPort()
+		dbName            = config.GetMysqlDbName()
+		dbEngine          = config.GetMysqlDbEngine()
+		dbMaxIdleConns, _ = strconv.Atoi(config.GetMysqlDbMaxIdleConns())
+		dbMaxOpenConns, _ = strconv.Atoi(config.GetMysqlDbMaxOpenConns())
+		dbEnableLogMode   = config.GetMysqlDbEnableLogMode()
+	)
 	connUrl := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUserName, dbPassword, dbUri, dbPort, dbName)
 	db, dbErr = gorm.Open("mysql", connUrl)
 	if dbErr != nil {

@@ -25,26 +25,8 @@ func TestGetMysqlConfigProfile(t *testing.T) {
 
 		mysqlDbName := GetMysqlDbName()
 		convey.So(mysqlDbName, convey.ShouldEqual, "goim")
+
+		mysqlDbEnableLogMode := GetMysqlDbEnableLogMode()
+		convey.So(mysqlDbEnableLogMode, convey.ShouldBeTrue)
 	})
 }
-
-
-//func TestGetAppConfigProfile(t *testing.T) {
-//	Convey("Subject: Get application configuration profile", t, func() {
-//		appProfile, _ := GetAppConfigProfile()
-//		fmt.Printf("read profile: %v\n", *appProfile)
-//		So(appProfile.AppHost, ShouldEqual, "127.0.0.1")
-//		So(appProfile.AppPort, ShouldEqual, 9090)
-//		So(appProfile.AppLogLevel, ShouldEqual, "DEBUG")
-//	})
-//}
-//
-//func TestGetMysqlConfigProfile(t *testing.T) {
-//	Convey("Subject Get mysql configuration profile", t, func() {
-//		mysqlProfile, _ := GetMysqlConfigProfile()
-//		fmt.Printf("read profile: %v\n", *mysqlProfile)
-//		So(mysqlProfile.DBUri, ShouldEqual, "127.0.0.1")
-//		So(mysqlProfile.DBPort, ShouldEqual, 3306)
-//		So(mysqlProfile.DBName, ShouldEqual, "goim")
-//	})
-//}

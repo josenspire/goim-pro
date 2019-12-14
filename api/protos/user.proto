@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package goimpro.user;
+
+import "google/protobuf/timestamp.proto";
+
+// user information
+message User {
+    int64 userId = 1;
+    UserProfile userProfile = 2;
+    enum role {
+        DEFAULT = 0;
+        ADMIN = 10;
+        SUPER_ADMIN = 99;
+    }
+    repeated Address address = 4;
+    
+    message UserProfile {
+        string telephone = 1;
+        string username = 2;
+        string password = 3;
+        string nickname = 4;
+    }
+}
+
+// user address information
+message Address {
+
+}
+
+// user service
+service UserService {
+    // user register service
+    // rpc Register ()
+}
+

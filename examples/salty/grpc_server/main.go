@@ -38,9 +38,11 @@ func main() {
 	// 在 gRPC 服务器上注册反射服务
 	reflection.Register(s)
 
-	// 将监听交给 gRPC 服务处理
-	err = s.Serve(lis)
-	if err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+	go func() {
+		// 将监听交给 gRPC 服务处理
+		err = s.Serve(lis)
+		if err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
 }
