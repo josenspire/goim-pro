@@ -4,6 +4,9 @@
     "appPort": "9090",
     "appLogLevel": "DEBUG"
   },
+
+  "apiSecretKey": "",
+
   "mysqlProfile": {
     "dbUserName": "root",
     "dbPassword": "Password1!",

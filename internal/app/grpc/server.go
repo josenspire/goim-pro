@@ -7,7 +7,7 @@ package grpc
 import (
 	"crypto/md5"
 	"fmt"
-	"goim-pro/api/protos"
+	protos "goim-pro/api/protos"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -24,7 +24,7 @@ func New() *grpc.Server {
 	if err != nil {
 		log.Fatalf("TCP 监听失败: %v", err)
 	} else {
-		log.Printf("TCP 开始监听...", )
+		log.Printf("TCP 开始监听...")
 	}
 
 	// 创建 gRPC 服务

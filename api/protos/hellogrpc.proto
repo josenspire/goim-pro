@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package hellogrpc;
+package protos.salty;
 
 service Waiter {
     // defined interface (struct can be reuse)

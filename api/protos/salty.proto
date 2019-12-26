@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package protos.salty;
+
+import "google/protobuf/timestamp.proto";
+
+// Request
+message UserServiceRequest {
+
+}
+
+// Response
+message UserServiceResponse {
+
+}
+
+message ServerCommonResponse {}
+
+// user service
+service UserService {
+    // user register service
+    rpc Register(User) returns (ServerCommonResponse) {}
+    rpc Login(User) returns (User) {}
+}
+
+
+// user information
+message User {
+    int64 userId = 1;
+    enum Role {
+        DEFAULT = 0;
+        ADMIN = 10;
+        SUPER_ADMIN = 99;
+    }
+    Role role = 2;
+
+    enum Sex {
+        MALE = 0;
+        FEMALE = 1;
+    }
+    message UserProfile {
+        string telephone = 1;
+        string email = 2;
+        string username = 3;
+        string nickname = 4;
+        string avatar = 5;
+        string signature = 6;
+        Sex sex = 7;
+        google.protobuf.Timestamp Birthday = 8;
+        string location = 9;
+    }
+    UserProfile userProfile = 3;
+
+    string password = 4;
+
+    enum Status {
+        ACTIVE = 0;
+        INACTIVE = 1;
+    }
+    Status status = 5;
+
+//    repeated Address address = 6;
+    google.protobuf.Timestamp CreatedAt = 6;
+}
+

@@ -62,6 +62,12 @@ func GetAppLogLevel() (appLogLevel string) {
 	return buildConfigParameter(appLogLevel, defaultAppLogLevel)
 }
 
+/* api config **/
+func GetApiSecretKey() (apiSecretKey string) {
+	apiSecretKey = viper.MyViper.GetString("apiSecretKey")
+	return apiSecretKey
+}
+
 /* app config **/
 func GetMysqlDbUserName() (dbUserName string) {
 	dbUserName = mysqlConfigMap["dbUserName"]
@@ -107,7 +113,7 @@ func buildConfigParameter(originalValue string, defaultValue string) string {
 	return defaultValue
 }
 
-func buildBoolParameter(originalValue string, defaultValue bool) bool  {
+func buildBoolParameter(originalValue string, defaultValue bool) bool {
 	if len(originalValue) > 0 {
 		return originalValue == "true"
 	}
