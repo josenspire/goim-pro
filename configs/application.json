@@ -4,9 +4,6 @@
     "appPort": "9090",
     "appLogLevel": "DEBUG"
   },
-
-  "apiSecretKey": "",
-
   "mysqlProfile": {
     "dbUserName": "root",
     "dbPassword": "Password1!",
@@ -17,5 +14,7 @@
     "dbMaxIdleConns": "10",
     "dbMaxOpenConns": "30",
     "dbEnableLogMode": "true"
-  }
+  },
+
+  "apiSecretKey": ""
 }

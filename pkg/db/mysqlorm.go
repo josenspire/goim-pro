@@ -31,7 +31,7 @@ func GetMysqlConnection() *MysqlConnectionPool {
 }
 
 /* the method to init mysql connection pool */
-func (m *MysqlConnectionPool) InitConnectionPool() (bool, error) {
+func (m *MysqlConnectionPool) InitConnectionPool() error {
 	var (
 		dbUserName        = config.GetMysqlDbUserName()
 		dbPassword        = config.GetMysqlDbPassword()
@@ -47,7 +47,7 @@ func (m *MysqlConnectionPool) InitConnectionPool() (bool, error) {
 	db, dbErr = gorm.Open("mysql", connUrl)
 	if dbErr != nil {
 		fmt.Printf("mysql connect fail: %v\n", dbErr)
-		return false, dbErr
+		return dbErr
 	}
 	fmt.Printf("mysql connect successful: %s\n", connUrl)
 
@@ -60,7 +60,7 @@ func (m *MysqlConnectionPool) InitConnectionPool() (bool, error) {
 
 	// 关闭数据库，db会被多个goroutine共享，可以不调用
 	// defer db.Close()
-	return true, nil
+	return nil
 }
 
 func (m *MysqlConnectionPool) GetMysqlDBInstance() *gorm.DB {

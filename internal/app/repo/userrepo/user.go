@@ -1,10 +1,10 @@
-package models
+package userrepo
 
 import (
 	"errors"
 	"github.com/jinzhu/gorm"
-	"goim-pro/configs"
-	"goim-pro/pkg/db"
+	"goim-pro/internal/app/repo"
+	"goim-pro/pkg/logs"
 )
 
 type User struct {
@@ -13,7 +13,7 @@ type User struct {
 	Role     string `json:"role" gorm:"column:role; type:ENUM('0', '10', '99'); default:'0'"`
 	Status   string `json:"status" gorm:"column:status; type:ENUM('0', '1'); default: '0'; not null"`
 	UserProfile
-	BaseModel
+	repo.BaseModel
 }
 
 type UserProfile struct {
@@ -28,21 +28,31 @@ type UserProfile struct {
 	Location  string `json:"location" gorm:"column:location; type: varchar(255)"`
 }
 
-var aesSecretKey string
-var mysqlDB *gorm.DB
-
-func init() {
-	aesSecretKey = configs.GetApiSecretKey()
-	mysqlDB = db.GetMysqlConnection().GetMysqlDBInstance()
+type IUserRepo interface {
+	Register(newUser *User) (*User, error)
+	IsTelephoneRegistered(telephone string) (bool, error)
 }
 
-func (u *User) Register(newUser User) (err error) {
+var logger = logs.GetLogger("ERROR")
+var mysqlDB *gorm.DB
+
+func NewUserModel() *User {
+	return &User{}
+}
+
+func NewUserRepo(db *gorm.DB) IUserRepo {
+	mysqlDB = db
+	return NewUserModel()
+}
+
+func (u *User) Register(newUser *User) (user *User, err error) {
 	isExist, err := u.IsTelephoneRegistered(newUser.Telephone)
 	if err != nil {
+		logger.Errorf("user registration failed: %v", err)
 		return
 	}
 	if isExist {
-		return errors.New("user already register, please login")
+		return nil, errors.New("user already register, please login")
 	}
 	mysqlDB.Create(&newUser)
 	return
@@ -54,6 +64,7 @@ func (u *User) IsTelephoneRegistered(telephone string) (bool, error) {
 		return false, nil
 	}
 	if err != nil {
+		logger.Errorf("query user by telephone error: %v", err)
 		return false, err
 	}
 	return true, nil

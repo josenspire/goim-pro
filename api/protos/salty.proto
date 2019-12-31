@@ -16,15 +16,15 @@ message UserServiceResponse {
 
 message ServerCommonResponse {}
 
-// user service
+// userrepo service
 service UserService {
-    // user register service
+    // userrepo register service
     rpc Register(User) returns (ServerCommonResponse) {}
     rpc Login(User) returns (User) {}
 }
 
 
-// user information
+// userrepo information
 message User {
     int64 userId = 1;
     enum Role {

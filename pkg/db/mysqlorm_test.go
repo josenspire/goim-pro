@@ -3,8 +3,8 @@ package db
 import "testing"
 
 func TestMysqlConnectionPool_GetMysqlDBInstance(t *testing.T) {
-	initResult, _ := GetMysqlConnection().InitConnectionPool()
-	if !initResult {
+	err := GetMysqlConnection().InitConnectionPool()
+	if err != nil {
 		t.FailNow()
 	}
 	db := GetMysqlConnection().GetMysqlDBInstance()
