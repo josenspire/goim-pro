@@ -3,7 +3,7 @@ package appsvr
 import (
 	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/repo/address"
-	"goim-pro/internal/app/repo/userrepo"
+	"goim-pro/internal/app/repo/user"
 	"goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
 )
@@ -12,11 +12,6 @@ var mysqlDB *gorm.DB
 var logger = logs.GetLogger("ERROR")
 
 func init() {
-	err := db.GetMysqlConnection().InitConnectionPool()
-	if err != nil {
-		logger.Errorf("initial mysql connection pool error: %v", err)
-		panic(err)
-	}
 	mysqlDB = db.GetMysqlConnection().GetMysqlDBInstance()
 	if err := initialMysqlTables(mysqlDB); err != nil {
 		panic(err)
@@ -24,24 +19,24 @@ func init() {
 }
 
 type Server struct {
-	UserRepo    userrepo.IUserRepo
+	UserRepo    user.IUserRepo
 	AddressRepo address.IAddress
 }
 
 func New() *Server {
 	return &Server{
-		UserRepo:    userrepo.NewUserRepo(mysqlDB),
+		UserRepo:    user.NewUserRepo(mysqlDB),
 		AddressRepo: address.New(mysqlDB),
 	}
 }
 
 func initialMysqlTables(db *gorm.DB) (err error) {
-	if !db.HasTable(userrepo.User{}) {
+	if !db.HasTable(user.User{}) {
 		err = db.Set(
 			"gorm:table_options",
 			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
 		).CreateTable(
-			userrepo.User{},
+			user.User{},
 		).Error
 		if err != nil {
 			logger.Errorf("initial mysql tables [users] error: %v\n", err)

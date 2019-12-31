@@ -1,11 +1,11 @@
 package logs
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"os"
 )
 
-var logger *log.Logger
+var logger = logrus.New()
 
 const (
 	environment     string = "development"
@@ -17,41 +17,44 @@ func init() {
 	// or command-line flag
 	// TODO: should dynamic control the env
 	if environment == "production" {
-		log.SetFormatter(&log.JSONFormatter{})
+		logger.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		// The TextFormatter is default, you don't actually have to do this.
-		log.SetFormatter(&log.TextFormatter{
+		logger.SetFormatter(&logrus.TextFormatter{
 			FullTimestamp: true,
 		})
 	}
 
 	// Output to stdout instead of the default stderr
 	// Can be any io.Writer, see below for File example
-	log.SetOutput(os.Stdout)
+	logger.SetOutput(os.Stdout)
 }
 
-func GetLogger(level string) *log.Logger {
-	log.SetLevel(getLoggerLevel(level))
+func GetLogger(level string) *logrus.Logger {
+	if len(level) == 0 {
+		level = defaultLogLevel
+	}
+	logger.SetLevel(getLoggerLevel(level))
 	return logger
 }
 
-func getLoggerLevel(level string) log.Level {
+func getLoggerLevel(level string) logrus.Level {
 	switch level {
 	case "INFO":
-		return log.InfoLevel
+		return logrus.InfoLevel
 	case "WARN":
-		return log.WarnLevel
+		return logrus.WarnLevel
 	case "ERROR":
-		return log.ErrorLevel
+		return logrus.ErrorLevel
 	case "DEBUG":
-		return log.DebugLevel
+		return logrus.DebugLevel
 	case "TRACE":
-		return log.TraceLevel
+		return logrus.TraceLevel
 	case "FATAL":
-		return log.FatalLevel
+		return logrus.FatalLevel
 	case "PANIC":
-		return log.PanicLevel
+		return logrus.PanicLevel
 	default:
-		return log.WarnLevel
+		return logrus.WarnLevel
 	}
 }

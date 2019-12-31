@@ -1,4 +1,4 @@
-package userrepo
+package user
 
 import (
 	"errors"
@@ -29,7 +29,7 @@ type UserProfile struct {
 }
 
 type IUserRepo interface {
-	Register(newUser *User) (*User, error)
+	Register(newUser *User) error
 	IsTelephoneRegistered(telephone string) (bool, error)
 }
 
@@ -45,16 +45,19 @@ func NewUserRepo(db *gorm.DB) IUserRepo {
 	return NewUserModel()
 }
 
-func (u *User) Register(newUser *User) (user *User, err error) {
+func (u *User) Register(newUser *User) (err error) {
 	isExist, err := u.IsTelephoneRegistered(newUser.Telephone)
 	if err != nil {
 		logger.Errorf("user registration failed: %v", err)
 		return
 	}
 	if isExist {
-		return nil, errors.New("user already register, please login")
+		return errors.New("user already register, please login")
 	}
-	mysqlDB.Create(&newUser)
+	_db := mysqlDB.Create(&newUser)
+	if _db.Error != nil {
+		logger.Errorf("create user error: %v\n", err)
+	}
 	return
 }
 

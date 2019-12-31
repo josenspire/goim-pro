@@ -1,11 +1,12 @@
-package userrepo
+package user
 
 import (
-	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/repo"
 	"goim-pro/pkg/db"
 	"reflect"
 	"testing"
+
+	"github.com/jinzhu/gorm"
 )
 
 func TestNewUserModel(t *testing.T) {
@@ -29,7 +30,6 @@ func TestNewUserModel(t *testing.T) {
 }
 
 func TestNewUserRepo(t *testing.T) {
-	_ = db.GetMysqlConnection().InitConnectionPool()
 	mysqlDB := db.GetMysqlConnection().GetMysqlDBInstance()
 
 	type args struct {
@@ -58,7 +58,6 @@ func TestNewUserRepo(t *testing.T) {
 	}
 }
 
-// TODO: should verify the result, have not got all pass
 func TestUser_IsTelephoneRegistered(t *testing.T) {
 	type fields struct {
 		UserID      uint64
@@ -116,7 +115,6 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	db.GetMysqlConnection().InitConnectionPool()
 	mysqlDB := db.GetMysqlConnection().GetMysqlDBInstance()
 	NewUserRepo(mysqlDB)
 	for _, tt := range tests {
@@ -149,14 +147,70 @@ func TestUser_Register(t *testing.T) {
 	type args struct {
 		newUser *User
 	}
+	mysqlDB := db.GetMysqlConnection().GetMysqlDBInstance()
+	NewUserRepo(mysqlDB)
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantUser *User
-		wantErr  bool
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "testing_register_with_new_record",
+			fields: fields{
+				UserID:   2,
+				Password: "1234567890",
+				UserProfile: UserProfile{
+					Telephone: "13631210010",
+					Email:     "294001@qq.com",
+					Username:  "TEST02",
+					Nickname:  "TEST02",
+					Signature: "Never Settle",
+				},
+			},
+			args: args{
+				&User{
+					UserID:   2,
+					Password: "1234567890",
+					UserProfile: UserProfile{
+						Telephone: "13631210010",
+						Email:     "294001@qq.com",
+						Username:  "TEST02",
+						Nickname:  "TEST02",
+						Signature: "Never Settle",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "testing_register_with_exist_record",
+			fields:  fields{
+				UserID:   2,
+				Password: "1234567890",
+				UserProfile: UserProfile{
+					Telephone: "13631210010",
+					Email:     "294001@qq.com",
+					Username:  "TEST02",
+					Nickname:  "TEST02",
+					Signature: "Never Settle",
+				},
+			},
+			args:    args{
+				&User{
+					UserID:   2,
+					Password: "1234567890",
+					UserProfile: UserProfile{
+						Telephone: "13631210010",
+						Email:     "294001@qq.com",
+						Username:  "TEST02",
+						Nickname:  "TEST02",
+						Signature: "Never Settle",
+					},
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -168,13 +222,8 @@ func TestUser_Register(t *testing.T) {
 				UserProfile: tt.fields.UserProfile,
 				BaseModel:   tt.fields.BaseModel,
 			}
-			gotUser, err := u.Register(tt.args.newUser)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Register() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotUser, tt.wantUser) {
-				t.Errorf("Register() gotUser = %v, want %v", gotUser, tt.wantUser)
+			if err := u.Register(tt.args.newUser); (err != nil) != tt.wantErr {
+				t.Errorf("User.Register() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

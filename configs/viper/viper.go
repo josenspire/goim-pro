@@ -1,11 +1,12 @@
 package viper
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
+	"goim-pro/pkg/logs"
 )
 
 var MyViper *viper.Viper
+var logger = logs.GetLogger("INFO")
 
 func init() {
 	MyViper = viper.New()
@@ -15,8 +16,8 @@ func init() {
 
 	err := MyViper.ReadInConfig()
 	if err != nil {
-		fmt.Println("application config loaded...")
+		logger.Info("application config loaded...")
 	} else {
-		fmt.Printf("error reading application config file: %v\n", err)
+		logger.Infof("error reading application config file: %v\n", err)
 	}
 }

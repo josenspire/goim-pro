@@ -5,6 +5,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	config "goim-pro/configs"
+	"goim-pro/pkg/logs"
 	"strconv"
 	"sync"
 )
@@ -18,20 +19,19 @@ var mysqlInstance *MysqlConnectionPool
 var mysqlOnce sync.Once
 
 var (
-	db    *gorm.DB
-	dbErr error
+	db     *gorm.DB
+	dbErr  error
+	logger = logs.GetLogger("PANIC")
 )
 
-/* to get mysql connect from pool as single case */
-func GetMysqlConnection() *MysqlConnectionPool {
-	mysqlOnce.Do(func() {
-		mysqlInstance = &MysqlConnectionPool{}
-	})
-	return mysqlInstance
+func init() {
+	if err := initConnectionPool(); err != nil {
+		logger.Panicf("initial mysql connection pool error: %v\n", err)
+	}
 }
 
 /* the method to init mysql connection pool */
-func (m *MysqlConnectionPool) InitConnectionPool() error {
+func initConnectionPool() error {
 	var (
 		dbUserName        = config.GetMysqlDbUserName()
 		dbPassword        = config.GetMysqlDbPassword()
@@ -46,10 +46,10 @@ func (m *MysqlConnectionPool) InitConnectionPool() error {
 	connUrl := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUserName, dbPassword, dbUri, dbPort, dbName)
 	db, dbErr = gorm.Open("mysql", connUrl)
 	if dbErr != nil {
-		fmt.Printf("mysql connect fail: %v\n", dbErr)
+		logger.Errorf("mysql connect fail: %v\n", dbErr)
 		return dbErr
 	}
-	fmt.Printf("mysql connect successful: %s\n", connUrl)
+	logger.Infof("mysql connect successful: %s\n", connUrl)
 
 	engine := fmt.Sprintf("ENGINE=%s", dbEngine)
 	db.Set("gorm:table_options", engine)
@@ -61,6 +61,14 @@ func (m *MysqlConnectionPool) InitConnectionPool() error {
 	// 关闭数据库，db会被多个goroutine共享，可以不调用
 	// defer db.Close()
 	return nil
+}
+
+/* to get mysql connect from pool as single case */
+func GetMysqlConnection() *MysqlConnectionPool {
+	mysqlOnce.Do(func() {
+		mysqlInstance = &MysqlConnectionPool{}
+	})
+	return mysqlInstance
 }
 
 func (m *MysqlConnectionPool) GetMysqlDBInstance() *gorm.DB {
