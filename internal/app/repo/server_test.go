@@ -1,4 +1,4 @@
-package appsvr
+package repo
 
 import (
 	"github.com/jinzhu/gorm"

@@ -200,7 +200,7 @@ var xxx_messageInfo_ServerCommonResponse proto.InternalMessageInfo
 
 // user information
 type User struct {
-	UserId      int64             `protobuf:"varint,1,opt,name=userId,proto3" json:"userId,omitempty"`
+	UserID      int64             `protobuf:"varint,1,opt,name=userID,proto3" json:"userID,omitempty"`
 	Role        User_Role         `protobuf:"varint,2,opt,name=role,proto3,enum=protos.salty.User_Role" json:"role,omitempty"`
 	UserProfile *User_UserProfile `protobuf:"bytes,3,opt,name=userProfile,proto3" json:"userProfile,omitempty"`
 	Password    string            `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`

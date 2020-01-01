@@ -26,7 +26,7 @@ service UserService {
 
 // user information
 message User {
-    int64 userId = 1;
+    int64 userID = 1;
     enum Role {
         DEFAULT = 0;
         ADMIN = 10;

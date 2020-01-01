@@ -77,7 +77,6 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 		want    bool
 		wantErr bool
 	}{
-		// TODO: Add test cases.
 		{
 			name: "test_for_IsTelephoneExist_returns_True",
 			fields: fields{
@@ -184,8 +183,8 @@ func TestUser_Register(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "testing_register_with_exist_record",
-			fields:  fields{
+			name: "testing_register_with_exist_record",
+			fields: fields{
 				UserID:   2,
 				Password: "1234567890",
 				UserProfile: UserProfile{
@@ -196,7 +195,7 @@ func TestUser_Register(t *testing.T) {
 					Signature: "Never Settle",
 				},
 			},
-			args:    args{
+			args: args{
 				&User{
 					UserID:   2,
 					Password: "1234567890",
@@ -224,6 +223,54 @@ func TestUser_Register(t *testing.T) {
 			}
 			if err := u.Register(tt.args.newUser); (err != nil) != tt.wantErr {
 				t.Errorf("User.Register() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestUser_RemoveUserByUserId(t *testing.T) {
+	type fields struct {
+		UserID      uint64
+		Password    string
+		Role        string
+		Status      string
+		UserProfile UserProfile
+		BaseModel   repo.BaseModel
+	}
+	type args struct {
+		userID uint64
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "testing_for_remove_user_by_userID",
+			fields:  fields{
+				UserID:      2,
+			},
+			args:    args{
+				userID: 2,
+			},
+			wantErr: false,
+		},
+	}
+	mysqlDB := db.GetMysqlConnection().GetMysqlDBInstance()
+	NewUserRepo(mysqlDB)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := &User{
+				UserID:      tt.fields.UserID,
+				Password:    tt.fields.Password,
+				Role:        tt.fields.Role,
+				Status:      tt.fields.Status,
+				UserProfile: tt.fields.UserProfile,
+				BaseModel:   tt.fields.BaseModel,
+			}
+			if err := u.RemoveUserByUserId(tt.args.userID); (err != nil) != tt.wantErr {
+				t.Errorf("User.RemoveUserByUserId() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
