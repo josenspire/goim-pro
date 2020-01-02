@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
-	protos "goim-pro/api/protos"
+	protos2 "goim-pro/api/protos"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -17,9 +17,9 @@ const (
 	address = "localhost:9090"
 )
 
-func (s *server) DoMD5(ctx context.Context, in *protos.Req) (*protos.Res, error) {
+func (s *server) DoMD5(ctx context.Context, in *protos2.Req) (*protos2.Res, error) {
 	fmt.Println("MD5方法请求的JSON: ", in.JsonStr)
-	return &protos.Res{BackJson: "MD5 :" + fmt.Sprintf("%x", md5.Sum([]byte(in.JsonStr)))}, nil
+	return &protos2.Res{BackJson: "MD5 :" + fmt.Sprintf("%x", md5.Sum([]byte(in.JsonStr)))}, nil
 }
 
 func main() {
@@ -33,16 +33,14 @@ func main() {
 	s := grpc.NewServer() // 创建 gRPC 服务
 
 	// 注册接口服务
-	protos.RegisterWaiterServer(s, &server{})
+	protos2.RegisterWaiterServer(s, &server{})
 
 	// 在 gRPC 服务器上注册反射服务
 	reflection.Register(s)
 
-	go func() {
-		// 将监听交给 gRPC 服务处理
-		err = s.Serve(lis)
-		if err != nil {
-			log.Fatalf("failed to serve: %v", err)
-		}
-	}()
+	// 将监听交给 gRPC 服务处理
+	err = s.Serve(lis)
+	if err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }

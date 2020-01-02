@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package protos.salty;
+package protos;
 
 service Waiter {
     // defined interface (struct can be reuse)

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package protos.salty;
+package protos;
 
 import "google/protobuf/timestamp.proto";
 

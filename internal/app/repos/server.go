@@ -1,9 +1,9 @@
-package repo
+package repos
 
 import (
 	"github.com/jinzhu/gorm"
-	"goim-pro/internal/app/repo/address"
-	"goim-pro/internal/app/repo/user"
+	"goim-pro/internal/app/repos/address"
+	"goim-pro/internal/app/repos/user"
 	"goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
 )
@@ -18,13 +18,13 @@ func init() {
 	}
 }
 
-type Server struct {
+type RepoServer struct {
 	UserRepo    user.IUserRepo
 	AddressRepo address.IAddress
 }
 
-func New() *Server {
-	return &Server{
+func New() *RepoServer {
+	return &RepoServer{
 		UserRepo:    user.NewUserRepo(mysqlDB),
 		AddressRepo: address.New(mysqlDB),
 	}

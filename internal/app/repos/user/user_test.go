@@ -1,7 +1,7 @@
 package user
 
 import (
-	"goim-pro/internal/app/repo"
+	"goim-pro/internal/app/repos/base"
 	"goim-pro/pkg/db"
 	"reflect"
 	"testing"
@@ -65,7 +65,7 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 		Role        string
 		Status      string
 		UserProfile UserProfile
-		BaseModel   repo.BaseModel
+		BaseModel   base.BaseModel
 	}
 	type args struct {
 		telephone string
@@ -87,7 +87,7 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 				UserProfile: UserProfile{
 					Telephone: "13631210000",
 				},
-				BaseModel: repo.BaseModel{},
+				BaseModel: base.BaseModel{},
 			},
 			args: args{
 				telephone: "13631210000",
@@ -105,7 +105,7 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 				UserProfile: UserProfile{
 					Telephone: "13631210001",
 				},
-				BaseModel: repo.BaseModel{},
+				BaseModel: base.BaseModel{},
 			},
 			args: args{
 				telephone: "13631210001",
@@ -124,7 +124,7 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 				Role:        "",
 				Status:      "",
 				UserProfile: UserProfile{},
-				BaseModel:   repo.BaseModel{},
+				BaseModel:   base.BaseModel{},
 			}
 			got, _ := u.IsTelephoneRegistered(tt.args.telephone)
 			if got != tt.want {
@@ -141,7 +141,7 @@ func TestUser_Register(t *testing.T) {
 		Role        string
 		Status      string
 		UserProfile UserProfile
-		BaseModel   repo.BaseModel
+		BaseModel   base.BaseModel
 	}
 	type args struct {
 		newUser *User
@@ -235,7 +235,7 @@ func TestUser_RemoveUserByUserId(t *testing.T) {
 		Role        string
 		Status      string
 		UserProfile UserProfile
-		BaseModel   repo.BaseModel
+		BaseModel   base.BaseModel
 	}
 	type args struct {
 		userID uint64

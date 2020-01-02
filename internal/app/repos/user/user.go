@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/constants"
-	"goim-pro/internal/app/repo"
+	"goim-pro/internal/app/repos/base"
 	"goim-pro/pkg/logs"
 )
 
@@ -14,7 +14,7 @@ type User struct {
 	Role     string `json:"role" gorm:"column:role; type:ENUM('1', '10', '99'); default:'1'"`
 	Status   string `json:"status" gorm:"column:status; type:ENUM('ACTIVE', 'INACTIVE'); default: 'ACTIVE'; not null"`
 	UserProfile
-	repo.BaseModel
+	base.BaseModel
 }
 
 type UserProfile struct {

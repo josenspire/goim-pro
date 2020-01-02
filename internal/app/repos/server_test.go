@@ -1,4 +1,4 @@
-package repo
+package repos
 
 import (
 	"github.com/jinzhu/gorm"
@@ -9,7 +9,7 @@ import (
 func TestNew(t *testing.T) {
 	tests := []struct {
 		name string
-		want *Server
+		want *RepoServer
 	}{
 		// TODO: Add test cases.
 	}
