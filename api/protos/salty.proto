@@ -3,63 +3,71 @@ syntax = "proto3";
 package protos;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
 
-// Request
-message UserServiceRequest {
-
+// Basic Request
+message BaseClientRequest {
+    int32 code = 1;
+    google.protobuf.Any data = 2;
+    string message = 3;
 }
 
-// Response
-message UserServiceResponse {
-
+// Basic Response
+message BaseServerResponse {
+    int32 code = 1;
+    google.protobuf.Any data = 2;
+    string message = 3;
 }
 
-message ServerCommonResponse {}
-
+/* [USER] */
 // user service
 service UserService {
-    // user register service
-    rpc Register(User) returns (ServerCommonResponse) {}
-    rpc Login(User) returns (User) {}
+    rpc Register (BaseClientRequest) returns (BaseServerResponse) {
+    }
+    rpc Login (BaseClientRequest) returns (BaseServerResponse) {
+    }
 }
 
-
-// user information
-message User {
-    int64 userID = 1;
-    enum Role {
-        DEFAULT = 0;
-        ADMIN = 10;
-        SUPER_ADMIN = 99;
-    }
-    Role role = 2;
-
-    enum Sex {
-        MALE = 0;
-        FEMALE = 1;
-    }
-    message UserProfile {
-        string telephone = 1;
-        string email = 2;
-        string username = 3;
-        string nickname = 4;
-        string avatar = 5;
-        string signature = 6;
-        Sex sex = 7;
-        google.protobuf.Timestamp Birthday = 8;
-        string location = 9;
-    }
+enum CodeType {
+    REGISTER = 0;
+    LOGIN = 1;
+}
+enum Role {
+    DEFAULT = 0;
+    ADMIN = 10;
+    SUPER_ADMIN = 99;
+}
+enum Sex {
+    MALE = 0;
+    FEMALE = 1;
+}
+enum Status {
+    ACTIVE = 0;
+    INACTIVE = 1;
+}
+message UserProfile {
+    string telephone = 1;
+    string email = 2;
+    string username = 3;
+    string nickname = 4;
+    string avatar = 5;
+    string signature = 6;
+    Sex sex = 7;
+    google.protobuf.Timestamp Birthday = 8;
+    string location = 9;
+}
+message UserReq {
+    CodeType codeType = 1;
+    string verifyCode = 2;
     UserProfile userProfile = 3;
-
     string password = 4;
+    string deviceID = 5;
 
-    enum Status {
-        ACTIVE = 0;
-        INACTIVE = 1;
-    }
-    Status status = 5;
-
-//    repeated Address address = 6;
     google.protobuf.Timestamp CreatedAt = 6;
+
+    google.protobuf.Any Extension = 7;
+}
+
+message UserRes {
 }
 

@@ -4,23 +4,23 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"goim-pro/internal/app/grpc"
+	"goim-pro/internal/app"
 	"os"
 )
 
 func main() {
 	flag.Parse()
 
-	_ = grpc.New()
+	server := app.NewServer()
+	server.StartGrpcServer()
 
-MetaExist:
 	for {
 		reader := bufio.NewReader(os.Stdin)
 		char, _, _ := reader.ReadRune()
 		switch char {
 		case 'q':
 			fmt.Println("server disconnecting...")
-			break MetaExist
+			server.GracefulStopGrpcServer()
 		default:
 			fmt.Println("server continue to listen...")
 		}
