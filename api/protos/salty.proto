@@ -71,3 +71,17 @@ message UserReq {
 message UserRes {
 }
 
+/* [SMS CODE] */
+service SMSService {
+    rpc ObtainSMSCode (BaseClientRequest) returns (BaseServerResponse) {
+    }
+}
+
+message SMSReq {
+    CodeType codeType = 1;
+    string telephone = 2;
+    google.protobuf.Any Extension = 3;
+}
+
+message SMSRes {
+}
