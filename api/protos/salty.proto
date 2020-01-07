@@ -6,14 +6,14 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
 // Basic Request
-message BaseClientRequest {
+message BasicClientRequest {
     int32 code = 1;
     google.protobuf.Any data = 2;
     string message = 3;
 }
 
 // Basic Response
-message BaseServerResponse {
+message BasicServerResponse {
     int32 code = 1;
     google.protobuf.Any data = 2;
     string message = 3;
@@ -22,9 +22,9 @@ message BaseServerResponse {
 /* [USER] */
 // user service
 service UserService {
-    rpc Register (BaseClientRequest) returns (BaseServerResponse) {
+    rpc Register (BasicClientRequest) returns (BasicServerResponse) {
     }
-    rpc Login (BaseClientRequest) returns (BaseServerResponse) {
+    rpc Login (BasicClientRequest) returns (BasicServerResponse) {
     }
 }
 
@@ -58,7 +58,7 @@ message UserProfile {
 }
 message UserReq {
     CodeType codeType = 1;
-    string verifyCode = 2;
+    string verificationCode = 2;
     UserProfile userProfile = 3;
     string password = 4;
     string deviceID = 5;
@@ -68,12 +68,12 @@ message UserReq {
     google.protobuf.Any Extension = 7;
 }
 
-message UserRes {
+message UserResp {
 }
 
 /* [SMS CODE] */
 service SMSService {
-    rpc ObtainSMSCode (BaseClientRequest) returns (BaseServerResponse) {
+    rpc ObtainSMSCode (BasicClientRequest) returns (BasicServerResponse) {
     }
 }
 
@@ -83,5 +83,5 @@ message SMSReq {
     google.protobuf.Any Extension = 3;
 }
 
-message SMSRes {
+message SMSResp {
 }

@@ -17,7 +17,7 @@ func New() protos.SMSServiceServer {
 	return &smsServer{}
 }
 
-func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.BaseClientRequest) (res *protos.BaseServerResponse, err error) {
+func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.BasicClientRequest) (res *protos.BasicServerResponse, err error) {
 	reqBody := req.Data.GetValue()
 	logger.Infoln(reqBody)
 
@@ -27,20 +27,20 @@ func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.BaseClientReq
 		logger.Errorf(`unmarshal error: %v`, err)
 	} else {
 		var code int32 = 200
-		var verifyCode string = ""
+		var verificationCode string = ""
 		var msg string = "sending sms code success"
 		switch smsReq.GetCodeType() {
 		case protos.CodeType(constants.CodeTypeRegister):
-			verifyCode = "123456"
+			verificationCode = "123456"
 			break
 		case protos.CodeType(constants.CodeTypeLogin):
-			verifyCode = "654321"
+			verificationCode = "654321"
 			break
 		default:
 			code = 400
 			msg = "invalid request code type"
 		}
-		res = utils.NewResp(code, []byte(verifyCode), msg)
+		res = utils.NewResp(code, []byte(verificationCode), msg)
 	}
 	return
 }

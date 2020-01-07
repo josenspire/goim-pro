@@ -130,7 +130,7 @@ func (Status) EnumDescriptor() ([]byte, []int) {
 }
 
 // Basic Request
-type BaseClientRequest struct {
+type BasicClientRequest struct {
 	Code                 int32    `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
 	Data                 *any.Any `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
 	Message              string   `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
@@ -139,46 +139,46 @@ type BaseClientRequest struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *BaseClientRequest) Reset()         { *m = BaseClientRequest{} }
-func (m *BaseClientRequest) String() string { return proto.CompactTextString(m) }
-func (*BaseClientRequest) ProtoMessage()    {}
-func (*BaseClientRequest) Descriptor() ([]byte, []int) {
+func (m *BasicClientRequest) Reset()         { *m = BasicClientRequest{} }
+func (m *BasicClientRequest) String() string { return proto.CompactTextString(m) }
+func (*BasicClientRequest) ProtoMessage()    {}
+func (*BasicClientRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f0b0587afcdc51fc, []int{0}
 }
 
-func (m *BaseClientRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_BaseClientRequest.Unmarshal(m, b)
+func (m *BasicClientRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_BasicClientRequest.Unmarshal(m, b)
 }
-func (m *BaseClientRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_BaseClientRequest.Marshal(b, m, deterministic)
+func (m *BasicClientRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_BasicClientRequest.Marshal(b, m, deterministic)
 }
-func (m *BaseClientRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BaseClientRequest.Merge(m, src)
+func (m *BasicClientRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BasicClientRequest.Merge(m, src)
 }
-func (m *BaseClientRequest) XXX_Size() int {
-	return xxx_messageInfo_BaseClientRequest.Size(m)
+func (m *BasicClientRequest) XXX_Size() int {
+	return xxx_messageInfo_BasicClientRequest.Size(m)
 }
-func (m *BaseClientRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_BaseClientRequest.DiscardUnknown(m)
+func (m *BasicClientRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_BasicClientRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BaseClientRequest proto.InternalMessageInfo
+var xxx_messageInfo_BasicClientRequest proto.InternalMessageInfo
 
-func (m *BaseClientRequest) GetCode() int32 {
+func (m *BasicClientRequest) GetCode() int32 {
 	if m != nil {
 		return m.Code
 	}
 	return 0
 }
 
-func (m *BaseClientRequest) GetData() *any.Any {
+func (m *BasicClientRequest) GetData() *any.Any {
 	if m != nil {
 		return m.Data
 	}
 	return nil
 }
 
-func (m *BaseClientRequest) GetMessage() string {
+func (m *BasicClientRequest) GetMessage() string {
 	if m != nil {
 		return m.Message
 	}
@@ -186,7 +186,7 @@ func (m *BaseClientRequest) GetMessage() string {
 }
 
 // Basic Response
-type BaseServerResponse struct {
+type BasicServerResponse struct {
 	Code                 int32    `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
 	Data                 *any.Any `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
 	Message              string   `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
@@ -195,46 +195,46 @@ type BaseServerResponse struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *BaseServerResponse) Reset()         { *m = BaseServerResponse{} }
-func (m *BaseServerResponse) String() string { return proto.CompactTextString(m) }
-func (*BaseServerResponse) ProtoMessage()    {}
-func (*BaseServerResponse) Descriptor() ([]byte, []int) {
+func (m *BasicServerResponse) Reset()         { *m = BasicServerResponse{} }
+func (m *BasicServerResponse) String() string { return proto.CompactTextString(m) }
+func (*BasicServerResponse) ProtoMessage()    {}
+func (*BasicServerResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f0b0587afcdc51fc, []int{1}
 }
 
-func (m *BaseServerResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_BaseServerResponse.Unmarshal(m, b)
+func (m *BasicServerResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_BasicServerResponse.Unmarshal(m, b)
 }
-func (m *BaseServerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_BaseServerResponse.Marshal(b, m, deterministic)
+func (m *BasicServerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_BasicServerResponse.Marshal(b, m, deterministic)
 }
-func (m *BaseServerResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BaseServerResponse.Merge(m, src)
+func (m *BasicServerResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BasicServerResponse.Merge(m, src)
 }
-func (m *BaseServerResponse) XXX_Size() int {
-	return xxx_messageInfo_BaseServerResponse.Size(m)
+func (m *BasicServerResponse) XXX_Size() int {
+	return xxx_messageInfo_BasicServerResponse.Size(m)
 }
-func (m *BaseServerResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_BaseServerResponse.DiscardUnknown(m)
+func (m *BasicServerResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_BasicServerResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BaseServerResponse proto.InternalMessageInfo
+var xxx_messageInfo_BasicServerResponse proto.InternalMessageInfo
 
-func (m *BaseServerResponse) GetCode() int32 {
+func (m *BasicServerResponse) GetCode() int32 {
 	if m != nil {
 		return m.Code
 	}
 	return 0
 }
 
-func (m *BaseServerResponse) GetData() *any.Any {
+func (m *BasicServerResponse) GetData() *any.Any {
 	if m != nil {
 		return m.Data
 	}
 	return nil
 }
 
-func (m *BaseServerResponse) GetMessage() string {
+func (m *BasicServerResponse) GetMessage() string {
 	if m != nil {
 		return m.Message
 	}
@@ -346,7 +346,7 @@ func (m *UserProfile) GetLocation() string {
 
 type UserReq struct {
 	CodeType             CodeType             `protobuf:"varint,1,opt,name=codeType,proto3,enum=protos.CodeType" json:"codeType,omitempty"`
-	VerifyCode           string               `protobuf:"bytes,2,opt,name=verifyCode,proto3" json:"verifyCode,omitempty"`
+	VerificationCode     string               `protobuf:"bytes,2,opt,name=verificationCode,proto3" json:"verificationCode,omitempty"`
 	UserProfile          *UserProfile         `protobuf:"bytes,3,opt,name=userProfile,proto3" json:"userProfile,omitempty"`
 	Password             string               `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
 	DeviceID             string               `protobuf:"bytes,5,opt,name=deviceID,proto3" json:"deviceID,omitempty"`
@@ -389,9 +389,9 @@ func (m *UserReq) GetCodeType() CodeType {
 	return CodeType_REGISTER
 }
 
-func (m *UserReq) GetVerifyCode() string {
+func (m *UserReq) GetVerificationCode() string {
 	if m != nil {
-		return m.VerifyCode
+		return m.VerificationCode
 	}
 	return ""
 }
@@ -431,36 +431,36 @@ func (m *UserReq) GetExtension() *any.Any {
 	return nil
 }
 
-type UserRes struct {
+type UserResp struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *UserRes) Reset()         { *m = UserRes{} }
-func (m *UserRes) String() string { return proto.CompactTextString(m) }
-func (*UserRes) ProtoMessage()    {}
-func (*UserRes) Descriptor() ([]byte, []int) {
+func (m *UserResp) Reset()         { *m = UserResp{} }
+func (m *UserResp) String() string { return proto.CompactTextString(m) }
+func (*UserResp) ProtoMessage()    {}
+func (*UserResp) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f0b0587afcdc51fc, []int{4}
 }
 
-func (m *UserRes) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_UserRes.Unmarshal(m, b)
+func (m *UserResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UserResp.Unmarshal(m, b)
 }
-func (m *UserRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_UserRes.Marshal(b, m, deterministic)
+func (m *UserResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UserResp.Marshal(b, m, deterministic)
 }
-func (m *UserRes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UserRes.Merge(m, src)
+func (m *UserResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UserResp.Merge(m, src)
 }
-func (m *UserRes) XXX_Size() int {
-	return xxx_messageInfo_UserRes.Size(m)
+func (m *UserResp) XXX_Size() int {
+	return xxx_messageInfo_UserResp.Size(m)
 }
-func (m *UserRes) XXX_DiscardUnknown() {
-	xxx_messageInfo_UserRes.DiscardUnknown(m)
+func (m *UserResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_UserResp.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_UserRes proto.InternalMessageInfo
+var xxx_messageInfo_UserResp proto.InternalMessageInfo
 
 type SMSReq struct {
 	CodeType             CodeType `protobuf:"varint,1,opt,name=codeType,proto3,enum=protos.CodeType" json:"codeType,omitempty"`
@@ -517,97 +517,97 @@ func (m *SMSReq) GetExtension() *any.Any {
 	return nil
 }
 
-type SMSRes struct {
+type SMSResp struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *SMSRes) Reset()         { *m = SMSRes{} }
-func (m *SMSRes) String() string { return proto.CompactTextString(m) }
-func (*SMSRes) ProtoMessage()    {}
-func (*SMSRes) Descriptor() ([]byte, []int) {
+func (m *SMSResp) Reset()         { *m = SMSResp{} }
+func (m *SMSResp) String() string { return proto.CompactTextString(m) }
+func (*SMSResp) ProtoMessage()    {}
+func (*SMSResp) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f0b0587afcdc51fc, []int{6}
 }
 
-func (m *SMSRes) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SMSRes.Unmarshal(m, b)
+func (m *SMSResp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SMSResp.Unmarshal(m, b)
 }
-func (m *SMSRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SMSRes.Marshal(b, m, deterministic)
+func (m *SMSResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SMSResp.Marshal(b, m, deterministic)
 }
-func (m *SMSRes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SMSRes.Merge(m, src)
+func (m *SMSResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SMSResp.Merge(m, src)
 }
-func (m *SMSRes) XXX_Size() int {
-	return xxx_messageInfo_SMSRes.Size(m)
+func (m *SMSResp) XXX_Size() int {
+	return xxx_messageInfo_SMSResp.Size(m)
 }
-func (m *SMSRes) XXX_DiscardUnknown() {
-	xxx_messageInfo_SMSRes.DiscardUnknown(m)
+func (m *SMSResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_SMSResp.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_SMSRes proto.InternalMessageInfo
+var xxx_messageInfo_SMSResp proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterEnum("protos.CodeType", CodeType_name, CodeType_value)
 	proto.RegisterEnum("protos.Role", Role_name, Role_value)
 	proto.RegisterEnum("protos.Sex", Sex_name, Sex_value)
 	proto.RegisterEnum("protos.Status", Status_name, Status_value)
-	proto.RegisterType((*BaseClientRequest)(nil), "protos.BaseClientRequest")
-	proto.RegisterType((*BaseServerResponse)(nil), "protos.BaseServerResponse")
+	proto.RegisterType((*BasicClientRequest)(nil), "protos.BasicClientRequest")
+	proto.RegisterType((*BasicServerResponse)(nil), "protos.BasicServerResponse")
 	proto.RegisterType((*UserProfile)(nil), "protos.UserProfile")
 	proto.RegisterType((*UserReq)(nil), "protos.UserReq")
-	proto.RegisterType((*UserRes)(nil), "protos.UserRes")
+	proto.RegisterType((*UserResp)(nil), "protos.UserResp")
 	proto.RegisterType((*SMSReq)(nil), "protos.SMSReq")
-	proto.RegisterType((*SMSRes)(nil), "protos.SMSRes")
+	proto.RegisterType((*SMSResp)(nil), "protos.SMSResp")
 }
 
 func init() { proto.RegisterFile("salty.proto", fileDescriptor_f0b0587afcdc51fc) }
 
 var fileDescriptor_f0b0587afcdc51fc = []byte{
-	// 661 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x94, 0xdf, 0x6e, 0xda, 0x4a,
-	0x10, 0xc6, 0x63, 0xfe, 0xda, 0xe3, 0x9c, 0x1c, 0xce, 0x9e, 0xa8, 0x72, 0xe8, 0x3f, 0x44, 0x6f,
-	0x10, 0xaa, 0x88, 0xe4, 0xaa, 0x55, 0x2f, 0x4b, 0x88, 0x93, 0x22, 0x41, 0x12, 0xad, 0x49, 0x6e,
-	0xab, 0x0d, 0x4c, 0xc8, 0x2a, 0xc6, 0x26, 0xde, 0x85, 0xc2, 0x1b, 0xf4, 0x01, 0xfa, 0x04, 0x7d,
-	0x86, 0x3e, 0x60, 0xb5, 0xb6, 0x17, 0x48, 0x22, 0x45, 0x6d, 0xa4, 0x5e, 0xe1, 0x6f, 0xe6, 0xd3,
-	0xcc, 0xc7, 0xcf, 0xeb, 0x05, 0x5b, 0xb0, 0x40, 0x2e, 0x5b, 0xd3, 0x38, 0x92, 0x11, 0x29, 0x25,
-	0x3f, 0xa2, 0xfa, 0x7a, 0x1c, 0x45, 0xe3, 0x00, 0xf7, 0x13, 0x79, 0x39, 0xbb, 0xda, 0x97, 0x7c,
-	0x82, 0x42, 0xb2, 0xc9, 0x34, 0x35, 0x56, 0xf7, 0xee, 0x1b, 0x58, 0x98, 0xcd, 0xa8, 0xdf, 0xc0,
-	0x7f, 0x07, 0x4c, 0x60, 0x27, 0xe0, 0x18, 0x4a, 0x8a, 0xb7, 0x33, 0x14, 0x92, 0x10, 0x28, 0x0c,
-	0xa3, 0x11, 0x3a, 0x46, 0xcd, 0x68, 0x14, 0x69, 0xf2, 0x4c, 0x1a, 0x50, 0x18, 0x31, 0xc9, 0x9c,
-	0x5c, 0xcd, 0x68, 0xd8, 0xee, 0x6e, 0x2b, 0x1d, 0xd9, 0xd2, 0x23, 0x5b, 0xed, 0x70, 0x49, 0x13,
-	0x07, 0x71, 0xa0, 0x3c, 0x41, 0x21, 0xd8, 0x18, 0x9d, 0x7c, 0xcd, 0x68, 0x58, 0x54, 0xcb, 0x7a,
-	0x00, 0x44, 0x2d, 0xf3, 0x31, 0x9e, 0x63, 0x4c, 0x51, 0x4c, 0xa3, 0x50, 0xe0, 0x5f, 0xdb, 0xf6,
-	0x23, 0x07, 0xf6, 0xb9, 0xc0, 0xf8, 0x2c, 0x8e, 0xae, 0x78, 0x80, 0xe4, 0x05, 0x58, 0x12, 0x03,
-	0x9c, 0x5e, 0x47, 0x61, 0xba, 0xcc, 0xa2, 0xeb, 0x02, 0xd9, 0x85, 0x22, 0x4e, 0x18, 0x0f, 0x92,
-	0x95, 0x16, 0x4d, 0x05, 0xa9, 0x82, 0x39, 0x13, 0x18, 0x87, 0x6c, 0xa2, 0xc7, 0xaf, 0xb4, 0xea,
-	0x85, 0x7c, 0x78, 0x93, 0xf4, 0x0a, 0x69, 0x4f, 0x6b, 0xf2, 0x0c, 0x4a, 0x6c, 0xce, 0x24, 0x8b,
-	0x9d, 0x62, 0xd2, 0xc9, 0x94, 0xca, 0x20, 0xf8, 0x38, 0x64, 0x72, 0x16, 0xa3, 0x53, 0x4a, 0x33,
-	0xac, 0x0a, 0xe4, 0x25, 0xe4, 0x05, 0x2e, 0x9c, 0x72, 0xcd, 0x68, 0xec, 0xb8, 0x76, 0xfa, 0x6f,
-	0x45, 0xcb, 0xc7, 0x05, 0x55, 0x75, 0xf2, 0x01, 0xcc, 0x03, 0x1e, 0xcb, 0xeb, 0x11, 0x5b, 0x3a,
-	0x66, 0x02, 0xa6, 0xfa, 0x00, 0xcc, 0x40, 0xbf, 0x7a, 0xba, 0xf2, 0xaa, 0xa0, 0x41, 0x34, 0x64,
-	0x92, 0x47, 0xa1, 0x63, 0xa5, 0x41, 0xb5, 0xae, 0xff, 0xcc, 0x41, 0x59, 0x41, 0xa2, 0x78, 0x4b,
-	0xde, 0x82, 0xa9, 0xe0, 0x0f, 0x96, 0xd3, 0x94, 0xcf, 0x8e, 0x5b, 0xd1, 0x19, 0x3a, 0x59, 0x9d,
-	0xae, 0x1c, 0xe4, 0x15, 0xc0, 0x1c, 0x63, 0x7e, 0xb5, 0x54, 0xbd, 0x8c, 0xda, 0x46, 0x85, 0xbc,
-	0x07, 0x7b, 0xb6, 0xa6, 0x9f, 0xd0, 0xb3, 0xdd, 0xff, 0xf5, 0xc0, 0x8d, 0x17, 0x43, 0x37, 0x7d,
-	0x2a, 0xec, 0x94, 0x09, 0xf1, 0x35, 0x8a, 0x47, 0x9a, 0xaa, 0xd6, 0xaa, 0x37, 0xc2, 0x39, 0x1f,
-	0x62, 0xf7, 0x30, 0xe3, 0xba, 0xd2, 0xe4, 0x23, 0x58, 0x9d, 0x18, 0x99, 0xc4, 0x51, 0x5b, 0x26,
-	0x64, 0x1f, 0xa7, 0xb3, 0x36, 0x13, 0x17, 0x2c, 0x6f, 0x21, 0x31, 0x14, 0x8a, 0x4f, 0xf9, 0x91,
-	0x03, 0xb7, 0xb6, 0xd5, 0x2d, 0x4d, 0x4d, 0xd4, 0xbf, 0x19, 0x50, 0xf2, 0xfb, 0xfe, 0x9f, 0x03,
-	0xbc, 0x73, 0x1e, 0x73, 0xf7, 0xcf, 0xe3, 0x9d, 0x54, 0xf9, 0xdf, 0x4b, 0x65, 0x66, 0x49, 0x44,
-	0xf3, 0x0d, 0x98, 0x7a, 0x23, 0xd9, 0x06, 0x93, 0x7a, 0xc7, 0x5d, 0x7f, 0xe0, 0xd1, 0xca, 0x16,
-	0xb1, 0xa0, 0xd8, 0x3b, 0x3d, 0xee, 0x9e, 0x54, 0x8c, 0xe6, 0x3e, 0x14, 0x68, 0x14, 0x20, 0xb1,
-	0xa1, 0x7c, 0xe8, 0x1d, 0xb5, 0xcf, 0x7b, 0x83, 0xb4, 0xdf, 0x3e, 0xec, 0x77, 0x4f, 0x2a, 0x40,
-	0xfe, 0x05, 0xdb, 0x3f, 0x3f, 0xf3, 0xe8, 0x97, 0xb4, 0x30, 0x6c, 0x3e, 0x87, 0xbc, 0x8f, 0x0b,
-	0x62, 0x42, 0xa1, 0xdf, 0xee, 0x79, 0x95, 0x2d, 0x02, 0x50, 0x3a, 0xf2, 0x92, 0x67, 0xa3, 0x59,
-	0x87, 0x92, 0x2f, 0x99, 0x9c, 0x09, 0x55, 0x6d, 0x77, 0x06, 0xdd, 0x0b, 0xe5, 0xd8, 0x06, 0xb3,
-	0x7b, 0x92, 0x29, 0xc3, 0xfd, 0x6e, 0xa4, 0x9f, 0xa4, 0xba, 0x01, 0xf8, 0x10, 0x49, 0x07, 0x4c,
-	0x8a, 0x63, 0x2e, 0x24, 0xc6, 0x64, 0x4f, 0xa3, 0x7a, 0x70, 0x1f, 0x55, 0xab, 0x9b, 0xad, 0xbb,
-	0xb7, 0x47, 0x7d, 0x8b, 0x7c, 0x82, 0x62, 0x2f, 0x1a, 0xf3, 0xf0, 0xc9, 0x13, 0xdc, 0x0b, 0x00,
-	0xbf, 0xef, 0xeb, 0x50, 0x9f, 0xe1, 0x9f, 0xd3, 0x4b, 0xc9, 0x78, 0xe8, 0xf7, 0xfd, 0xe4, 0x24,
-	0x3f, 0x75, 0xee, 0x65, 0x7a, 0x41, 0xbf, 0xfb, 0x15, 0x00, 0x00, 0xff, 0xff, 0xe4, 0xa8, 0x72,
-	0xc1, 0xb6, 0x05, 0x00, 0x00,
+	// 668 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x54, 0x5d, 0x6f, 0xda, 0x48,
+	0x14, 0x8d, 0xf9, 0xb4, 0xaf, 0xb3, 0x59, 0x34, 0x89, 0x56, 0x5e, 0xb2, 0xab, 0x22, 0xfa, 0x82,
+	0x50, 0x45, 0x24, 0x57, 0xad, 0xfa, 0x4a, 0x88, 0x13, 0x51, 0x41, 0x12, 0x8d, 0x49, 0xd5, 0xb7,
+	0x6a, 0x62, 0x6e, 0xc8, 0xa8, 0xc6, 0x76, 0x3c, 0x03, 0x85, 0x7f, 0xd0, 0x9f, 0xd0, 0xe7, 0xfe,
+	0x92, 0xfe, 0xb4, 0xca, 0x33, 0x18, 0x42, 0x22, 0x45, 0xfd, 0x50, 0x9f, 0x98, 0x73, 0xef, 0xd1,
+	0xb9, 0x87, 0x33, 0xe3, 0x0b, 0xb6, 0x60, 0xa1, 0x5c, 0x76, 0x92, 0x34, 0x96, 0x31, 0xa9, 0xa8,
+	0x1f, 0x51, 0x7f, 0x36, 0x89, 0xe3, 0x49, 0x88, 0x47, 0x0a, 0x5e, 0xcf, 0x6e, 0x8e, 0x24, 0x9f,
+	0xa2, 0x90, 0x6c, 0x9a, 0x68, 0x62, 0xfd, 0xdf, 0x87, 0x04, 0x16, 0xad, 0x34, 0x9a, 0x21, 0x90,
+	0x63, 0x26, 0x78, 0xd0, 0x0b, 0x39, 0x46, 0x92, 0xe2, 0xdd, 0x0c, 0x85, 0x24, 0x04, 0x4a, 0x41,
+	0x3c, 0x46, 0xc7, 0x68, 0x18, 0xad, 0x32, 0x55, 0x67, 0xd2, 0x82, 0xd2, 0x98, 0x49, 0xe6, 0x14,
+	0x1a, 0x46, 0xcb, 0x76, 0x0f, 0x3a, 0x5a, 0xb3, 0x93, 0x6b, 0x76, 0xba, 0xd1, 0x92, 0x2a, 0x06,
+	0x71, 0xa0, 0x3a, 0x45, 0x21, 0xd8, 0x04, 0x9d, 0x62, 0xc3, 0x68, 0x59, 0x34, 0x87, 0xcd, 0x29,
+	0xec, 0xab, 0x69, 0x3e, 0xa6, 0x73, 0x4c, 0x29, 0x8a, 0x24, 0x8e, 0x04, 0xfe, 0xb1, 0x71, 0x5f,
+	0x0b, 0x60, 0x5f, 0x09, 0x4c, 0x2f, 0xd3, 0xf8, 0x86, 0x87, 0x48, 0xfe, 0x03, 0x4b, 0x62, 0x88,
+	0xc9, 0x6d, 0x1c, 0xe9, 0x61, 0x16, 0xdd, 0x14, 0xc8, 0x01, 0x94, 0x71, 0xca, 0x78, 0xa8, 0x46,
+	0x5a, 0x54, 0x03, 0x52, 0x07, 0x73, 0x26, 0x30, 0x8d, 0xd8, 0x34, 0x97, 0x5f, 0xe3, 0xac, 0x17,
+	0xf1, 0xe0, 0xa3, 0xea, 0x95, 0x74, 0x2f, 0xc7, 0xe4, 0x1f, 0xa8, 0xb0, 0x39, 0x93, 0x2c, 0x75,
+	0xca, 0xaa, 0xb3, 0x42, 0x99, 0x07, 0xc1, 0x27, 0x11, 0x93, 0xb3, 0x14, 0x9d, 0x8a, 0xf6, 0xb0,
+	0x2e, 0x90, 0xff, 0xa1, 0x28, 0x70, 0xe1, 0x54, 0x1b, 0x46, 0x6b, 0xcf, 0xb5, 0xf5, 0xbf, 0x15,
+	0x1d, 0x1f, 0x17, 0x34, 0xab, 0x93, 0xd7, 0x60, 0x1e, 0xf3, 0x54, 0xde, 0x8e, 0xd9, 0xd2, 0x31,
+	0x55, 0x30, 0xf5, 0x47, 0xc1, 0x8c, 0xf2, 0xcb, 0xa7, 0x6b, 0x6e, 0x66, 0x34, 0x8c, 0x03, 0x26,
+	0x79, 0x1c, 0x39, 0x96, 0x36, 0x9a, 0xe3, 0xe6, 0xb7, 0x02, 0x54, 0xb3, 0x90, 0x28, 0xde, 0x91,
+	0x17, 0x60, 0x66, 0xe1, 0x8f, 0x96, 0x89, 0xce, 0x67, 0xcf, 0xad, 0xe5, 0x1e, 0x7a, 0xab, 0x3a,
+	0x5d, 0x33, 0x48, 0x1b, 0x6a, 0x73, 0x4c, 0xf9, 0x0d, 0xd7, 0x4a, 0x19, 0x63, 0x95, 0xdd, 0xa3,
+	0x3a, 0x79, 0x05, 0xf6, 0x6c, 0x73, 0x13, 0x2a, 0x49, 0xdb, 0xdd, 0xcf, 0xc5, 0xef, 0x5d, 0x12,
+	0xbd, 0xcf, 0xcb, 0x8c, 0x27, 0x4c, 0x88, 0x4f, 0x71, 0x3a, 0xce, 0x13, 0xce, 0x71, 0xd6, 0x1b,
+	0xe3, 0x9c, 0x07, 0xd8, 0x3f, 0x59, 0x65, 0xbc, 0xc6, 0xe4, 0x0d, 0x58, 0xbd, 0x14, 0x99, 0xc4,
+	0x71, 0x57, 0xaa, 0x94, 0x9f, 0x4e, 0x6a, 0x43, 0x26, 0x2e, 0x58, 0xde, 0x42, 0x62, 0x24, 0xb2,
+	0xac, 0xaa, 0x4f, 0x3c, 0xbe, 0x0d, 0xad, 0x09, 0x60, 0xea, 0x04, 0x45, 0xd2, 0xfc, 0x6c, 0x40,
+	0xc5, 0x1f, 0xfa, 0x3f, 0x9f, 0xe6, 0xd6, 0xe3, 0x2c, 0x3c, 0x7c, 0x9c, 0x5b, 0xb6, 0x8a, 0x3f,
+	0x66, 0xcb, 0x82, 0xaa, 0x72, 0x22, 0x92, 0xf6, 0x73, 0x30, 0xf3, 0x91, 0x64, 0x17, 0x4c, 0xea,
+	0x9d, 0xf5, 0xfd, 0x91, 0x47, 0x6b, 0x3b, 0xc4, 0x82, 0xf2, 0xe0, 0xe2, 0xac, 0x7f, 0x5e, 0x33,
+	0xda, 0x47, 0x50, 0xa2, 0x71, 0x88, 0xc4, 0x86, 0xea, 0x89, 0x77, 0xda, 0xbd, 0x1a, 0x8c, 0x74,
+	0xbf, 0x7b, 0x32, 0xec, 0x9f, 0xd7, 0x80, 0xfc, 0x0d, 0xb6, 0x7f, 0x75, 0xe9, 0xd1, 0x0f, 0xba,
+	0x10, 0xb4, 0x0f, 0xa1, 0xe8, 0xe3, 0x82, 0x98, 0x50, 0x1a, 0x76, 0x07, 0x5e, 0x6d, 0x87, 0x00,
+	0x54, 0x4e, 0x3d, 0x75, 0x36, 0xda, 0x4d, 0xa8, 0xf8, 0x92, 0xc9, 0x99, 0xc8, 0xaa, 0xdd, 0xde,
+	0xa8, 0xff, 0x2e, 0x63, 0xec, 0x82, 0xd9, 0x3f, 0x5f, 0x21, 0xc3, 0xfd, 0x62, 0xe8, 0x0f, 0x34,
+	0xdb, 0x07, 0x3c, 0x40, 0xe2, 0x81, 0x49, 0x71, 0xc2, 0x85, 0xc4, 0x94, 0xd4, 0xf3, 0xac, 0x1e,
+	0xef, 0xa7, 0xfa, 0xe1, 0x56, 0x6f, 0x7b, 0x9b, 0x34, 0x77, 0xc8, 0x31, 0x94, 0x07, 0xf1, 0x84,
+	0x47, 0xbf, 0xa1, 0xe1, 0xbe, 0x07, 0xf0, 0x87, 0x7e, 0x6e, 0xec, 0x2d, 0xfc, 0x75, 0x71, 0x2d,
+	0x19, 0x8f, 0xfc, 0xa1, 0xaf, 0xde, 0xf3, 0xaf, 0x2b, 0x5f, 0xeb, 0xb5, 0xfd, 0xf2, 0x7b, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0x55, 0xb5, 0x40, 0xad, 0xcc, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -622,8 +622,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type UserServiceClient interface {
-	Register(ctx context.Context, in *BaseClientRequest, opts ...grpc.CallOption) (*BaseServerResponse, error)
-	Login(ctx context.Context, in *BaseClientRequest, opts ...grpc.CallOption) (*BaseServerResponse, error)
+	Register(ctx context.Context, in *BasicClientRequest, opts ...grpc.CallOption) (*BasicServerResponse, error)
+	Login(ctx context.Context, in *BasicClientRequest, opts ...grpc.CallOption) (*BasicServerResponse, error)
 }
 
 type userServiceClient struct {
@@ -634,8 +634,8 @@ func NewUserServiceClient(cc *grpc.ClientConn) UserServiceClient {
 	return &userServiceClient{cc}
 }
 
-func (c *userServiceClient) Register(ctx context.Context, in *BaseClientRequest, opts ...grpc.CallOption) (*BaseServerResponse, error) {
-	out := new(BaseServerResponse)
+func (c *userServiceClient) Register(ctx context.Context, in *BasicClientRequest, opts ...grpc.CallOption) (*BasicServerResponse, error) {
+	out := new(BasicServerResponse)
 	err := c.cc.Invoke(ctx, "/protos.UserService/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -643,8 +643,8 @@ func (c *userServiceClient) Register(ctx context.Context, in *BaseClientRequest,
 	return out, nil
 }
 
-func (c *userServiceClient) Login(ctx context.Context, in *BaseClientRequest, opts ...grpc.CallOption) (*BaseServerResponse, error) {
-	out := new(BaseServerResponse)
+func (c *userServiceClient) Login(ctx context.Context, in *BasicClientRequest, opts ...grpc.CallOption) (*BasicServerResponse, error) {
+	out := new(BasicServerResponse)
 	err := c.cc.Invoke(ctx, "/protos.UserService/Login", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -654,18 +654,18 @@ func (c *userServiceClient) Login(ctx context.Context, in *BaseClientRequest, op
 
 // UserServiceServer is the server API for UserService service.
 type UserServiceServer interface {
-	Register(context.Context, *BaseClientRequest) (*BaseServerResponse, error)
-	Login(context.Context, *BaseClientRequest) (*BaseServerResponse, error)
+	Register(context.Context, *BasicClientRequest) (*BasicServerResponse, error)
+	Login(context.Context, *BasicClientRequest) (*BasicServerResponse, error)
 }
 
 // UnimplementedUserServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedUserServiceServer struct {
 }
 
-func (*UnimplementedUserServiceServer) Register(ctx context.Context, req *BaseClientRequest) (*BaseServerResponse, error) {
+func (*UnimplementedUserServiceServer) Register(ctx context.Context, req *BasicClientRequest) (*BasicServerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (*UnimplementedUserServiceServer) Login(ctx context.Context, req *BaseClientRequest) (*BaseServerResponse, error) {
+func (*UnimplementedUserServiceServer) Login(ctx context.Context, req *BasicClientRequest) (*BasicServerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
 
@@ -674,7 +674,7 @@ func RegisterUserServiceServer(s *grpc.Server, srv UserServiceServer) {
 }
 
 func _UserService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BaseClientRequest)
+	in := new(BasicClientRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -686,13 +686,13 @@ func _UserService_Register_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/protos.UserService/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).Register(ctx, req.(*BaseClientRequest))
+		return srv.(UserServiceServer).Register(ctx, req.(*BasicClientRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BaseClientRequest)
+	in := new(BasicClientRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -704,7 +704,7 @@ func _UserService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/protos.UserService/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).Login(ctx, req.(*BaseClientRequest))
+		return srv.(UserServiceServer).Login(ctx, req.(*BasicClientRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -730,7 +730,7 @@ var _UserService_serviceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type SMSServiceClient interface {
-	ObtainSMSCode(ctx context.Context, in *BaseClientRequest, opts ...grpc.CallOption) (*BaseServerResponse, error)
+	ObtainSMSCode(ctx context.Context, in *BasicClientRequest, opts ...grpc.CallOption) (*BasicServerResponse, error)
 }
 
 type sMSServiceClient struct {
@@ -741,8 +741,8 @@ func NewSMSServiceClient(cc *grpc.ClientConn) SMSServiceClient {
 	return &sMSServiceClient{cc}
 }
 
-func (c *sMSServiceClient) ObtainSMSCode(ctx context.Context, in *BaseClientRequest, opts ...grpc.CallOption) (*BaseServerResponse, error) {
-	out := new(BaseServerResponse)
+func (c *sMSServiceClient) ObtainSMSCode(ctx context.Context, in *BasicClientRequest, opts ...grpc.CallOption) (*BasicServerResponse, error) {
+	out := new(BasicServerResponse)
 	err := c.cc.Invoke(ctx, "/protos.SMSService/ObtainSMSCode", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -752,14 +752,14 @@ func (c *sMSServiceClient) ObtainSMSCode(ctx context.Context, in *BaseClientRequ
 
 // SMSServiceServer is the server API for SMSService service.
 type SMSServiceServer interface {
-	ObtainSMSCode(context.Context, *BaseClientRequest) (*BaseServerResponse, error)
+	ObtainSMSCode(context.Context, *BasicClientRequest) (*BasicServerResponse, error)
 }
 
 // UnimplementedSMSServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedSMSServiceServer struct {
 }
 
-func (*UnimplementedSMSServiceServer) ObtainSMSCode(ctx context.Context, req *BaseClientRequest) (*BaseServerResponse, error) {
+func (*UnimplementedSMSServiceServer) ObtainSMSCode(ctx context.Context, req *BasicClientRequest) (*BasicServerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ObtainSMSCode not implemented")
 }
 
@@ -768,7 +768,7 @@ func RegisterSMSServiceServer(s *grpc.Server, srv SMSServiceServer) {
 }
 
 func _SMSService_ObtainSMSCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BaseClientRequest)
+	in := new(BasicClientRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -780,7 +780,7 @@ func _SMSService_ObtainSMSCode_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/protos.SMSService/ObtainSMSCode",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SMSServiceServer).ObtainSMSCode(ctx, req.(*BaseClientRequest))
+		return srv.(SMSServiceServer).ObtainSMSCode(ctx, req.(*BasicClientRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

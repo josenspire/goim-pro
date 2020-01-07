@@ -1,7 +1,7 @@
 package services
 
 import (
-	protos "goim-pro/api/protos"
+	"goim-pro/api/protos"
 	demowaiter "goim-pro/internal/app/services/demowaiter"
 	usersrv "goim-pro/internal/app/services/user"
 )

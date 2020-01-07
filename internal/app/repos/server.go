@@ -11,16 +11,16 @@ import (
 var mysqlDB *gorm.DB
 var logger = logs.GetLogger("ERROR")
 
+type RepoServer struct {
+	UserRepo    user.IUserRepo
+	AddressRepo address.IAddress
+}
+
 func init() {
 	mysqlDB = db.GetMysqlConnection().GetMysqlDBInstance()
 	if err := initialMysqlTables(mysqlDB); err != nil {
 		panic(err)
 	}
-}
-
-type RepoServer struct {
-	UserRepo    user.IUserRepo
-	AddressRepo address.IAddress
 }
 
 func New() *RepoServer {

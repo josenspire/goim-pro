@@ -1,11 +1,12 @@
 package user
 
 import (
-	"errors"
 	"github.com/jinzhu/gorm"
+	"goim-pro/configs"
 	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos/base"
 	"goim-pro/pkg/logs"
+	"goim-pro/pkg/utils"
 )
 
 type User struct {
@@ -36,7 +37,12 @@ type IUserRepo interface {
 }
 
 var logger = logs.GetLogger("ERROR")
+var crypto = utils.NewCrypto()
 var mysqlDB *gorm.DB
+
+func (User) TableName() string {
+	return "users"
+}
 
 func NewUserModel() *User {
 	return &User{}
@@ -47,15 +53,25 @@ func NewUserRepo(db *gorm.DB) IUserRepo {
 	return NewUserModel()
 }
 
-func (u *User) Register(newUser *User) (err error) {
-	isExist, err := u.IsTelephoneRegistered(newUser.Telephone)
+// callbacks hock -- before create, encrypt password
+func (u *User) BeforeCreate(scope *gorm.Scope) error {
+	if utils.IsEmptyString(u.Password) {
+		return nil
+	}
+	encryptPassword, err := crypto.AESEncrypt(u.Password, configs.GetApiSecretKey())
 	if err != nil {
-		logger.Errorf("user registration failed: %v", err)
-		return
+		logger.Errorf("[aes] encrypt password error: %v", err)
+		return err
 	}
-	if isExist {
-		return errors.New("user already register, please login")
+	err = scope.SetColumn("password", encryptPassword)
+	if err != nil {
+		logger.Errorf("[aes] encrypt password error: %v", err)
+		return err
 	}
+	return nil
+}
+
+func (u *User) Register(newUser *User) (err error) {
 	_db := mysqlDB.Create(&newUser)
 	if _db.Error != nil {
 		logger.Errorf("create user error: %v\n", err)

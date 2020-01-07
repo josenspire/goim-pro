@@ -33,7 +33,7 @@ func main() {
 		Value: dataByte,
 	}
 
-	reqBody := &protos.BaseClientRequest{
+	reqBody := &protos.BasicClientRequest{
 		Code:                 0,
 		Data:                 anyData,
 		Message:              "",

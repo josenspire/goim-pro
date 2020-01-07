@@ -28,6 +28,8 @@ var (
 	defaultMysqlMaxIdleConns  = "10"
 	defaultMysqlMaxOpenConns  = "30"
 	defaultMysqlEnableLogMode = true
+
+	defaultAppSecretKey = "U0FMVFktSU0tUFJP"
 )
 
 type AppProfile struct {
@@ -65,6 +67,9 @@ func GetAppLogLevel() (appLogLevel string) {
 /* api config **/
 func GetApiSecretKey() (apiSecretKey string) {
 	apiSecretKey = viper.MyViper.GetString("apiSecretKey")
+	if len(apiSecretKey) == 0 {
+		apiSecretKey = defaultAppSecretKey
+	}
 	return apiSecretKey
 }
 

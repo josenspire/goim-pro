@@ -2,11 +2,36 @@ package usersrv
 
 import (
 	"context"
-	any "github.com/golang/protobuf/ptypes/any"
+	. "github.com/smartystreets/goconvey/convey"
 	"goim-pro/api/protos"
+	"goim-pro/pkg/utils"
 	"reflect"
 	"testing"
 )
+
+var reqData1 = &protos.UserProfile{
+	Telephone: "13631210001",
+	Email:     "123@qq.com",
+	Username:  "13631210001",
+	Nickname:  "JAMES001",
+	Avatar:    "http://www.avatar.goo/123.png",
+	Signature: "Never Settle",
+	Sex:       0,
+	Birthday:  nil,
+	Location:  "CHINA-ZHA",
+}
+
+var reqData2 = &protos.UserProfile{
+	Telephone: "13631210002",
+	Email:     "1233456@qq.com",
+	Username:  "13631210002",
+	Nickname:  "JAMES002",
+	Avatar:    "http://www.avatar.goo/1234365.png",
+	Signature: "Never Settle 222",
+	Sex:       1,
+	Birthday:  nil,
+	Location:  "CHINA-ZHA-NR",
+}
 
 func TestNew(t *testing.T) {
 	tests := []struct {
@@ -27,12 +52,12 @@ func TestNew(t *testing.T) {
 func Test_userServer_Login(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		req *protos.BaseClientRequest
+		req *protos.BasicClientRequest
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *protos.BaseServerResponse
+		want    *protos.BasicServerResponse
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -53,51 +78,38 @@ func Test_userServer_Login(t *testing.T) {
 }
 
 func Test_userServer_Register(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		req *protos.BaseClientRequest
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantRes *protos.BaseServerResponse
-		wantErr bool
-	}{
-		{
-			name: "testing_for_grpc_register",
-			args: args{
-				ctx: context.Background(),
-				req: &protos.BaseClientRequest{
-					Code: 0,
-					Data: &any.Any{
-						TypeUrl: "",
-						Value: []byte{123, 34, 97, 103, 101, 34, 58, 50, 52, 44, 34, 112, 97, 115, 115, 119, 111, 114, 100, 34, 58, 34, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 34, 44, 34, 117, 115, 101, 114, 110, 97, 109,
-							101, 34, 58, 34, 74, 65, 77, 69, 83, 34, 125},
-					},
-					Message: "",
-				},
+	Convey("testing_grpc_user_register", t, func() {
+		var ctx context.Context
+		var req *protos.BasicClientRequest
+		us := &userServer{}
+		userReq := protos.UserReq{
+			CodeType:         0,
+			VerificationCode: "123456",
+			UserProfile: &protos.UserProfile{
+				Telephone: "13631210001",
+				Email:     "123@qq.com",
+				Username:  "13631210001",
+				Nickname:  "JAMES001",
+				Avatar:    "http://www.avatar.goo/123.png",
+				Signature: "Never Settle",
+				Sex:       0,
+				Birthday:  nil,
+				Location:  "CHINA-ZHA",
 			},
-			wantRes: &protos.BaseServerResponse{
-				Code: 200,
-				Data: &any.Any{
-					Value: []byte("user regist successful.."),
-				},
-				Message: "user regist successful..",
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			us := &userServer{}
-			gotRes, err := us.Register(tt.args.ctx, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Register() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotRes.GetData(), tt.wantRes.GetData()) {
-				t.Errorf("Register() gotRes = %v, want %v", gotRes.GetData(), tt.wantRes.GetData())
-			}
+			Password: "1234567890",
+		}
+		any, _ := utils.NewMarshalAny(&userReq)
+		req = &protos.BasicClientRequest{
+			Data: any,
+		}
+		actualResp, err := us.Register(ctx, req)
+		Convey("user_registration_successful", func() {
+			So(err, ShouldBeNil)
+			So(actualResp.GetMessage(), ShouldEqual, "user registration successful")
 		})
-	}
+		Convey("user_multiple_registration", func() {
+			So(err, ShouldBeNil)
+			So(actualResp.GetMessage(), ShouldEqual, "this telephone has been registered, please login")
+		})
+	})
 }

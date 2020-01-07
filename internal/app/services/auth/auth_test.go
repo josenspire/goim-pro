@@ -2,7 +2,9 @@ package authsrv
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/golang/protobuf/ptypes/any"
+	. "github.com/smartystreets/goconvey/convey"
 	"goim-pro/api/protos"
 	"reflect"
 	"testing"
@@ -27,72 +29,53 @@ func TestNew(t *testing.T) {
 func Test_smsServer_ObtainSMSCode(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		req *protos.BaseClientRequest
+		req *protos.BasicClientRequest
 	}
-	tests := []struct {
-		name    string
-		args    args
-		wantRes *protos.BaseServerResponse
-		wantErr bool
-	}{
-		{
-			name:    "testing_for_obtain_sms_code_register",
-			args:    args{
-				ctx: context.Background(),
-				req: &protos.BaseClientRequest{
-					Code: 0,
-					Data: &any.Any{
-						TypeUrl: "",
-						Value: []byte("register"),
-					},
-					Message: "",
-				},
-			},
-			wantRes: &protos.BaseServerResponse{
-				Code:                 200,
-				Data:                 &any.Any{
-					TypeUrl:              "",
-					Value:                []byte("123456"),
-				},
-				Message:              "sending sms code success",
-			},
-			wantErr: false,
+	dataBytes1, _ := json.Marshal(&protos.SMSReq{
+		CodeType:  0,
+		Telephone: "13631210000",
+		Extension: nil,
+	})
+	dataBytes2, _ := json.Marshal(&protos.SMSReq{
+		CodeType:  3,
+		Telephone: "13631210000",
+		Extension: nil,
+	})
+	ctx := context.Background()
+	req1 := &protos.BasicClientRequest{
+		Code: 0,
+		Data: &any.Any{
+			TypeUrl: "",
+			Value:   dataBytes1,
 		},
-		{
-			name:    "testing_for_obtain_sms_code_by_error_type",
-			args:    args{
-				ctx: context.Background(),
-				req: &protos.BaseClientRequest{
-					Code: 0,
-					Data: &any.Any{
-						TypeUrl: "",
-						Value: []byte("CHECK"),
-					},
-					Message: "",
-				},
-			},
-			wantRes: &protos.BaseServerResponse{
-				Code:                 400,
-				Data:                 &any.Any{
-					TypeUrl:              "",
-					Value:                []byte("123456"),
-				},
-				Message:              "invalid request code type",
-			},
-			wantErr: true,
-		},
+		Message: "",
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	req2 := &protos.BasicClientRequest{
+		Code: 0,
+		Data: &any.Any{
+			TypeUrl: "",
+			Value:   dataBytes2,
+		},
+		Message: "",
+	}
+	Convey("obtain_sms_code", t, func() {
+		Convey("testing_for_obtain_sms_code_of_register", func() {
 			s := &smsServer{}
-			gotRes, err := s.ObtainSMSCode(tt.args.ctx, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ObtainSMSCode() error = %v, wantErr %v", err, tt.wantErr)
+			gotRes, err := s.ObtainSMSCode(ctx, req1)
+			if err != nil {
+				t.Errorf("ObtainSMSCode() error = %v", err)
 				return
 			}
-			if !reflect.DeepEqual(gotRes.GetData(), tt.wantRes.GetData()) {
-				t.Errorf("ObtainSMSCode() gotRes = %v, want %v", gotRes, tt.wantRes)
-			}
+			So(string(gotRes.GetData().Value), ShouldEqual, "123456")
 		})
-	}
+		Convey("testing_for_invalid_code_type", func() {
+			s := &smsServer{}
+			gotRes, err := s.ObtainSMSCode(ctx, req2)
+			if err != nil {
+				t.Errorf("ObtainSMSCode() error = %v", err)
+				return
+			}
+			So(gotRes.GetMessage(), ShouldEqual, "invalid request code type")
+		})
+	})
 }
