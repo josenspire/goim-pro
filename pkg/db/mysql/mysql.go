@@ -16,7 +16,7 @@ type MysqlConnectionPool struct{}
 var (
 	// use `sync.Once` aim to control the instance will only use once on multiple thread environment
 	mysqlOnce     sync.Once
-	db            *gorm.DB
+	mysqlDB       *gorm.DB
 	mysqlInstance *MysqlConnectionPool
 	logger        = logs.GetLogger("INFO")
 )
@@ -35,7 +35,7 @@ func initConnectionPool() (err error) {
 		dbEnableLogMode   = config.GetMysqlDBEnableLogMode()
 	)
 	connUrl := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUserName, dbPassword, dbUri, dbPort, dbName)
-	db, err = gorm.Open("mysql", connUrl)
+	mysqlDB, err = gorm.Open("mysql", connUrl)
 	if err != nil {
 		logger.Errorf("[mysql] connect fail: %v\n", err)
 		return
@@ -43,11 +43,11 @@ func initConnectionPool() (err error) {
 	logger.Infof("[mysql] connect successful: %s\n", connUrl)
 
 	engine := fmt.Sprintf("ENGINE=%s", dbEngine)
-	db.Set("gorm:table_options", engine)
-	db.DB().SetMaxIdleConns(dbMaxIdleConns)
-	db.DB().SetMaxOpenConns(dbMaxOpenConns)
+	mysqlDB.Set("gorm:table_options", engine)
+	mysqlDB.DB().SetMaxIdleConns(dbMaxIdleConns)
+	mysqlDB.DB().SetMaxOpenConns(dbMaxOpenConns)
 
-	db.LogMode(dbEnableLogMode)
+	mysqlDB.LogMode(dbEnableLogMode)
 
 	// 关闭数据库，db会被多个goroutine共享，可以不调用
 	// defer db.Close()
@@ -63,12 +63,10 @@ func NewMysqlConnection() *MysqlConnectionPool {
 }
 
 func (m *MysqlConnectionPool) Connect() (err error) {
-	if err := initConnectionPool(); err != nil {
-		logger.Panicf("initial mysql connection pool error: %v\n", err)
-	}
+	err = initConnectionPool()
 	return
 }
 
-func GetMysqlInstance() *gorm.DB {
-	return db
+func (m *MysqlConnectionPool) GetMysqlInstance() *gorm.DB {
+	return mysqlDB
 }

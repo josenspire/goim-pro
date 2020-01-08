@@ -9,8 +9,8 @@ import (
 	"goim-pro/api/protos"
 	"goim-pro/config"
 	"goim-pro/internal/app/services"
-	mysqlsrv "goim-pro/pkg/db/mysql"
-	redsrv "goim-pro/pkg/db/redis"
+	"goim-pro/pkg/db/mysql"
+	"goim-pro/pkg/db/redis"
 	"goim-pro/pkg/logs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -27,8 +27,9 @@ type GRPCServer struct {
 var logger = logs.GetLogger("INFO")
 
 func init() {
-	if err := mysqlsrv.NewMysqlConnection().Connect(); err != nil {
-		logger.Panicf("redis connect error: %v", err)
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	if err := mysqlDB.Connect(); err != nil {
+		logger.Panicf("mysql connect error: %v", err)
 	}
 	if err := redsrv.NewRedisService().Connect(); err != nil {
 		logger.Panicf("redis connect error: %v", err)

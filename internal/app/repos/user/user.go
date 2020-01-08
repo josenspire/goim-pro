@@ -5,6 +5,7 @@ import (
 	"goim-pro/config"
 	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos/base"
+	mysqlsrv "goim-pro/pkg/db/mysql"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 )
@@ -48,8 +49,8 @@ func NewUserModel() *User {
 	return &User{}
 }
 
-func NewUserRepo(db *gorm.DB) IUserRepo {
-	mysqlDB = db
+func NewUserRepo() IUserRepo {
+	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 	return NewUserModel()
 }
 

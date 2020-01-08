@@ -83,8 +83,9 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	mysqlsrv.NewMysqlConnection().Connect()
-	NewUserRepo(mysqlsrv.GetMysqlInstance())
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlDB.GetMysqlInstance())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &User{
@@ -115,8 +116,9 @@ func TestUser_Register(t *testing.T) {
 	type args struct {
 		newUser *User
 	}
-	mysqlsrv.NewMysqlConnection().Connect()
-	NewUserRepo(mysqlsrv.GetMysqlInstance())
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlDB.GetMysqlInstance())
 	tests := []struct {
 		name    string
 		fields  fields
@@ -226,8 +228,9 @@ func TestUser_RemoveUserByUserId(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	mysqlsrv.NewMysqlConnection().Connect()
-	NewUserRepo(mysqlsrv.GetMysqlInstance())
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlDB.GetMysqlInstance())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &User{

@@ -4,7 +4,6 @@ import (
 	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/repos/address"
 	"goim-pro/internal/app/repos/user"
-	"goim-pro/pkg/db/mysql"
 	"goim-pro/pkg/logs"
 )
 
@@ -16,11 +15,10 @@ type RepoServer struct {
 }
 
 func New() *RepoServer {
-	mysqlDB := mysqlsrv.GetMysqlInstance()
 	//redisDB := redsrv.GetRedisClient()
 	return &RepoServer{
-		UserRepo:    user.NewUserRepo(mysqlDB),
-		AddressRepo: address.New(mysqlDB),
+		UserRepo:    user.NewUserRepo(),
+		AddressRepo: address.New(),
 	}
 }
 
