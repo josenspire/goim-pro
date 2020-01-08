@@ -1,4 +1,4 @@
-package configs
+package config
 
 import (
 	"github.com/smartystreets/goconvey/convey"
@@ -17,16 +17,16 @@ func TestGetAppConfigProfile(t *testing.T) {
 
 func TestGetMysqlConfigProfile(t *testing.T) {
 	convey.Convey("Subject: Get mysql db profile", t, func() {
-		mysqlDbUri := GetMysqlDbUri()
+		mysqlDbUri := GetMysqlDBUri()
 		convey.So(mysqlDbUri, convey.ShouldEqual, "127.0.0.1")
 
-		mysqlDbPort := GetMysqlDbPort()
+		mysqlDbPort := GetMysqlDBPort()
 		convey.So(mysqlDbPort, convey.ShouldEqual, "3306")
 
-		mysqlDbName := GetMysqlDbName()
+		mysqlDbName := GetMysqlDBName()
 		convey.So(mysqlDbName, convey.ShouldEqual, "goim")
 
-		mysqlDbEnableLogMode := GetMysqlDbEnableLogMode()
+		mysqlDbEnableLogMode := GetMysqlDBEnableLogMode()
 		convey.So(mysqlDbEnableLogMode, convey.ShouldBeTrue)
 	})
 }

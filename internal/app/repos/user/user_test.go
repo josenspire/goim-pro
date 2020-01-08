@@ -2,11 +2,9 @@ package user
 
 import (
 	"goim-pro/internal/app/repos/base"
-	"goim-pro/pkg/db"
+	mysqlsrv "goim-pro/pkg/db/mysql"
 	"reflect"
 	"testing"
-
-	"github.com/jinzhu/gorm"
 )
 
 func TestNewUserModel(t *testing.T) {
@@ -24,35 +22,6 @@ func TestNewUserModel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NewUserModel(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewUserModel() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNewUserRepo(t *testing.T) {
-	mysqlDB := db.GetMysqlConnection().GetMysqlDBInstance()
-
-	type args struct {
-		db *gorm.DB
-	}
-	tests := []struct {
-		name string
-		args args
-		want IUserRepo
-	}{
-		// TODO: Add test cases.
-		{
-			name: "test_for_NewUserRepo_method",
-			args: args{
-				mysqlDB,
-			},
-			want: &User{},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewUserRepo(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewUserRepo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -114,8 +83,8 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	mysqlDB := db.GetMysqlConnection().GetMysqlDBInstance()
-	NewUserRepo(mysqlDB)
+	mysqlsrv.NewMysqlConnection().Connect()
+	NewUserRepo(mysqlsrv.GetMysqlInstance())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &User{
@@ -146,8 +115,8 @@ func TestUser_Register(t *testing.T) {
 	type args struct {
 		newUser *User
 	}
-	mysqlDB := db.GetMysqlConnection().GetMysqlDBInstance()
-	NewUserRepo(mysqlDB)
+	mysqlsrv.NewMysqlConnection().Connect()
+	NewUserRepo(mysqlsrv.GetMysqlInstance())
 	tests := []struct {
 		name    string
 		fields  fields
@@ -185,7 +154,7 @@ func TestUser_Register(t *testing.T) {
 		{
 			name: "testing_register_with_exist_record",
 			fields: fields{
-				UserID:   2,
+				UserID:   3,
 				Password: "1234567890",
 				UserProfile: UserProfile{
 					Telephone: "13631210010",
@@ -208,7 +177,7 @@ func TestUser_Register(t *testing.T) {
 					},
 				},
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -257,8 +226,8 @@ func TestUser_RemoveUserByUserId(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	mysqlDB := db.GetMysqlConnection().GetMysqlDBInstance()
-	NewUserRepo(mysqlDB)
+	mysqlsrv.NewMysqlConnection().Connect()
+	NewUserRepo(mysqlsrv.GetMysqlInstance())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &User{

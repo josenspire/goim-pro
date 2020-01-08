@@ -10,7 +10,7 @@ var logger = logs.GetLogger("INFO")
 
 func init() {
 	MyViper = viper.New()
-	//MyViper.AddConfigPath("../configs")
+	//MyViper.AddConfigPath("../config")
 	MyViper.SetConfigFile("application.json")
 	MyViper.SetConfigType("json")
 

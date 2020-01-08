@@ -6,9 +6,11 @@ package grpc
 
 import (
 	"fmt"
-	protos "goim-pro/api/protos"
-	"goim-pro/configs"
+	"goim-pro/api/protos"
+	"goim-pro/config"
 	"goim-pro/internal/app/services"
+	mysqlsrv "goim-pro/pkg/db/mysql"
+	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/logs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -18,15 +20,31 @@ import (
 	"time"
 )
 
+type GRPCServer struct {
+	grpcServer *grpc.Server
+}
+
 var logger = logs.GetLogger("INFO")
 
-func New() *grpc.Server {
-	tcpAddress := fmt.Sprintf("%s:%s", configs.GetAppHost(), configs.GetAppPort())
+func init() {
+	if err := mysqlsrv.NewMysqlConnection().Connect(); err != nil {
+		logger.Panicf("redis connect error: %v", err)
+	}
+	if err := redsrv.NewRedisService().Connect(); err != nil {
+		logger.Panicf("redis connect error: %v", err)
+	}
+}
+
+func NewServer() *GRPCServer {
+	return &GRPCServer{}
+}
+func (gs *GRPCServer) ConnectGRPCServer() {
+	tcpAddress := fmt.Sprintf("%s:%s", config.GetAppHost(), config.GetAppPort())
 	lis, err := net.Listen("tcp", tcpAddress)
 	if err != nil {
-		logger.Fatalf("server - [%s] startup failed: %v\n", err)
+		logger.Fatalf("[GRPC server] - [%s] startup failed: %v\n", err)
 	} else {
-		logger.Infof("server - [%s] started successfully...", tcpAddress)
+		logger.Infof("[GRPC server] - [%s] started successfully!\n", tcpAddress)
 	}
 
 	keepaliveParams := grpc.KeepaliveParams(keepalive.ServerParameters{
@@ -53,8 +71,15 @@ func New() *grpc.Server {
 			log.Fatalf("failed to serve: %v", err)
 		}
 	}()
+	gs.grpcServer = srv
+}
 
-	return srv
+func (gs *GRPCServer) GracefulStopGRPCServer() {
+	gs.grpcServer.GracefulStop()
+}
+
+func (gs *GRPCServer) ForceStopGRPCServer() {
+	gs.grpcServer.Stop()
 }
 
 func handleServiceRegister(srv *grpc.Server) {

@@ -14,10 +14,9 @@ import (
 type userServer struct{}
 
 var (
-	logger     = logs.GetLogger("INFO")
-	repoServer = repos.New()
-
-	userRepo = repoServer.UserRepo
+	logger      = logs.GetLogger("INFO")
+	repoServer  = repos.New()
+	userRepo    = repoServer.UserRepo
 )
 
 func New() protos.UserServiceServer {

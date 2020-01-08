@@ -15,6 +15,12 @@
     "dbMaxOpenConns": "30",
     "dbEnableLogMode": "true"
   },
-
+  "redisProfile": {
+    "dbHost": "127.0.0.1",
+    "dbPort": "6379",
+    "dbPassword": "",
+    "dbNum": "1",
+    "dbKey": "SaltyIMPro"
+  },
   "apiSecretKey": "U0FMVFktSU0tUFJP"
 }

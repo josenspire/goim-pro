@@ -1,17 +1,20 @@
-package configs
+package config
 
 import (
-	viper "goim-pro/configs/viper"
+	viper "goim-pro/config/viper"
+	"strconv"
 )
 
 var (
 	appConfigMap   map[string]string
 	mysqlConfigMap map[string]string
+	redisConfigMap map[string]string
 )
 
 func init() {
 	appConfigMap = viper.MyViper.GetStringMapString("appProfile")
 	mysqlConfigMap = viper.MyViper.GetStringMapString("mysqlProfile")
+	redisConfigMap = viper.MyViper.GetStringMapString("redisProfile")
 }
 
 var (
@@ -30,25 +33,13 @@ var (
 	defaultMysqlEnableLogMode = true
 
 	defaultAppSecretKey = "U0FMVFktSU0tUFJP"
+
+	defaultRedisHost     = "127.0.0.1"
+	defaultRedisPort     = "6379"
+	defaultRedisPassword = ""
+	defaultRedisNum      = "1"
+	defaultRedisKey      = "SaltyIMPro"
 )
-
-type AppProfile struct {
-	AppHost     string
-	AppPort     int
-	AppLogLevel string
-}
-
-type MysqlProfile struct {
-	DBUserName      string
-	DBPassword      string
-	DBUri           string
-	DBPort          int
-	DBName          string
-	DBEngine        string
-	DBMaxIdleConns  int
-	DBMaxOpenConns  int
-	DBEnableLogMode bool
-}
 
 /* app config **/
 func GetAppHost() (appHost string) {
@@ -74,41 +65,64 @@ func GetApiSecretKey() (apiSecretKey string) {
 }
 
 /* app config **/
-func GetMysqlDbUserName() (dbUserName string) {
+func GetMysqlDBUserName() (dbUserName string) {
 	dbUserName = mysqlConfigMap["dbUserName"]
 	return buildConfigParameter(dbUserName, defaultMysqlUserName)
 }
-func GetMysqlDbPassword() (dbPassword string) {
+func GetMysqlDBPassword() (dbPassword string) {
 	dbPassword = mysqlConfigMap["dbPassword"]
 	return buildConfigParameter(dbPassword, defaultMysqlPassword)
 }
-func GetMysqlDbUri() (dbUri string) {
+func GetMysqlDBUri() (dbUri string) {
 	dbUri = mysqlConfigMap["dbUri"]
 	return buildConfigParameter(dbUri, defaultMysqlUri)
 }
-func GetMysqlDbPort() (dbPort string) {
+func GetMysqlDBPort() (dbPort string) {
 	dbPort = mysqlConfigMap["dbPort"]
 	return buildConfigParameter(dbPort, defaultMysqlPort)
 }
-func GetMysqlDbName() (dbName string) {
+func GetMysqlDBName() (dbName string) {
 	dbName = mysqlConfigMap["dbName"]
 	return buildConfigParameter(dbName, defaultMysqlName)
 }
-func GetMysqlDbEngine() (dbEngine string) {
+func GetMysqlDBEngine() (dbEngine string) {
 	dbEngine = mysqlConfigMap["dbEngine"]
 	return buildConfigParameter(dbEngine, defaultMysqlEngine)
 }
-func GetMysqlDbMaxIdleConns() (dbMaxIdleConns string) {
+func GetMysqlDBMaxIdleConns() (dbMaxIdleConns string) {
 	dbMaxIdleConns = mysqlConfigMap["dbMaxIdleConns"]
 	return buildConfigParameter(dbMaxIdleConns, defaultMysqlMaxIdleConns)
 }
-func GetMysqlDbMaxOpenConns() (dbMaxOpenConns string) {
+func GetMysqlDBMaxOpenConns() (dbMaxOpenConns string) {
 	dbMaxOpenConns = mysqlConfigMap["dbMaxOpenConns"]
 	return buildConfigParameter(dbMaxOpenConns, defaultMysqlMaxOpenConns)
 }
-func GetMysqlDbEnableLogMode() bool {
+func GetMysqlDBEnableLogMode() bool {
 	dbEnableLogModeStr := mysqlConfigMap["dbEnableLogMode"]
 	return buildBoolParameter(dbEnableLogModeStr, defaultMysqlEnableLogMode)
+}
+
+/* app config **/
+func GetRedisDBHost() (redisHost string) {
+	redisHost = redisConfigMap["dbHost"]
+	return buildConfigParameter(redisHost, defaultRedisHost)
+}
+func GetRedisDBPort() (redisPort string) {
+	redisPort = redisConfigMap["dbPort"]
+	return buildConfigParameter(redisPort, defaultRedisPort)
+}
+func GetRedisDBPassword() (redisPassword string) {
+	redisPassword = redisConfigMap["dbPassword"]
+	return buildConfigParameter(redisPassword, defaultRedisPassword)
+}
+func GetRedisDBNum() (redisDBNum int) {
+	redisDBStr := redisConfigMap["dbNum"]
+	redisDBNum, _ = strconv.Atoi(buildConfigParameter(redisDBStr, defaultRedisNum))
+	return
+}
+func GetRedisDBKey() (redisDBKey string) {
+	redisDBKey = redisConfigMap["dbKey"]
+	return buildConfigParameter(redisDBKey, defaultRedisKey)
 }
 
 func buildConfigParameter(originalValue string, defaultValue string) string {

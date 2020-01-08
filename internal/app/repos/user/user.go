@@ -2,7 +2,7 @@ package user
 
 import (
 	"github.com/jinzhu/gorm"
-	"goim-pro/configs"
+	"goim-pro/config"
 	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos/base"
 	"goim-pro/pkg/logs"
@@ -58,7 +58,7 @@ func (u *User) BeforeCreate(scope *gorm.Scope) error {
 	if utils.IsEmptyString(u.Password) {
 		return nil
 	}
-	encryptPassword, err := crypto.AESEncrypt(u.Password, configs.GetApiSecretKey())
+	encryptPassword, err := crypto.AESEncrypt(u.Password, config.GetApiSecretKey())
 	if err != nil {
 		logger.Errorf("[aes] encrypt password error: %v", err)
 		return err

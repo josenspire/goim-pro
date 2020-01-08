@@ -5,6 +5,8 @@ package protos;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
+option java_multiple_files = true;
+
 // Basic Request
 message BasicClientRequest {
     int32 code = 1;
@@ -53,7 +55,7 @@ message UserProfile {
     string avatar = 5;
     string signature = 6;
     Sex sex = 7;
-    google.protobuf.Timestamp Birthday = 8;
+    google.protobuf.Timestamp birthday = 8;
     string location = 9;
 }
 message UserReq {
@@ -63,9 +65,9 @@ message UserReq {
     string password = 4;
     string deviceID = 5;
 
-    google.protobuf.Timestamp CreatedAt = 6;
+    google.protobuf.Timestamp createdAt = 6;
 
-    google.protobuf.Any Extension = 7;
+    google.protobuf.Any extension = 7;
 }
 
 message UserResp {
@@ -80,7 +82,7 @@ service SMSService {
 message SMSReq {
     CodeType codeType = 1;
     string telephone = 2;
-    google.protobuf.Any Extension = 3;
+    google.protobuf.Any extension = 3;
 }
 
 message SMSResp {

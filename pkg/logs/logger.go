@@ -1,60 +1,87 @@
 package logs
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
-	"os"
+	"sync"
 )
-
-var logger = logrus.New()
 
 const (
 	environment     string = "development"
 	defaultLogLevel string = "INFO"
 )
 
-func init() {
-	// do something here to set environment depending on an environment variable
-	// or command-line flag
-	// TODO: should dynamic control the env
-	if environment == "production" {
-		logger.SetFormatter(&logrus.JSONFormatter{})
-	} else {
-		// The TextFormatter is default, you don't actually have to do this.
-		logger.SetFormatter(&logrus.TextFormatter{
-			FullTimestamp: true,
-		})
+var rwMutex = &sync.RWMutex{}
+var loggersMap = make(map[string]*logrus.Logger)
+var (
+	logursMap = map[string]logrus.Level{
+		"INFO":  logrus.InfoLevel,
+		"WARN":  logrus.WarnLevel,
+		"ERROR": logrus.ErrorLevel,
+		"DEBUG": logrus.DebugLevel,
+		"TRACE": logrus.TraceLevel,
+		"FATAL": logrus.FatalLevel,
+		"PANIC": logrus.PanicLevel,
 	}
+	logLevel = logrus.InfoLevel
+)
 
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
-	logger.SetOutput(os.Stdout)
+type LogFormatter struct {
+	loggerName string
 }
 
-func GetLogger(level string) *logrus.Logger {
-	if len(level) == 0 {
-		level = defaultLogLevel
+func init() {
+	logursLevel, ok := logursMap[defaultLogLevel]
+	if !ok {
+		fmt.Printf("unsupported default Log Level - [%s]. Set to default Log Level - [%s]", defaultLogLevel, defaultLogLevel)
+	} else {
+		logLevel = logursLevel
 	}
-	logger.SetLevel(getLoggerLevel(level))
+}
+
+//func (lf *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+//	logEntry := fmt.Sprintf("%s %s [%s] - %s\n", entry.Time.Format(time.RFC3339Nano), getLoggerLevel(entry.Level), lf.loggerName, entry.Message)
+//	return []byte(logEntry), nil
+//}
+
+func GetLogger(level string) *logrus.Logger {
+	rwMutex.RLock()
+	logger := loggersMap[level]
+	rwMutex.RUnlock()
+
+	if logger == nil {
+		logger = newLogger()
+
+		rwMutex.Lock()
+		loggersMap[level] = logger
+		rwMutex.Unlock()
+	}
 	return logger
 }
 
-func getLoggerLevel(level string) logrus.Level {
+func getLoggerLevel(level logrus.Level) string {
 	switch level {
-	case "INFO":
-		return logrus.InfoLevel
-	case "WARN":
-		return logrus.WarnLevel
-	case "ERROR":
-		return logrus.ErrorLevel
-	case "DEBUG":
-		return logrus.DebugLevel
-	case "TRACE":
-		return logrus.TraceLevel
-	case "FATAL":
-		return logrus.FatalLevel
-	case "PANIC":
-		return logrus.PanicLevel
-	default:
-		return logrus.WarnLevel
+	case logrus.DebugLevel:
+		return "DEBUG"
+	case logrus.InfoLevel:
+		return "INFO"
+	case logrus.ErrorLevel:
+		return "ERROR"
+	case logrus.WarnLevel:
+		return "WARN"
+	case logrus.PanicLevel:
+		return "PANIC"
+	case logrus.FatalLevel:
+		return "FATAL"
 	}
+	return "UNKNOWN"
+}
+
+func newLogger() *logrus.Logger {
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
+	logger.SetLevel(logLevel)
+	return logger
 }
