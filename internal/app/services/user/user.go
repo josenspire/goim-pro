@@ -3,10 +3,11 @@ package usersrv
 import (
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"goim-pro/api/protos"
 	"goim-pro/internal/app/repos"
 	"goim-pro/internal/app/repos/user"
-	"goim-pro/internal/app/services/converts"
+	"goim-pro/internal/app/services/converters"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 )
@@ -14,10 +15,16 @@ import (
 type userServer struct{}
 
 var (
-	logger      = logs.GetLogger("INFO")
-	repoServer  = repos.New()
-	userRepo    = repoServer.UserRepo
+	logger      *logrus.Logger
+	reposServer *repos.RepoServer
+	userRepo    user.IUserRepo
 )
+
+func init() {
+	logger = logs.GetLogger("INFO")
+	reposServer = repos.New()
+	userRepo = reposServer.UserRepo
+}
 
 func New() protos.UserServiceServer {
 	return &userServer{}
@@ -55,7 +62,7 @@ func (us *userServer) Register(ctx context.Context, req *protos.BasicClientReque
 	}
 	err = userRepo.Register(&user.User{
 		Password:    userReq.GetPassword(),
-		UserProfile: converts.ConvertRegisterUserProfile(userProfile),
+		UserProfile: converters.ConvertRegisterUserProfile(userProfile),
 	})
 	if err != nil {
 		resp.Code = 500

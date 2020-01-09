@@ -1,4 +1,4 @@
-package converts
+package converters
 
 import (
 	"goim-pro/api/protos"

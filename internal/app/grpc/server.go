@@ -31,7 +31,8 @@ func init() {
 	if err := mysqlDB.Connect(); err != nil {
 		logger.Panicf("mysql connect error: %v", err)
 	}
-	if err := redsrv.NewRedisService().Connect(); err != nil {
+	redisDB := redsrv.NewRedisConnection()
+	if err := redisDB.Connect(); err != nil {
 		logger.Panicf("redis connect error: %v", err)
 	}
 }

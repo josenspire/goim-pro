@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-type RedisService struct {
+type RedisConnectionPool struct {
 }
 
 var (
@@ -23,7 +23,7 @@ var (
 
 var logger = logs.GetLogger("INFO")
 var redisOnce sync.Once
-var redisInstance *RedisService
+var redisInstance *RedisConnectionPool
 var client *redis.Client
 
 func init() {
@@ -36,14 +36,14 @@ func init() {
 	redis.SetLogger(log.New(os.Stderr, "redis: ", log.LstdFlags))
 }
 
-func NewRedisService() *RedisService {
+func NewRedisConnection() *RedisConnectionPool {
 	redisOnce.Do(func() {
-		redisInstance = &RedisService{}
+		redisInstance = &RedisConnectionPool{}
 	})
 	return redisInstance
 }
 
-func (rs *RedisService) Connect() (err error) {
+func (rs *RedisConnectionPool) Connect() (err error) {
 	uriAddr := fmt.Sprintf("%s:%s", host, port)
 	client = redis.NewClient(&redis.Options{
 		Addr:     uriAddr,
@@ -59,6 +59,6 @@ func (rs *RedisService) Connect() (err error) {
 	return
 }
 
-func GetRedisClient() *redis.Client {
+func (rs *RedisConnectionPool) GetRedisClient() *redis.Client {
 	return client
 }
