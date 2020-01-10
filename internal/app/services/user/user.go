@@ -3,7 +3,7 @@ package usersrv
 import (
 	"context"
 	"fmt"
-	protos "goim-pro/api/protos/saltyv2"
+	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/repos"
 	"goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
@@ -24,7 +24,7 @@ func New() protos.UserServiceServer {
 	}
 }
 
-func (us *userService) Register(ctx context.Context, req *protos.BasicReq) (resp *protos.BasicResp, err error) {
+func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, err error) {
 	resp = utils.NewResp(200, nil, "")
 
 	var registerReq protos.RegisterReq
@@ -76,6 +76,6 @@ func isVerificationCodeValid(registerType protos.RegisterReq_RegisterType, verif
 	return true, nil
 }
 
-func (us *userService) Login(ctx context.Context, req *protos.BasicReq) (*protos.BasicResp, error) {
+func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (*protos.GrpcResp, error) {
 	panic("implement me")
 }

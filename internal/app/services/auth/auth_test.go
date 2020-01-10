@@ -3,7 +3,7 @@ package authsrv
 import (
 	"context"
 	. "github.com/smartystreets/goconvey/convey"
-	protos "goim-pro/api/protos/saltyv2"
+	protos "goim-pro/api/protos/salty"
 	"goim-pro/pkg/utils"
 	"testing"
 )
@@ -11,7 +11,7 @@ import (
 func Test_smsServer_ObtainSMSCode(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		req *protos.BasicReq
+		req *protos.GrpcResp
 	}
 	smsReq1 := &protos.SMSReq{
 		CodeType: 0,
@@ -27,11 +27,11 @@ func Test_smsServer_ObtainSMSCode(t *testing.T) {
 	}
 	ctx := context.Background()
 	any1, _ := utils.MarshalMessageToAny(smsReq1)
-	req1 := &protos.BasicReq{
+	req1 := &protos.GrpcReq{
 		Data: any1,
 	}
 	any2, _ := utils.MarshalMessageToAny(smsReq2)
-	req2 := &protos.BasicReq{
+	req2 := &protos.GrpcReq{
 		Data: any2,
 	}
 	Convey("obtain_sms_code", t, func() {

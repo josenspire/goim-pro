@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/golang/protobuf/ptypes/any"
-	protos "goim-pro/api/protos/saltyv2"
+	protos "goim-pro/api/protos/salty"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -33,7 +33,7 @@ func main() {
 		Value: dataByte,
 	}
 
-	reqBody := &protos.BasicReq{
+	reqBody := &*protos.GrpcResp{
 		Data: anyData,
 	}
 

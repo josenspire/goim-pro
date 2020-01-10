@@ -2,7 +2,7 @@ package authsrv
 
 import (
 	"context"
-	protos "goim-pro/api/protos/saltyv2"
+	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/constants"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -16,7 +16,7 @@ func New() protos.SMSServiceServer {
 	return &smsServer{}
 }
 
-func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.BasicReq) (res *protos.BasicResp, err error) {
+func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (res *protos.GrpcResp, err error) {
 	var smsReq protos.SMSReq
 	err = utils.NewReq(req, &smsReq)
 	if err != nil {

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	example "goim-pro/api/protos/example"
-	protos "goim-pro/api/protos/saltyv2"
+	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
 	"goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services"

@@ -3,11 +3,12 @@ package usersrv
 import (
 	"context"
 	. "github.com/smartystreets/goconvey/convey"
-	protos "goim-pro/api/protos/saltyv2"
+	protos "goim-pro/api/protos/salty"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	"goim-pro/pkg/utils"
 	"reflect"
 	"testing"
+	"time"
 )
 
 var reqData1 = &protos.UserProfile{
@@ -18,7 +19,7 @@ var reqData1 = &protos.UserProfile{
 	Avatar:      "http://www.avatar.goo/123.png",
 	Description: "Never Settle",
 	Sex:         0,
-	Birthday:    nil,
+	Birthday:    0,
 	Location:    "CHINA-ZHA",
 }
 
@@ -30,7 +31,7 @@ var reqData2 = &protos.UserProfile{
 	Avatar:      "http://www.avatar.goo/1234365.png",
 	Description: "Never Settle 222",
 	Sex:         1,
-	Birthday:    nil,
+	Birthday:    0,
 	Location:    "CHINA-ZHA-NR",
 }
 
@@ -59,7 +60,7 @@ func Test_userServer_Register(t *testing.T) {
 
 	Convey("testing_grpc_user_register", t, func() {
 		var ctx context.Context
-		var req *protos.BasicReq
+		var req *protos.GrpcReq
 		us := New()
 		userReq := &protos.RegisterReq{
 			RegisterType:     0,
@@ -71,14 +72,14 @@ func Test_userServer_Register(t *testing.T) {
 				Nickname:    "JAMES001",
 				Avatar:      "http://www.avatar.goo/123.png",
 				Description: "Never Settle",
-				Sex:         0,
-				Birthday:    nil,
-				Location:    "CHINA-ZHA",
+				//Sex:         0,
+				Birthday: time.Now().Unix(),
+				//Location:    "CHINA-ZHA",
 			},
 			Password: "1234567890",
 		}
 		any, _ := utils.MarshalMessageToAny(userReq)
-		req = &protos.BasicReq{
+		req = &protos.GrpcReq{
 			Data: any,
 		}
 		actualResp, err := us.Register(ctx, req)

@@ -2,7 +2,7 @@ package services
 
 import (
 	example "goim-pro/api/protos/example"
-	protos "goim-pro/api/protos/saltyv2"
+	protos "goim-pro/api/protos/salty"
 	waitersrv "goim-pro/internal/app/services/demowaiter"
 	usersrv "goim-pro/internal/app/services/user"
 )

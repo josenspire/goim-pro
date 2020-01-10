@@ -26,7 +26,7 @@ type UserProfile struct {
 	Avatar      string `json:"avatar" gorm:"column:avatar; type:varchar(255)"`
 	Description string `json:"description" gorm:"column:description; type:varchar(255)"`
 	Sex         string `json:"sex" gorm:"column:sex; type: ENUM('MALE', 'FEMALE'); default:'FEMALE'"`
-	Birthday    string `json:"birthday" gorm:"column:birthday; type: varchar(12)"`
+	Birthday    string `json:"birthday" gorm:"column:birthday; type: varchar(20)"`
 	Location    string `json:"location" gorm:"column:location; type: varchar(255)"`
 }
 
@@ -74,7 +74,8 @@ func (u *User) BeforeCreate(scope *gorm.Scope) error {
 func (u *User) Register(newUser *User) (err error) {
 	_db := mysqlDB.Create(&newUser)
 	if _db.Error != nil {
-		logger.Errorf("create user error: %v\n", err)
+		err = _db.Error
+		logger.Errorf("create user error: %v", err)
 	}
 	return
 }
