@@ -1,7 +1,7 @@
 package converters
 
 import (
-	"goim-pro/api/protos"
+	protos "goim-pro/api/protos/saltyv2"
 	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos/user"
 )
@@ -14,7 +14,7 @@ func ConvertRegisterUserProfile(profile *protos.UserProfile) user.UserProfile {
 		Username:  profile.GetUsername(),
 		Nickname:  profile.GetNickname(),
 		Avatar:    profile.GetAvatar(),
-		Signature: profile.GetSignature(),
+		Description: profile.GetDescription(),
 		Sex:       constants.USER_SEX[int32(profile.GetSex())],
 		Birthday:  profile.GetBirthday().String(),
 		Location:  profile.GetLocation(),

@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
-	any "github.com/golang/protobuf/ptypes/any"
-	"goim-pro/api/protos"
+	"github.com/golang/protobuf/ptypes/any"
+	protos "goim-pro/api/protos/saltyv2"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -26,17 +26,15 @@ func main() {
 	userData := map[string]interface{}{
 		"username": "JAMES",
 		"password": "1234567890",
-		"age": 24,
+		"age":      24,
 	}
 	dataByte, _ := json.Marshal(userData)
 	anyData := &any.Any{
 		Value: dataByte,
 	}
 
-	reqBody := &protos.BasicClientRequest{
-		Code:                 0,
-		Data:                 anyData,
-		Message:              "",
+	reqBody := &protos.BasicReq{
+		Data: anyData,
 	}
 
 	// 调用 gRPC 接口

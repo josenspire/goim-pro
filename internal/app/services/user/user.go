@@ -3,8 +3,7 @@ package usersrv
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"goim-pro/api/protos"
+	protos "goim-pro/api/protos/saltyv2"
 	"goim-pro/internal/app/repos"
 	"goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
@@ -12,43 +11,38 @@ import (
 	"goim-pro/pkg/utils"
 )
 
-type userServer struct{}
-
-var (
-	logger      *logrus.Logger
-	reposServer *repos.RepoServer
-	userRepo    user.IUserRepo
-)
-
-func init() {
-	logger = logs.GetLogger("INFO")
-	reposServer = repos.New()
-	userRepo = reposServer.UserRepo
+type userService struct {
+	userRepo user.IUserRepo
 }
+
+var logger = logs.GetLogger("INFO")
 
 func New() protos.UserServiceServer {
-	return &userServer{}
+	repoServer := repos.New()
+	return &userService{
+		userRepo: repoServer.UserRepo,
+	}
 }
 
-func (us *userServer) Register(ctx context.Context, req *protos.BasicClientRequest) (resp *protos.BasicServerResponse, err error) {
+func (us *userService) Register(ctx context.Context, req *protos.BasicReq) (resp *protos.BasicResp, err error) {
 	resp = utils.NewResp(200, nil, "")
 
-	var userReq protos.UserReq
-	err = utils.NewReq(req, &userReq)
+	var registerReq protos.RegisterReq
+	err = utils.NewReq(req, &registerReq)
 	if err != nil {
 		resp.Code = 500
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
-	isValid, err := isVerificationCodeValid(userReq.GetCodeType(), userReq.GetVerificationCode())
+	isValid, err := isVerificationCodeValid(registerReq.GetRegisterType(), registerReq.GetVerificationCode())
 	if !isValid {
 		resp.Code = 400
 		resp.Message = "verification code is invalid"
-		logger.Warnf("verification code is invalid: %s", userReq.GetVerificationCode())
+		logger.Warnf("verification code is invalid: %s", registerReq.GetVerificationCode())
 		return
 	}
-	userProfile := userReq.GetUserProfile()
-	isRegistered, err := userRepo.IsTelephoneRegistered(userProfile.GetTelephone())
+	userProfile := registerReq.GetUserProfile()
+	isRegistered, err := us.userRepo.IsTelephoneRegistered(userProfile.GetTelephone())
 	if err != nil {
 		resp.Code = 500
 		resp.Message = fmt.Sprintf("server error, %s", err.Error())
@@ -60,8 +54,8 @@ func (us *userServer) Register(ctx context.Context, req *protos.BasicClientReque
 		resp.Message = "this telephone has been registered, please login"
 		return
 	}
-	err = userRepo.Register(&user.User{
-		Password:    userReq.GetPassword(),
+	err = us.userRepo.Register(&user.User{
+		Password:    registerReq.GetPassword(),
 		UserProfile: converters.ConvertRegisterUserProfile(userProfile),
 	})
 	if err != nil {
@@ -74,7 +68,7 @@ func (us *userServer) Register(ctx context.Context, req *protos.BasicClientReque
 	return
 }
 
-func isVerificationCodeValid(codeType protos.CodeType, verificationCode string) (isValid bool, err error) {
+func isVerificationCodeValid(registerType protos.RegisterReq_RegisterType, verificationCode string) (isValid bool, err error) {
 	// TODO: should query from db
 	if verificationCode != "123456" {
 		return false, nil
@@ -82,6 +76,6 @@ func isVerificationCodeValid(codeType protos.CodeType, verificationCode string) 
 	return true, nil
 }
 
-func (us *userServer) Login(ctx context.Context, req *protos.BasicClientRequest) (*protos.BasicServerResponse, error) {
+func (us *userService) Login(ctx context.Context, req *protos.BasicReq) (*protos.BasicResp, error) {
 	panic("implement me")
 }

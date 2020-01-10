@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-package protos;
+package com.salty.protos;
+
+import "google/protobuf/any.proto";
 
 service Waiter {
     // defined interface (struct can be reuse)
@@ -13,9 +15,11 @@ service Waiter {
 message Req {
     // type
     string jsonStr = 1;
+    google.protobuf.Any data = 2;
 }
 
 //defined Res message struct
 message Res {
     string backJson = 1;
+    google.protobuf.Any data = 2;
 }

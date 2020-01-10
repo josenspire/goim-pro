@@ -10,11 +10,13 @@ import (
 )
 
 var logger = logs.GetLogger("INFO")
+var server *grpc.GRPCServer
 
 func main() {
 	flag.Parse()
 
-	server := grpc.NewServer()
+	server = grpc.NewServer()
+	server.InitServer()
 	server.ConnectGRPCServer()
 
 	for {

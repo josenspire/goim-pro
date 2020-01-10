@@ -6,11 +6,14 @@ package grpc
 
 import (
 	"fmt"
-	"goim-pro/api/protos"
+	"github.com/jinzhu/gorm"
+	example "goim-pro/api/protos/example"
+	protos "goim-pro/api/protos/saltyv2"
 	"goim-pro/config"
+	"goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services"
-	"goim-pro/pkg/db/mysql"
-	"goim-pro/pkg/db/redis"
+	mysqlsrv "goim-pro/pkg/db/mysql"
+	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/logs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -26,10 +29,20 @@ type GRPCServer struct {
 
 var logger = logs.GetLogger("INFO")
 
-func init() {
+// server constructor
+func NewServer() *GRPCServer {
+	return &GRPCServer{}
+}
+
+// initialize server config and db
+func (gs *GRPCServer) InitServer() {
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	if err := mysqlDB.Connect(); err != nil {
 		logger.Panicf("mysql connect error: %v", err)
+	} else {
+		if err := initialMysqlTables(mysqlDB.GetMysqlInstance()); err != nil {
+			logger.Errorf("mysql tables initialization fail: %s", err)
+		}
 	}
 	redisDB := redsrv.NewRedisConnection()
 	if err := redisDB.Connect(); err != nil {
@@ -37,14 +50,12 @@ func init() {
 	}
 }
 
-func NewServer() *GRPCServer {
-	return &GRPCServer{}
-}
+// create gprc server connection
 func (gs *GRPCServer) ConnectGRPCServer() {
 	tcpAddress := fmt.Sprintf("%s:%s", config.GetAppHost(), config.GetAppPort())
 	lis, err := net.Listen("tcp", tcpAddress)
 	if err != nil {
-		logger.Fatalf("[GRPC server] - [%s] startup failed: %v\n", err)
+		logger.Fatalf("[GRPC server] - [%s] startup failed: %v", tcpAddress, err)
 	} else {
 		logger.Infof("[GRPC server] - [%s] started successfully!\n", tcpAddress)
 	}
@@ -76,16 +87,34 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 	gs.grpcServer = srv
 }
 
+// stop grpc server by graceful
 func (gs *GRPCServer) GracefulStopGRPCServer() {
 	gs.grpcServer.GracefulStop()
 }
 
+// stop grpc server by force
 func (gs *GRPCServer) ForceStopGRPCServer() {
 	gs.grpcServer.Stop()
 }
 
+func initialMysqlTables(db *gorm.DB) (err error) {
+	if !db.HasTable(user.User{}) {
+		err = db.Set(
+			"gorm:table_options",
+			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
+		).CreateTable(
+			user.User{},
+		).Error
+		if err != nil {
+			logger.Errorf("initial mysql tables [users] error: %v\n", err)
+			return
+		}
+	}
+	return
+}
+
 func handleServiceRegister(srv *grpc.Server) {
 	var userService = services.NewService()
-	protos.RegisterWaiterServer(srv, userService.WaiterServer)
+	example.RegisterWaiterServer(srv, userService.WaiterServer)
 	protos.RegisterUserServiceServer(srv, userService.UserServer)
 }

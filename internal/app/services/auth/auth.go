@@ -2,8 +2,7 @@ package authsrv
 
 import (
 	"context"
-	"encoding/json"
-	"goim-pro/api/protos"
+	protos "goim-pro/api/protos/saltyv2"
 	"goim-pro/internal/app/constants"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -17,23 +16,20 @@ func New() protos.SMSServiceServer {
 	return &smsServer{}
 }
 
-func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.BasicClientRequest) (res *protos.BasicServerResponse, err error) {
-	reqBody := req.Data.GetValue()
-	logger.Infoln(reqBody)
-
-	var smsReq *protos.SMSReq
-	err = json.Unmarshal(reqBody, &smsReq)
-	if err != nil || smsReq == nil {
+func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.BasicReq) (res *protos.BasicResp, err error) {
+	var smsReq protos.SMSReq
+	err = utils.NewReq(req, &smsReq)
+	if err != nil {
 		logger.Errorf(`unmarshal error: %v`, err)
 	} else {
 		var code int32 = 200
 		var verificationCode string = ""
 		var msg string = "sending sms code success"
 		switch smsReq.GetCodeType() {
-		case protos.CodeType(constants.CodeTypeRegister):
+		case protos.SMSReq_CodeType(constants.CodeTypeRegister):
 			verificationCode = "123456"
 			break
-		case protos.CodeType(constants.CodeTypeLogin):
+		case protos.SMSReq_CodeType(constants.CodeTypeLogin):
 			verificationCode = "654321"
 			break
 		default:

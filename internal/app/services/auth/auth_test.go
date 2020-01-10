@@ -2,61 +2,37 @@ package authsrv
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/golang/protobuf/ptypes/any"
 	. "github.com/smartystreets/goconvey/convey"
-	"goim-pro/api/protos"
-	"reflect"
+	protos "goim-pro/api/protos/saltyv2"
+	"goim-pro/pkg/utils"
 	"testing"
 )
-
-func TestNew(t *testing.T) {
-	tests := []struct {
-		name string
-		want protos.SMSServiceServer
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := New(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func Test_smsServer_ObtainSMSCode(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		req *protos.BasicClientRequest
+		req *protos.BasicReq
 	}
-	dataBytes1, _ := json.Marshal(&protos.SMSReq{
-		CodeType:  0,
-		Telephone: "13631210000",
-		Extension: nil,
-	})
-	dataBytes2, _ := json.Marshal(&protos.SMSReq{
-		CodeType:  3,
-		Telephone: "13631210000",
-		Extension: nil,
-	})
+	smsReq1 := &protos.SMSReq{
+		CodeType: 0,
+		TargetAccount: &protos.SMSReq_Telephone{
+			Telephone: "13631210000",
+		},
+	}
+	smsReq2 := &protos.SMSReq{
+		CodeType: 3,
+		TargetAccount: &protos.SMSReq_Telephone{
+			Telephone: "13631210000",
+		},
+	}
 	ctx := context.Background()
-	req1 := &protos.BasicClientRequest{
-		Code: 0,
-		Data: &any.Any{
-			TypeUrl: "",
-			Value:   dataBytes1,
-		},
-		Message: "",
+	any1, _ := utils.MarshalMessageToAny(smsReq1)
+	req1 := &protos.BasicReq{
+		Data: any1,
 	}
-	req2 := &protos.BasicClientRequest{
-		Code: 0,
-		Data: &any.Any{
-			TypeUrl: "",
-			Value:   dataBytes2,
-		},
-		Message: "",
+	any2, _ := utils.MarshalMessageToAny(smsReq2)
+	req2 := &protos.BasicReq{
+		Data: any2,
 	}
 	Convey("obtain_sms_code", t, func() {
 		Convey("testing_for_obtain_sms_code_of_register", func() {

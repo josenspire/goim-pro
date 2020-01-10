@@ -5,7 +5,6 @@ import (
 	"goim-pro/config"
 	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos/base"
-	mysqlsrv "goim-pro/pkg/db/mysql"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 )
@@ -20,15 +19,15 @@ type User struct {
 }
 
 type UserProfile struct {
-	Telephone string `json:"telephone" gorm:"column:telephone; type:varchar(11)"`
-	Email     string `json:"email" gorm:"column:email; type:varchar(100)"`
-	Username  string `json:"username" gorm:"column:username; type:varchar(18)"`
-	Nickname  string `json:"nickname" gorm:"column:nickname; type:varchar(16)"`
-	Avatar    string `json:"avatar" gorm:"column:avatar; type:varchar(255)"`
-	Signature string `json:"signature" gorm:"column:signature; type:varchar(255)"`
-	Sex       string `json:"sex" gorm:"column:sex; type: ENUM('MALE', 'FEMALE'); default:'FEMALE'"`
-	Birthday  string `json:"birthday" gorm:"column:birthday; type: varchar(12)"`
-	Location  string `json:"location" gorm:"column:location; type: varchar(255)"`
+	Telephone   string `json:"telephone" gorm:"column:telephone; type:varchar(11)"`
+	Email       string `json:"email" gorm:"column:email; type:varchar(100)"`
+	Username    string `json:"username" gorm:"column:username; type:varchar(18)"`
+	Nickname    string `json:"nickname" gorm:"column:nickname; type:varchar(16)"`
+	Avatar      string `json:"avatar" gorm:"column:avatar; type:varchar(255)"`
+	Description string `json:"description" gorm:"column:description; type:varchar(255)"`
+	Sex         string `json:"sex" gorm:"column:sex; type: ENUM('MALE', 'FEMALE'); default:'FEMALE'"`
+	Birthday    string `json:"birthday" gorm:"column:birthday; type: varchar(12)"`
+	Location    string `json:"location" gorm:"column:location; type: varchar(255)"`
 }
 
 type IUserRepo interface {
@@ -49,9 +48,9 @@ func NewUserModel() *User {
 	return &User{}
 }
 
-func NewUserRepo() IUserRepo {
-	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
-	return NewUserModel()
+func NewUserRepo(db *gorm.DB) IUserRepo {
+	mysqlDB = db
+	return &User{}
 }
 
 // callbacks hock -- before create, encrypt password

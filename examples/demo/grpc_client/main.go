@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	protos2 "goim-pro/api/protos"
+	example "goim-pro/api/protos/example"
+	"goim-pro/pkg/utils"
 	"google.golang.org/grpc"
 	"log"
 	"os"
@@ -20,7 +21,7 @@ func main() {
 	defer conn.Close()
 
 	// create Writer service's client
-	t := protos2.NewWaiterClient(conn)
+	t := example.NewWaiterClient(conn)
 
 	//	模拟请求数据
 	res := "test123"
@@ -29,8 +30,14 @@ func main() {
 		res = os.Args[1]
 	}
 
+	any, _ := utils.MarshalMessageToAny(&example.Req{
+		JsonStr:              "XXX",
+	})
 	//	调用 gRPC 接口
-	tr, err := t.DoMD5(context.Background(), &protos2.Req{JsonStr: res})
+	tr, err := t.DoMD5(context.Background(), &example.Req{
+		JsonStr: res,
+		Data: any,
+	})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
