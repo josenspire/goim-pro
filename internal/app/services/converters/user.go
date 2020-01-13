@@ -16,8 +16,7 @@ func ConvertRegisterUserProfile(profile *protos.UserProfile) user.UserProfile {
 		Avatar:      profile.GetAvatar(),
 		Description: profile.GetDescription(),
 		Sex:         constants.USER_SEX[int32(profile.GetSex())],
-		// TODO: should parse and format
-		//Birthday:    profile.GetBirthday(),
+		Birthday:    profile.GetBirthday(),
 		Location:    profile.GetLocation(),
 	}
 }

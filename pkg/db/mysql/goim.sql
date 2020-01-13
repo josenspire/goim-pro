@@ -11,7 +11,7 @@ CREATE TABLE users (
                        `email` varchar(255) not null,
                        `username` varchar(100) not null,
                        `nickname` varchar(100) not null,
-                       `signature` varbinary(255) null,
+                       `description` varbinary(255) null,
                        PRIMARY KEY (`userID`)
 );
 -- END

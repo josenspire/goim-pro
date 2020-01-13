@@ -85,7 +85,7 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 	}
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
-	NewUserRepo(nil)
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &User{
@@ -118,7 +118,7 @@ func TestUser_Register(t *testing.T) {
 	}
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
-	NewUserRepo(nil)
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 	tests := []struct {
 		name    string
 		fields  fields
@@ -131,11 +131,12 @@ func TestUser_Register(t *testing.T) {
 				UserID:   2,
 				Password: "1234567890",
 				UserProfile: UserProfile{
-					Telephone: "13631210010",
-					Email:     "294001@qq.com",
-					Username:  "TEST02",
-					Nickname:  "TEST02",
-					Signature: "Never Settle",
+					Telephone:   "13631210010",
+					Email:       "294001@qq.com",
+					Username:    "TEST02",
+					Nickname:    "TEST02",
+					Description: "Never Settle",
+					Birthday:    1578903121862,
 				},
 			},
 			args: args{
@@ -143,11 +144,12 @@ func TestUser_Register(t *testing.T) {
 					UserID:   2,
 					Password: "1234567890",
 					UserProfile: UserProfile{
-						Telephone: "13631210010",
-						Email:     "294001@qq.com",
-						Username:  "TEST02",
-						Nickname:  "TEST02",
-						Signature: "Never Settle",
+						Telephone:   "13631210010",
+						Email:       "294001@qq.com",
+						Username:    "TEST02",
+						Nickname:    "TEST02",
+						Description: "Never Settle",
+						Birthday:    1578903121862,
 					},
 				},
 			},
@@ -156,14 +158,14 @@ func TestUser_Register(t *testing.T) {
 		{
 			name: "testing_register_with_exist_record",
 			fields: fields{
-				UserID:   3,
+				UserID:   2,
 				Password: "1234567890",
 				UserProfile: UserProfile{
-					Telephone: "13631210010",
-					Email:     "294001@qq.com",
-					Username:  "TEST02",
-					Nickname:  "TEST02",
-					Signature: "Never Settle",
+					Telephone:   "13631210010",
+					Email:       "294001@qq.com",
+					Username:    "TEST02",
+					Nickname:    "TEST02",
+					Description: "Never Settle",
 				},
 			},
 			args: args{
@@ -171,15 +173,15 @@ func TestUser_Register(t *testing.T) {
 					UserID:   2,
 					Password: "1234567890",
 					UserProfile: UserProfile{
-						Telephone: "13631210010",
-						Email:     "294001@qq.com",
-						Username:  "TEST02",
-						Nickname:  "TEST02",
-						Signature: "Never Settle",
+						Telephone:   "13631210010",
+						Email:       "294001@qq.com",
+						Username:    "TEST02",
+						Nickname:    "TEST02",
+						Description: "Never Settle",
 					},
 				},
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -218,11 +220,11 @@ func TestUser_RemoveUserByUserId(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "testing_for_remove_user_by_userID",
-			fields:  fields{
-				UserID:      2,
+			name: "testing_for_remove_user_by_userID",
+			fields: fields{
+				UserID: 2,
 			},
-			args:    args{
+			args: args{
 				userID: 2,
 			},
 			wantErr: false,
@@ -230,7 +232,7 @@ func TestUser_RemoveUserByUserId(t *testing.T) {
 	}
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
-	NewUserRepo(nil)
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &User{

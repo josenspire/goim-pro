@@ -8,7 +8,6 @@ import (
 	"goim-pro/pkg/utils"
 	"reflect"
 	"testing"
-	"time"
 )
 
 var reqData1 = &protos.UserProfile{
@@ -72,9 +71,9 @@ func Test_userServer_Register(t *testing.T) {
 				Nickname:    "JAMES001",
 				Avatar:      "http://www.avatar.goo/123.png",
 				Description: "Never Settle",
-				//Sex:         0,
-				Birthday: time.Now().Unix(),
-				//Location:    "CHINA-ZHA",
+				Sex:         0,
+				Birthday:    utils.MakeTimestamp(),
+				Location:    "CHINA-ZHA",
 			},
 			Password: "1234567890",
 		}
