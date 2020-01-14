@@ -1,0 +1,26 @@
+{
+  "appProfile": {
+    "appHost": "111.231.238.209",
+    "appPort": "9090",
+    "appLogLevel": "DEBUG"
+  },
+  "mysqlProfile": {
+    "dbUserName": "root",
+    "dbPassword": "Password1!",
+    "dbUri": "111.231.238.209",
+    "dbPort": "3306",
+    "dbName": "goim",
+    "dbEngine": "InnoDB",
+    "dbMaxIdleConns": "10",
+    "dbMaxOpenConns": "30",
+    "dbEnableLogMode": "true"
+  },
+  "redisProfile": {
+    "dbHost": "111.231.238.209",
+    "dbPort": "6379",
+    "dbPassword": "",
+    "dbNum": "1",
+    "dbKey": "SaltyIMPro"
+  },
+  "apiSecretKey": "U0FMVFktSU0tUFJP"
+}

@@ -3,6 +3,7 @@
     <words>
       <w>grpc</w>
       <w>protos</w>
+      <w>workdir</w>
     </words>
   </dictionary>
 </component>

@@ -8,7 +8,7 @@ import (
 func TestGetAppConfigProfile(t *testing.T) {
 	convey.Convey("Subject: Get application profile", t, func() {
 		appHost := GetAppHost()
-		convey.So(appHost, convey.ShouldEqual, "127.0.0.1")
+		convey.So(appHost, convey.ShouldEqual, "0.0.0.0")
 
 		appPort := GetAppPort()
 		convey.So(appPort, convey.ShouldEqual, "9090")

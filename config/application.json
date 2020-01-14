@@ -1,13 +1,13 @@
 {
   "appProfile": {
-    "appHost": "127.0.0.1",
+    "appHost": "0.0.0.0",
     "appPort": "9090",
     "appLogLevel": "DEBUG"
   },
   "mysqlProfile": {
     "dbUserName": "root",
     "dbPassword": "Password1!",
-    "dbUri": "127.0.0.1",
+    "dbUri": "0.0.0.0",
     "dbPort": "3306",
     "dbName": "goim",
     "dbEngine": "InnoDB",
@@ -16,7 +16,7 @@
     "dbEnableLogMode": "true"
   },
   "redisProfile": {
-    "dbHost": "127.0.0.1",
+    "dbHost": "0.0.0.0",
     "dbPort": "6379",
     "dbPassword": "",
     "dbNum": "1",

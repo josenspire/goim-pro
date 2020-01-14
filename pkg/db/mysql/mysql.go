@@ -37,10 +37,9 @@ func initConnectionPool() (err error) {
 	connUrl := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUserName, dbPassword, dbUri, dbPort, dbName)
 	mysqlDB, err = gorm.Open("mysql", connUrl)
 	if err != nil {
-		logger.Errorf("[mysql] connect fail: %v\n", err)
 		return
 	}
-	logger.Infof("[mysql] connect successful: %s\n", connUrl)
+	logger.Infof("[mysql] connect successful: %s", connUrl)
 
 	engine := fmt.Sprintf("ENGINE=%s", dbEngine)
 	mysqlDB.Set("gorm:table_options", engine)

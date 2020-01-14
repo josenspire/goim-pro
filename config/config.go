@@ -43,21 +43,21 @@ var (
 
 /* app config **/
 func GetAppHost() (appHost string) {
-	appHost = appConfigMap["appHost"]
+	appHost = appConfigMap["apphost"]
 	return buildConfigParameter(appHost, defaultAppHost)
 }
 func GetAppPort() (appPort string) {
-	appPort = appConfigMap["appPort"]
+	appPort = appConfigMap["appport"]
 	return buildConfigParameter(appPort, defaultAppPort)
 }
 func GetAppLogLevel() (appLogLevel string) {
-	appLogLevel = appConfigMap["appLogLevel"]
+	appLogLevel = appConfigMap["apploglevel"]
 	return buildConfigParameter(appLogLevel, defaultAppLogLevel)
 }
 
 /* api config **/
 func GetApiSecretKey() (apiSecretKey string) {
-	apiSecretKey = viper.MyViper.GetString("apiSecretKey")
+	apiSecretKey = viper.MyViper.GetString("apisecretkey")
 	if len(apiSecretKey) == 0 {
 		apiSecretKey = defaultAppSecretKey
 	}
@@ -66,62 +66,62 @@ func GetApiSecretKey() (apiSecretKey string) {
 
 /* app config **/
 func GetMysqlDBUserName() (dbUserName string) {
-	dbUserName = mysqlConfigMap["dbUserName"]
+	dbUserName = mysqlConfigMap["dbusername"]
 	return buildConfigParameter(dbUserName, defaultMysqlUserName)
 }
 func GetMysqlDBPassword() (dbPassword string) {
-	dbPassword = mysqlConfigMap["dbPassword"]
+	dbPassword = mysqlConfigMap["dbpassword"]
 	return buildConfigParameter(dbPassword, defaultMysqlPassword)
 }
 func GetMysqlDBUri() (dbUri string) {
-	dbUri = mysqlConfigMap["dbUri"]
+	dbUri = mysqlConfigMap["dburi"]
 	return buildConfigParameter(dbUri, defaultMysqlUri)
 }
 func GetMysqlDBPort() (dbPort string) {
-	dbPort = mysqlConfigMap["dbPort"]
+	dbPort = mysqlConfigMap["dbport"]
 	return buildConfigParameter(dbPort, defaultMysqlPort)
 }
 func GetMysqlDBName() (dbName string) {
-	dbName = mysqlConfigMap["dbName"]
+	dbName = mysqlConfigMap["dbname"]
 	return buildConfigParameter(dbName, defaultMysqlName)
 }
 func GetMysqlDBEngine() (dbEngine string) {
-	dbEngine = mysqlConfigMap["dbEngine"]
+	dbEngine = mysqlConfigMap["dbengine"]
 	return buildConfigParameter(dbEngine, defaultMysqlEngine)
 }
 func GetMysqlDBMaxIdleConns() (dbMaxIdleConns string) {
-	dbMaxIdleConns = mysqlConfigMap["dbMaxIdleConns"]
+	dbMaxIdleConns = mysqlConfigMap["dbmaxidleconns"]
 	return buildConfigParameter(dbMaxIdleConns, defaultMysqlMaxIdleConns)
 }
 func GetMysqlDBMaxOpenConns() (dbMaxOpenConns string) {
-	dbMaxOpenConns = mysqlConfigMap["dbMaxOpenConns"]
+	dbMaxOpenConns = mysqlConfigMap["dbmaxopenconns"]
 	return buildConfigParameter(dbMaxOpenConns, defaultMysqlMaxOpenConns)
 }
 func GetMysqlDBEnableLogMode() bool {
-	dbEnableLogModeStr := mysqlConfigMap["dbEnableLogMode"]
+	dbEnableLogModeStr := mysqlConfigMap["dbenablelogmode"]
 	return buildBoolParameter(dbEnableLogModeStr, defaultMysqlEnableLogMode)
 }
 
 /* app config **/
 func GetRedisDBHost() (redisHost string) {
-	redisHost = redisConfigMap["dbHost"]
+	redisHost = redisConfigMap["dbhost"]
 	return buildConfigParameter(redisHost, defaultRedisHost)
 }
 func GetRedisDBPort() (redisPort string) {
-	redisPort = redisConfigMap["dbPort"]
+	redisPort = redisConfigMap["dbport"]
 	return buildConfigParameter(redisPort, defaultRedisPort)
 }
 func GetRedisDBPassword() (redisPassword string) {
-	redisPassword = redisConfigMap["dbPassword"]
+	redisPassword = redisConfigMap["dbpassword"]
 	return buildConfigParameter(redisPassword, defaultRedisPassword)
 }
 func GetRedisDBNum() (redisDBNum int) {
-	redisDBStr := redisConfigMap["dbNum"]
+	redisDBStr := redisConfigMap["dbnum"]
 	redisDBNum, _ = strconv.Atoi(buildConfigParameter(redisDBStr, defaultRedisNum))
 	return
 }
 func GetRedisDBKey() (redisDBKey string) {
-	redisDBKey = redisConfigMap["dbKey"]
+	redisDBKey = redisConfigMap["dbkey"]
 	return buildConfigParameter(redisDBKey, defaultRedisKey)
 }
 
