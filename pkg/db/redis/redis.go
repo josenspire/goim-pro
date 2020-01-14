@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 type RedisConnectionPool struct {
@@ -46,14 +47,13 @@ func NewRedisConnection() *RedisConnectionPool {
 func (rs *RedisConnectionPool) Connect() (err error) {
 	uriAddr := fmt.Sprintf("%s:%s", host, port)
 	client = redis.NewClient(&redis.Options{
-		Addr:     uriAddr,
-		Password: password,
-		DB:       dbNum,
+		Addr:        uriAddr,
+		Password:    password,
+		DB:          dbNum,
+		DialTimeout: time.Second * 10,
 	})
 	_, err = client.Ping().Result()
-	if err != nil {
-		logger.Errorf("[redis] ping redis fail: %v", err)
-	} else {
+	if err == nil {
 		logger.Infoln("[redis] pong successful")
 	}
 	return

@@ -46,7 +46,7 @@ func (gs *GRPCServer) InitServer() {
 	}
 	redisDB := redsrv.NewRedisConnection()
 	if err := redisDB.Connect(); err != nil {
-		logger.Panicf("redis connect error: %v", err)
+		logger.Errorf("redis connect error: %v", err.Error())
 	}
 }
 
@@ -57,7 +57,7 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 	if err != nil {
 		logger.Fatalf("[GRPC server] - [%s] startup failed: %v", tcpAddress, err)
 	} else {
-		logger.Infof("[GRPC server] - [%s] started successfully!\n", tcpAddress)
+		logger.Infof("[GRPC server] - [%s] started successfully!", tcpAddress)
 	}
 
 	keepaliveParams := grpc.KeepaliveParams(keepalive.ServerParameters{
@@ -106,7 +106,7 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 			user.User{},
 		).Error
 		if err != nil {
-			logger.Errorf("initial mysql tables [users] error: %v\n", err)
+			logger.Errorf("initial mysql tables [users] error: %v", err)
 			return
 		}
 	}

@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"flag"
-	"fmt"
 	"goim-pro/internal/app/grpc"
 	"goim-pro/pkg/logs"
 	"os"
@@ -19,16 +18,23 @@ func main() {
 	server.InitServer()
 	server.ConnectGRPCServer()
 
+	reader := bufio.NewReader(os.Stdin)
 	for {
-		reader := bufio.NewReader(os.Stdin)
-		char, _, _ := reader.ReadRune()
+		char, _, err := reader.ReadRune()
+		if err != nil {
+			logger.Errorf("input error: %s", err.Error())
+			goto BLOCK
+		}
 		switch char {
 		case 'q':
 			logger.Infoln("server is starting to disconnect...")
 			server.GracefulStopGRPCServer()
 			logger.Infoln("server has been gracefully disconnected!")
+			goto BLOCK
 		default:
-			fmt.Println("server continue to listen...")
+			logger.Info("server continue to listen...")
 		}
 	}
+BLOCK:
+	logger.Info("exit!")
 }

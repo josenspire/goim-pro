@@ -18,7 +18,6 @@ func init() {
 	readInConfig(MyViper, "default")
 
 	profileName := os.Getenv("APP_ENV")
-	//profileName = "PROD"
 	if profileName != "" {
 		profileName = strings.ToLower(profileName)
 		profileViper := viper.New()
