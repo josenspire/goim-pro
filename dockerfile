@@ -9,7 +9,7 @@ RUN go build -mod=vendor -v cmd/main.go
 
 EXPOSE 9090
 
-ENTRYPOINT ["./main"]
+CMD ["./main"]
 
 # docker build -t josenspire/goim-pro .
 # docker run --env APP_ENV=PROD -p 9090:9090 --name goim-pro 0620

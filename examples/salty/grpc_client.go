@@ -2,15 +2,14 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/golang/protobuf/ptypes/any"
 	protos "goim-pro/api/protos/salty"
+	"goim-pro/pkg/utils"
 	"google.golang.org/grpc"
 	"log"
 )
 
 const (
-	address = "localhost:9090"
+	address = "111.231.238.209:9090"
 )
 
 func main() {
@@ -21,26 +20,25 @@ func main() {
 	defer conn.Close()
 
 	// create Writer service's client
-	t := protos.NewUserServiceClient(conn)
+	//t := protos.NewUserServiceClient(conn)
+	t := protos.NewSMSServiceClient(conn)
 
-	userData := map[string]interface{}{
-		"username": "JAMES",
-		"password": "1234567890",
-		"age":      24,
+	smsReq := protos.SMSReq{
+		CodeType: protos.SMSReq_REGISTER,
+		TargetAccount: &protos.SMSReq_Telephone{
+			Telephone: "13631210000",
+		},
 	}
-	dataByte, _ := json.Marshal(userData)
-	anyData := &any.Any{
-		Value: dataByte,
-	}
-
-	reqBody := &*protos.GrpcResp{
+	anyData, _ := utils.MarshalMessageToAny(&smsReq)
+	gprcReq := &protos.GrpcReq{
 		Data: anyData,
 	}
 
 	// 调用 gRPC 接口
-	tr, err := t.Register(context.Background(), reqBody)
+	tr, err := t.ObtainSMSCode(context.Background(), gprcReq)
+	//tr, err := t.Register(context.Background(), gprcReq)
 	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+		log.Fatalf("could not greet: %v", err.Error())
 	}
 	log.Printf("服务端响应：%s", tr.GetData().Value)
 }

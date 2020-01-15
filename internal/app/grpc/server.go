@@ -5,6 +5,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	example "goim-pro/api/protos/example"
@@ -38,7 +39,7 @@ func NewServer() *GRPCServer {
 func (gs *GRPCServer) InitServer() {
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	if err := mysqlDB.Connect(); err != nil {
-		logger.Panicf("mysql connect error: %v", err)
+		logger.Errorf("mysql connect error: %v", err)
 	} else {
 		if err := initialMysqlTables(mysqlDB.GetMysqlInstance()); err != nil {
 			logger.Errorf("mysql tables initialization fail: %s", err)
@@ -60,6 +61,8 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 		logger.Infof("[GRPC server] - [%s] started successfully!", tcpAddress)
 	}
 
+	var opts []grpc.ServerOption
+
 	keepaliveParams := grpc.KeepaliveParams(keepalive.ServerParameters{
 		MaxConnectionIdle:     time.Second * 60,
 		MaxConnectionAge:      time.Hour * 2,
@@ -67,8 +70,16 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 		Time:                  time.Second * 60,
 		Timeout:               time.Second * 20,
 	})
+	opts = append(opts, keepaliveParams)
+	// gRPC 拦截器
+	var interceptor grpc.UnaryServerInterceptor
+	interceptor = func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		logger.Info(info)
+		return handler(ctx, req)
+	}
+	opts = append(opts, grpc.UnaryInterceptor(interceptor))
 	// 创建 gRPC 服务
-	srv := grpc.NewServer(keepaliveParams)
+	srv := grpc.NewServer(opts...)
 
 	// TODO: should add the service discovery
 	// 注册接口服务
@@ -114,7 +125,8 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 }
 
 func handleServiceRegister(srv *grpc.Server) {
-	var userService = services.NewService()
-	example.RegisterWaiterServer(srv, userService.WaiterServer)
-	protos.RegisterUserServiceServer(srv, userService.UserServer)
+	var gprcService = services.NewService()
+	example.RegisterWaiterServer(srv, gprcService.WaiterServer)
+	protos.RegisterSMSServiceServer(srv, gprcService.SMSServer)
+	protos.RegisterUserServiceServer(srv, gprcService.UserServer)
 }
