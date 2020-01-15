@@ -13,11 +13,13 @@ var logger = logs.GetLogger("INFO")
 func init() {
 	MyViper = viper.New()
 	MyViper.AddConfigPath("./config")
+	MyViper.AddConfigPath("/Go/src/goim-pro/config")
 	MyViper.SetConfigName("application")
 	MyViper.SetConfigType("json")
 	readInConfig(MyViper, "default")
 
 	profileName := os.Getenv("APP_ENV")
+	//profileName := "PROD"
 	if profileName != "" {
 		profileName = strings.ToLower(profileName)
 		profileViper := viper.New()
@@ -32,7 +34,7 @@ func init() {
 func readInConfig(myViper *viper.Viper, appEnv string) {
 	err := myViper.ReadInConfig()
 	if err != nil {
-		logger.Errorf("error in reading application [%s] config file: %s", appEnv, err.Error())
+		logger.Errorf("reading application [%s] config file error: %s", appEnv, err.Error())
 	} else {
 		logger.Infof("application [%s] config loaded...", appEnv)
 	}

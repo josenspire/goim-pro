@@ -1,6 +1,6 @@
 {
   "appProfile": {
-    "appHost": "127.0.0.1",
+    "appHost": "0.0.0.0",
     "appPort": "9090",
     "appLogLevel": "DEBUG"
   },
