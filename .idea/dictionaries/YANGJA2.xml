@@ -4,6 +4,7 @@
       <w>gprc</w>
       <w>grpc</w>
       <w>protos</w>
+      <w>ptypes</w>
       <w>workdir</w>
     </words>
   </dictionary>

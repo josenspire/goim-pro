@@ -9,6 +9,7 @@ import (
 	"goim-pro/internal/app/services/converters"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
+	"net/http"
 )
 
 type userService struct {
@@ -25,19 +26,18 @@ func New() protos.UserServiceServer {
 }
 
 func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, err error) {
-	resp = utils.NewResp(200, nil, "")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var registerReq protos.RegisterReq
-	err = utils.NewReq(req, &registerReq)
-	if err != nil {
-		resp.Code = 500
+	if err = utils.UnmarshalGRPCReq(req, &registerReq); err != nil {
+		resp.Code = http.StatusBadRequest
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
 	isValid, err := isVerificationCodeValid(registerReq.GetRegisterType(), registerReq.GetVerificationCode())
 	if !isValid {
-		resp.Code = 400
+		resp.Code = http.StatusBadRequest
 		resp.Message = "verification code is invalid"
 		logger.Warnf("verification code is invalid: %s", registerReq.GetVerificationCode())
 		return
@@ -45,34 +45,33 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 	userProfile := registerReq.GetUserProfile()
 	isRegistered, err := us.userRepo.IsTelephoneRegistered(userProfile.GetTelephone())
 	if err != nil {
-		resp.Code = 500
+		resp.Code = http.StatusInternalServerError
 		resp.Message = fmt.Sprintf("server error, %s", err.Error())
-		logger.Errorf("checking telephone validity error: %v", err)
+		logger.Errorf("checking telephone validity error: %v", err.Error())
 		return
 	}
 	if isRegistered {
-		resp.Code = 400
+		resp.Code = http.StatusBadRequest
 		resp.Message = "this telephone has been registered, please login"
 		return
 	}
-	err = us.userRepo.Register(&user.User{
+	if err = us.userRepo.Register(&user.User{
 		Password:    registerReq.GetPassword(),
 		UserProfile: converters.ConvertRegisterUserProfile(userProfile),
-	})
-	if err != nil {
-		resp.Code = 500
+	}); err != nil {
+		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
-		logger.Errorf("register user error: %v", err)
-	} else {
-		registerResp := &protos.RegisterResp{
-			Profile: userProfile,
-		}
-		resp.Data, err = utils.MarshalMessageToAny(registerResp)
-		if err != nil {
-			logger.Errorf("register response marshal message error: %s", err.Error())
-		}
-		resp.Message = "user registration successful"
+		logger.Errorf("register user error: %v", err.Error())
+		return
 	}
+	registerResp := &protos.RegisterResp{
+		Profile: userProfile,
+	}
+	resp.Data, err = utils.MarshalMessageToAny(registerResp)
+	if err != nil {
+		logger.Errorf("register response marshal message error: %s", err.Error())
+	}
+	resp.Message = "user registration successful"
 	return
 }
 

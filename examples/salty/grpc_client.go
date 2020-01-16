@@ -40,5 +40,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not greet: %v", err.Error())
 	}
-	log.Printf("服务端响应：%s", tr.GetData().Value)
+	log.Printf("服务端响应：%s", tr.GetMessage())
 }
