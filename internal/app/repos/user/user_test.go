@@ -1,251 +1,91 @@
 package user
 
 import (
-	"goim-pro/internal/app/repos/base"
+	. "github.com/smartystreets/goconvey/convey"
 	mysqlsrv "goim-pro/pkg/db/mysql"
-	"reflect"
 	"testing"
 )
 
-func TestNewUserModel(t *testing.T) {
-	tests := []struct {
-		name string
-		want *User
-	}{
-		{
-			name: "test_for_NewUserModel_method",
-			want: &User{},
-		},
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewUserModel(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewUserModel() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+var user1 = &User{
+	Password: "1234567890",
+	UserProfile: UserProfile{
+		UserID:      2,
+		Telephone:   "13631210010",
+		Email:       "294001@qq.com",
+		Username:    "TEST02",
+		Nickname:    "TEST02",
+		Description: "Never Settle",
+		Birthday:    1578903121862,
+	},
+}
+
+var user2 = &User{
+	Password: "1234567890",
+	UserProfile: UserProfile{
+		UserID:      3,
+		Telephone:   "13631210022",
+		Email:       "294001@qq.com",
+		Username:    "TEST02",
+		Nickname:    "TEST02",
+		Description: "Never Settle",
+	},
 }
 
 func TestUser_IsTelephoneRegistered(t *testing.T) {
-	type fields struct {
-		UserID      uint64
-		Password    string
-		Role        string
-		Status      string
-		UserProfile UserProfile
-		BaseModel   base.BaseModel
-	}
-	type args struct {
-		telephone string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    bool
-		wantErr bool
-	}{
-		{
-			name: "test_for_IsTelephoneExist_returns_True",
-			fields: fields{
-				UserID:   0,
-				Password: "uiowpqejfmdlvm",
-				Role:     "0",
-				Status:   "1",
-				UserProfile: UserProfile{
-					Telephone: "13631210000",
-				},
-				BaseModel: base.BaseModel{},
-			},
-			args: args{
-				telephone: "13631210000",
-			},
-			want:    true,
-			wantErr: true,
-		},
-		{
-			name: "test_for_IsTelephoneExist_returns_False",
-			fields: fields{
-				UserID:   1,
-				Password: "zxcvdfgreqgrewqg",
-				Role:     "0",
-				Status:   "1",
-				UserProfile: UserProfile{
-					Telephone: "13631210001",
-				},
-				BaseModel: base.BaseModel{},
-			},
-			args: args{
-				telephone: "13631210001",
-			},
-			want:    false,
-			wantErr: false,
-		},
-	}
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := &User{
-				UserID:      0,
-				Password:    "",
-				Role:        "",
-				Status:      "",
-				UserProfile: UserProfile{},
-				BaseModel:   base.BaseModel{},
-			}
-			got, _ := u.IsTelephoneRegistered(tt.args.telephone)
-			if got != tt.want {
-				t.Errorf("IsTelephoneRegistered() got = %v, want %v", got, tt.want)
-			}
+	u := &User{}
+	_ = u.Register(user2) // create a user
+	Convey("Test_IsTelephoneRegistered", t, func() {
+		Convey("Test_return_FALSE", func() {
+			isExist, err := u.IsTelephoneRegistered("13631210033")
+			So(err, ShouldBeNil)
+			So(isExist, ShouldBeFalse)
 		})
-	}
+		Convey("Test_return_TRUE", func() {
+			isExist, err := u.IsTelephoneRegistered("13631210022")
+			So(err, ShouldBeNil)
+			So(isExist, ShouldBeTrue)
+		})
+	})
+	_ = u.RemoveUserByUserID(user1.UserID, true) // remove demo user
 }
 
 func TestUser_Register(t *testing.T) {
-	type fields struct {
-		UserID      uint64
-		Password    string
-		Role        string
-		Status      string
-		UserProfile UserProfile
-		BaseModel   base.BaseModel
-	}
-	type args struct {
-		newUser *User
-	}
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "testing_register_with_new_record",
-			fields: fields{
-				UserID:   2,
-				Password: "1234567890",
-				UserProfile: UserProfile{
-					Telephone:   "13631210010",
-					Email:       "294001@qq.com",
-					Username:    "TEST02",
-					Nickname:    "TEST02",
-					Description: "Never Settle",
-					Birthday:    1578903121862,
-				},
-			},
-			args: args{
-				&User{
-					UserID:   2,
-					Password: "1234567890",
-					UserProfile: UserProfile{
-						Telephone:   "13631210010",
-						Email:       "294001@qq.com",
-						Username:    "TEST02",
-						Nickname:    "TEST02",
-						Description: "Never Settle",
-						Birthday:    1578903121862,
-					},
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "testing_register_with_exist_record",
-			fields: fields{
-				UserID:   2,
-				Password: "1234567890",
-				UserProfile: UserProfile{
-					Telephone:   "13631210010",
-					Email:       "294001@qq.com",
-					Username:    "TEST02",
-					Nickname:    "TEST02",
-					Description: "Never Settle",
-				},
-			},
-			args: args{
-				&User{
-					UserID:   2,
-					Password: "1234567890",
-					UserProfile: UserProfile{
-						Telephone:   "13631210010",
-						Email:       "294001@qq.com",
-						Username:    "TEST02",
-						Nickname:    "TEST02",
-						Description: "Never Settle",
-					},
-				},
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := &User{
-				UserID:      tt.fields.UserID,
-				Password:    tt.fields.Password,
-				Role:        tt.fields.Role,
-				Status:      tt.fields.Status,
-				UserProfile: tt.fields.UserProfile,
-				BaseModel:   tt.fields.BaseModel,
-			}
-			if err := u.Register(tt.args.newUser); (err != nil) != tt.wantErr {
-				t.Errorf("User.Register() error = %v, wantErr %v", err, tt.wantErr)
-			}
+	u := &User{}
+	Convey("Test_Register", t, func() {
+		Convey("Registration_successful", func() {
+			err := u.Register(user1)
+			So(err, ShouldBeNil)
 		})
-	}
+		Convey("Registration_fail_by_telephone_exist", func() {
+			err := u.Register(user1)
+			So(err, ShouldNotBeNil)
+		})
+	})
+
+	_ = u.RemoveUserByUserID(user1.UserID, true)
 }
 
-func TestUser_RemoveUserByUserId(t *testing.T) {
-	type fields struct {
-		UserID      uint64
-		Password    string
-		Role        string
-		Status      string
-		UserProfile UserProfile
-		BaseModel   base.BaseModel
-	}
-	type args struct {
-		userID uint64
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "testing_for_remove_user_by_userID",
-			fields: fields{
-				UserID: 2,
-			},
-			args: args{
-				userID: 2,
-			},
-			wantErr: false,
-		},
-	}
+func TestUser_RemoveUserByUserID(t *testing.T) {
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := &User{
-				UserID:      tt.fields.UserID,
-				Password:    tt.fields.Password,
-				Role:        tt.fields.Role,
-				Status:      tt.fields.Status,
-				UserProfile: tt.fields.UserProfile,
-				BaseModel:   tt.fields.BaseModel,
+
+	Convey("TestUserRepo_RemoveUserByUserID", t, func() {
+		Convey("testing_RemoveUserByUserID_success", func() {
+			user := &User{
+				Status: "ACTIVE",
+				UserProfile: UserProfile{
+					UserID: 2,
+				},
 			}
-			if err := u.RemoveUserByUserId(tt.args.userID); (err != nil) != tt.wantErr {
-				t.Errorf("User.RemoveUserByUserId() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			err := user.RemoveUserByUserID(1, false)
+			So(err, ShouldBeNil)
 		})
-	}
+	})
 }

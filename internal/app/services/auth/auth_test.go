@@ -42,7 +42,7 @@ func Test_smsServer_ObtainSMSCode(t *testing.T) {
 				t.Errorf("ObtainSMSCode() error = %v", err)
 				return
 			}
-			So(string(gotRes.GetData().Value), ShouldEqual, "123456")
+			So(gotRes.GetMessage(), ShouldEqual, "sending sms code success: 123456")
 		})
 		Convey("testing_for_invalid_code_type", func() {
 			s := &smsServer{}

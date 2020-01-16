@@ -3,14 +3,12 @@ package user
 import (
 	"github.com/jinzhu/gorm"
 	"goim-pro/config"
-	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos/base"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 )
 
 type User struct {
-	UserID   uint64 `json:"userID" gorm:"column:userID; primary_key; not null"`
 	Password string `json:"password" gorm:"column:password; type:varchar(255); not null"`
 	Role     string `json:"role" gorm:"column:role; type:ENUM('1', '10', '99'); default:'1'"`
 	Status   string `json:"status" gorm:"column:status; type:ENUM('ACTIVE', 'INACTIVE'); default: 'ACTIVE'; not null"`
@@ -19,6 +17,7 @@ type User struct {
 }
 
 type UserProfile struct {
+	UserID      uint64 `json:"userID" gorm:"column:userID; primary_key; not null"`
 	Telephone   string `json:"telephone" gorm:"column:telephone; type:varchar(11)"`
 	Email       string `json:"email" gorm:"column:email; type:varchar(100)"`
 	Username    string `json:"username" gorm:"column:username; type:varchar(18)"`
@@ -33,7 +32,7 @@ type UserProfile struct {
 type IUserRepo interface {
 	IsTelephoneRegistered(telephone string) (bool, error)
 	Register(newUser *User) error
-	RemoveUserByUserId(userID uint64) error
+	RemoveUserByUserID(userID uint64, isForce bool) error
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -72,7 +71,7 @@ func (u *User) BeforeCreate(scope *gorm.Scope) error {
 }
 
 func (u *User) Register(newUser *User) (err error) {
-	_db := mysqlDB.Create(&newUser)
+	_db := mysqlDB.Create(&newUser).First(&u, "userID = ?", newUser.UserID)
 	if _db.Error != nil {
 		err = _db.Error
 		logger.Errorf("create user error: %v", err)
@@ -92,12 +91,12 @@ func (u *User) IsTelephoneRegistered(telephone string) (bool, error) {
 	return true, nil
 }
 
-func (u *User) RemoveUserByUserId(userID uint64) (err error) {
-	_user := &User{
-		UserID: userID,
-		Status: constants.StatusActive,
+func (u *User) RemoveUserByUserID(userID uint64, isForce bool) (err error) {
+	_db := mysqlDB
+	if isForce {
+		_db = mysqlDB.Unscoped()
 	}
-	_db := mysqlDB.Set("gorm:delete_option", "UPDATE users SET users.status = 'INACTIVE'").Delete(_user)
+	_db = _db.Delete(&User{}, "userID = ?", userID)
 	if _db.RecordNotFound() {
 		logger.Warningln("remove user fail, userID not found")
 	} else if _db.Error != nil {

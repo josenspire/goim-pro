@@ -2,6 +2,7 @@ package authsrv
 
 import (
 	"context"
+	"fmt"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/constants"
 	"goim-pro/pkg/logs"
@@ -16,27 +17,34 @@ func New() protos.SMSServiceServer {
 	return &smsServer{}
 }
 
-func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (res *protos.GrpcResp, err error) {
+func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, err error) {
+	resp = utils.NewResp(200, nil, "")
+
 	var smsReq protos.SMSReq
 	err = utils.NewReq(req, &smsReq)
 	if err != nil {
+		resp.Code = 500
+		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
+		return
 	} else {
-		var code int32 = 200
+		resp.Code = 200
+		resp.Message = "sending sms code success"
 		var verificationCode string = ""
-		var msg string = "sending sms code success"
 		switch smsReq.GetCodeType() {
 		case protos.SMSReq_CodeType(constants.CodeTypeRegister):
 			verificationCode = "123456"
+			resp.Message = fmt.Sprintf("sending sms code success: %s", verificationCode)
 			break
 		case protos.SMSReq_CodeType(constants.CodeTypeLogin):
 			verificationCode = "654321"
+			resp.Message = fmt.Sprintf("sending sms code success: %s", verificationCode)
 			break
 		default:
-			code = 400
-			msg = "invalid request code type"
+			resp.Code = 400
+			resp.Message = "invalid request code type"
 		}
-		res = utils.NewResp(code, []byte(verificationCode), msg)
+		resp.Data, _ = utils.MarshalMessageToAny(&protos.SMSResp{})
 	}
 	return
 }

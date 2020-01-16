@@ -18,13 +18,13 @@ func init() {
 }
 
 var (
-	defaultAppHost     = "127.0.0.1"
+	defaultAppHost     = "0.0.0.0"
 	defaultAppPort     = "9090"
 	defaultAppLogLevel = "DEBUG"
 
 	defaultMysqlUserName      = "root"
 	defaultMysqlPassword      = "Password1!"
-	defaultMysqlUri           = "127.0.0.1"
+	defaultMysqlURI           = "0.0.0.0"
 	defaultMysqlPort          = "3306"
 	defaultMysqlName          = "goim"
 	defaultMysqlEngine        = "InnoDB"
@@ -34,7 +34,7 @@ var (
 
 	defaultAppSecretKey = "U0FMVFktSU0tUFJP"
 
-	defaultRedisHost     = "127.0.0.1"
+	defaultRedisHost     = "0.0.0.0"
 	defaultRedisPort     = "6379"
 	defaultRedisPassword = ""
 	defaultRedisNum      = "1"
@@ -73,9 +73,9 @@ func GetMysqlDBPassword() (dbPassword string) {
 	dbPassword = mysqlConfigMap["dbpassword"]
 	return buildConfigParameter(dbPassword, defaultMysqlPassword)
 }
-func GetMysqlDBUri() (dbUri string) {
-	dbUri = mysqlConfigMap["dburi"]
-	return buildConfigParameter(dbUri, defaultMysqlUri)
+func GetMysqlDBUri() (dbURI string) {
+	dbURI = mysqlConfigMap["dburi"]
+	return buildConfigParameter(dbURI, defaultMysqlURI)
 }
 func GetMysqlDBPort() (dbPort string) {
 	dbPort = mysqlConfigMap["dbport"]

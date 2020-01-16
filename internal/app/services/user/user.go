@@ -31,6 +31,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 	err = utils.NewReq(req, &registerReq)
 	if err != nil {
 		resp.Code = 500
+		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
@@ -63,6 +64,13 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		resp.Message = err.Error()
 		logger.Errorf("register user error: %v", err)
 	} else {
+		registerResp := &protos.RegisterResp{
+			Profile: userProfile,
+		}
+		resp.Data, err = utils.MarshalMessageToAny(registerResp)
+		if err != nil {
+			logger.Errorf("register response marshal message error: %s", err.Error())
+		}
 		resp.Message = "user registration successful"
 	}
 	return
