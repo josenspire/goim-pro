@@ -21,3 +21,19 @@ func ConvertRegisterUserProfile(profile *protos.UserProfile) user.UserProfile {
 		Location:    profile.GetLocation(),
 	}
 }
+
+func ConvertLoginResp(profile user.UserProfile) *protos.UserProfile {
+	return &protos.UserProfile{
+		UserID:      profile.UserID,
+		Telephone:   profile.Telephone,
+		Email:       profile.Email,
+		Username:    profile.Username,
+		Nickname:    profile.Nickname,
+		Avatar:      profile.Avatar,
+		Description: profile.Description,
+		// TODO:
+		//Sex:         constants.UserSex[profile.Sex],
+		Birthday:    profile.Birthday,
+		Location:    profile.Location,
+	}
+}

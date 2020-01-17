@@ -22,11 +22,22 @@ func GenerateRandString(length int) string {
 	return string(result)
 }
 
-func IsEmptyString(strArgs ...string) bool {
+func IsEmptyStrings(strArgs ...string) bool {
 	var result = true
 	for _, str := range strArgs {
 		if str != "" {
 			result = false
+			break
+		}
+	}
+	return result
+}
+
+func IsContainEmptyString(strArgs ...string) bool {
+	var result = false
+	for _, str := range strArgs {
+		if str == "" {
+			result = true
 			break
 		}
 	}

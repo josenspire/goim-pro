@@ -38,18 +38,23 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 	u := &User{}
 	_ = u.Register(user2) // create a user
 	Convey("Test_IsTelephoneRegistered", t, func() {
-		Convey("Test_return_FALSE", func() {
-			isExist, err := u.IsTelephoneRegistered("13631210033")
+		Convey("Test_return_FALSE_with_exist_telephone", func() {
+			isExist, err := u.IsTelephoneOrEmailRegistered("13631210033", "123@qq.com")
+			So(err, ShouldBeNil)
+			So(isExist, ShouldBeFalse)
+		})
+		Convey("Test_return_FALSE_with_exist_email", func() {
+			isExist, err := u.IsTelephoneOrEmailRegistered("13631210044", "294001@qq.com")
 			So(err, ShouldBeNil)
 			So(isExist, ShouldBeFalse)
 		})
 		Convey("Test_return_TRUE", func() {
-			isExist, err := u.IsTelephoneRegistered("13631210022")
+			isExist, err := u.IsTelephoneOrEmailRegistered("13631210022", "")
 			So(err, ShouldBeNil)
 			So(isExist, ShouldBeTrue)
 		})
 	})
-	_ = u.RemoveUserByUserID(user1.UserID, true) // remove demo user
+	_ = u.RemoveUserByUserID(user2.UserID, true) // remove demo user
 }
 
 func TestUser_Register(t *testing.T) {

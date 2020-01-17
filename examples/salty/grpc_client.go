@@ -57,10 +57,10 @@ func main() {
 
 func toolsIntroduce() {
 	logger.Info("********************************************")
-	logger.Info("**** welcome to grpc client tools ****")
-	logger.Info("**** can input the commons to test ****")
-	logger.Info("** 's': obtainSMSCode **")
-	logger.Info("** 'r': register **")
+	logger.Info("**** Welcome to [GRPC] client tools ****")
+	logger.Info("**** Can input the commons to test ****")
+	logger.Info("** ['s']: obtainSMSCode **")
+	logger.Info("** ['r']: register **")
 
-	logger.Info("** 'q': exist grpc client **")
+	logger.Info("** ['q']: exist [GRPC] client **")
 }

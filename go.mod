@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/edwingeng/wuid v0.0.0-20191129013112-1bf3d98c028d
+	github.com/go-playground/validator/v10 v10.1.0
 	github.com/go-redis/redis/v7 v7.0.0-beta.5
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.3.2

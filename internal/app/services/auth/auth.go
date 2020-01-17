@@ -18,8 +18,8 @@ func New() protos.SMSServiceServer {
 	return &smsServer{}
 }
 
-func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, err error) {
-	resp, err = utils.NewGRPCResp(200, nil, "")
+func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, grpcErr error) {
+	resp, err := utils.NewGRPCResp(200, nil, "")
 
 	var smsReq protos.SMSReq
 	if err = utils.UnMarshalAnyToMessage(req.GetData(), &smsReq); err != nil {

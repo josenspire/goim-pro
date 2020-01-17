@@ -9,8 +9,8 @@ type MockUserRepo struct {
 	mock.Mock
 }
 
-func (m *MockUserRepo) IsTelephoneRegistered(telephone string) (bool, error) {
-	args := m.Called(telephone)
+func (m *MockUserRepo) IsTelephoneOrEmailRegistered(telephone string, email string) (bool, error) {
+	args := m.Called(telephone, email)
 	return args.Bool(0), args.Error(1)
 }
 

@@ -72,6 +72,22 @@ message RegisterResp {
     UserProfile profile = 1;
 }
 
+message LoginReq {
+    LoginType loginType = 1;
+    oneof targetAccount {
+        string telephone = 2;
+        string email = 3;
+    }
+    string password = 4;
+    enum LoginType {
+        TELEPHONE = 0;
+        EMAIL = 1;
+    }
+}
+
+message LoginResp {
+    UserProfile profile = 1;
+}
 
 message SMSReq {
     CodeType codeType = 1;
@@ -88,4 +104,5 @@ message SMSReq {
 message SMSResp {
 }
 
-message EmptyResp {}
+message EmptyResp {
+}

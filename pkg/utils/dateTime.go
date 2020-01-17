@@ -31,7 +31,7 @@ func ParseTimestampToDateTimeStr(timestamp int64, format string) string {
 	if timestamp == 0 {
 		return ""
 	}
-	if IsEmptyString(format) {
+	if format == "" {
 		format = DefaultDateTimeFormat
 	}
 	return time.Unix(timestamp, 0).In(loc).Format(format)
@@ -41,10 +41,10 @@ func ParseTimestampToDateTimeStr(timestamp int64, format string) string {
 // dateTimeFormat {string}  target input date time format, default: YYYY-MM-DDTHH:mm:ss+08:00
 // dateTimeStr	  {string}  target input date time string
 func ParseDateTimeStrToTimestamp(dateTimeFormat string, dateTimeStr string) (int64, error) {
-	if IsEmptyString(dateTimeStr) {
+	if dateTimeStr == "" {
 		return 0, errors.New("invalid dateTime string")
 	}
-	if IsEmptyString(dateTimeFormat) {
+	if dateTimeFormat == "" {
 		dateTimeFormat = DefaultDateTimeFormat
 	}
 	tt, err := time.ParseInLocation(dateTimeFormat, dateTimeStr, loc)

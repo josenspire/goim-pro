@@ -29,17 +29,17 @@ func obtainSMSCode(t protos.SMSServiceClient) {
 
 func register(t protos.UserServiceClient) {
 	registerReq := &protos.RegisterReq{
-		RegisterType:     0,
+		RegisterType:     protos.RegisterReq_TELEPHONE,
 		Password:         "1234567890",
 		VerificationCode: "123456",
 		UserProfile: &protos.UserProfile{
-			Telephone:   "13631210001",
-			Email:       "123@qq.com",
+			Telephone:   "13631210003",
+			Email:       "12345@qq.com",
 			Username:    "JAMES001",
 			Nickname:    "JAMES001",
 			Avatar:      "https://www.baidu.com/avatar/header1.png",
 			Description: "Never settle",
-			Sex:         0,
+			Sex:         protos.UserProfile_MALE,
 			Birthday:    utils.MakeTimestamp(),
 			Location:    "CHINA-ZHA",
 		},

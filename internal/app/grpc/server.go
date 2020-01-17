@@ -74,7 +74,7 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 	// gRPC 拦截器
 	var interceptor grpc.UnaryServerInterceptor
 	interceptor = func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-		logger.Info(info)
+		logger.Info(req)
 		return handler(ctx, req)
 	}
 	opts = append(opts, grpc.UnaryInterceptor(interceptor))

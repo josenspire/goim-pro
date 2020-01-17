@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"github.com/jinzhu/gorm"
 	"goim-pro/config"
 	"goim-pro/internal/app/repos/base"
@@ -30,8 +31,10 @@ type UserProfile struct {
 }
 
 type IUserRepo interface {
-	IsTelephoneRegistered(telephone string) (bool, error)
+	IsTelephoneOrEmailRegistered(telephone string, email string) (bool, error)
 	Register(newUser *User) error
+	LoginByEmail(email string, password string) (user *User, err error)
+	LoginByTelephone(telephone string, password string) (user *User, err error)
 	RemoveUserByUserID(userID string, isForce bool) error
 }
 
@@ -43,52 +46,88 @@ func (User) TableName() string {
 	return "users"
 }
 
-func NewUserModel() *User {
-	return &User{}
-}
-
 func NewUserRepo(db *gorm.DB) IUserRepo {
 	mysqlDB = db
 	return &User{}
 }
 
 // callbacks hock -- before create, encrypt password
-func (u *User) BeforeCreate(scope *gorm.Scope) error {
-	if utils.IsEmptyString(u.Password) {
-		return nil
+func (u *User) BeforeCreate(scope *gorm.Scope) (err error) {
+	if u.Password == "" {
+		return errors.New("[aes] invalid password parameter")
 	}
 	encryptPassword, err := crypto.AESEncrypt(u.Password, config.GetApiSecretKey())
 	if err != nil {
-		logger.Errorf("[aes] encrypt password error: %v", err)
-		return err
+		logger.Errorf("[aes] encrypt password error: %s", err.Error())
+		return
 	}
 	err = scope.SetColumn("password", encryptPassword)
 	if err != nil {
-		logger.Errorf("[aes] encrypt password error: %v", err)
-		return err
-	}
-	return nil
-}
-
-func (u *User) Register(newUser *User) (err error) {
-	_db := mysqlDB.Create(&newUser).First(&u, "userID = ?", newUser.UserID)
-	if _db.Error != nil {
-		err = _db.Error
-		logger.Errorf("create user error: %v", err)
+		logger.Errorf("[aes] encrypt password error: %s", err.Error())
 	}
 	return
 }
 
-func (u *User) IsTelephoneRegistered(telephone string) (bool, error) {
-	err := mysqlDB.Where("telephone = ? and status = 'ACTIVE'", telephone).Find(&u).Error
-	if err == gorm.ErrRecordNotFound {
-		return false, nil
+func (u *User) Register(newUser *User) (err error) {
+	_db := mysqlDB.Create(&newUser)
+	if _db.Error != nil {
+		err = _db.Error
+		logger.Errorf("create user error: %s", err.Error())
 	}
-	if err != nil {
-		logger.Errorf("query user by telephone error: %v", err)
-		return false, err
+	return
+}
+
+func (u *User) IsTelephoneOrEmailRegistered(telephone string, email string) (bool, error) {
+	var isTelExist bool = true
+	var err error
+	if telephone != "" {
+		err = mysqlDB.First(&User{}, "telephone = ?", telephone).Error
+		if err == gorm.ErrRecordNotFound {
+			isTelExist = false
+			err = nil
+		} else if err != nil {
+			logger.Errorf("query user by telephone error: %s", err.Error())
+			return isTelExist, err
+		}
 	}
-	return true, nil
+
+	if isTelExist {
+		return true, nil
+	}
+
+	var isEmailExist bool = true
+	if email != "" {
+		err = mysqlDB.First(&User{}, "email = ?", email).Error
+		if err == gorm.ErrRecordNotFound {
+			isEmailExist = false
+			err = nil
+		} else if err != nil {
+			logger.Errorf("query user by email error: %s", err.Error())
+			return isEmailExist, err
+		}
+	}
+
+	return isTelExist || isEmailExist, nil
+}
+
+func (u *User) LoginByEmail(email string, password string) (user *User, err error) {
+	db := mysqlDB.First(user, "email = ? and password = ?", email, password)
+	if db.RecordNotFound() {
+		err = utils.ErrAccountOrPswInvalid
+	} else {
+		err = db.Error
+	}
+	return
+}
+
+func (u *User) LoginByTelephone(telephone string, password string) (user *User, err error) {
+	db := mysqlDB.First(user, "telephone = ? and password = ?", telephone, password)
+	if db.RecordNotFound() {
+		err = utils.ErrAccountOrPswInvalid
+	} else {
+		err = db.Error
+	}
+	return
 }
 
 func (u *User) RemoveUserByUserID(userID string, isForce bool) (err error) {
@@ -103,5 +142,5 @@ func (u *User) RemoveUserByUserID(userID string, isForce bool) (err error) {
 		logger.Errorf("error happened to remove user: %v\n", _db.Error)
 		err = _db.Error
 	}
-	return _db.Error
+	return
 }

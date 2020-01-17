@@ -25,7 +25,7 @@ var pbUserProfile1 = &protos.UserProfile{
 var pbUserProfile2 = &protos.UserProfile{
 	UserID:      "13631210002",
 	Telephone:   "13631210002",
-	Email:       "123@qq.com",
+	Email:       "12345@qq.com",
 	Username:    "13631210001",
 	Nickname:    "JAMES001",
 	Avatar:      "http://www.avatar.goo/123.png",
@@ -50,7 +50,7 @@ var modelUserProfile1 = &user.UserProfile{
 var modelUserProfile2 = &user.UserProfile{
 	UserID:      "13631210002",
 	Telephone:   "13631210002",
-	Email:       "123@qq.com",
+	Email:       "12345@qq.com",
 	Username:    "13631210001",
 	Nickname:    "JAMES001",
 	Avatar:      "http://www.avatar.goo/123.png",
@@ -62,8 +62,8 @@ var modelUserProfile2 = &user.UserProfile{
 
 func Test_Register(t *testing.T) {
 	m := &MockUserRepo{}
-	m.On("IsTelephoneRegistered", "13631210001").Return(true, nil)
-	m.On("IsTelephoneRegistered", "13631210002").Return(false, nil)
+	m.On("IsTelephoneOrEmailRegistered", "13631210001", "123@qq.com").Return(true, nil)
+	m.On("IsTelephoneOrEmailRegistered", "13631210002", "12345@qq.com").Return(false, nil)
 	m.On("Register", &user.User{
 		Password:    "1234567890",
 		UserProfile: *modelUserProfile1,
@@ -92,7 +92,7 @@ func Test_Register(t *testing.T) {
 			}
 			actualResp, err := us.Register(ctx, req)
 			So(err, ShouldBeNil)
-			So(actualResp.GetMessage(), ShouldEqual, "this telephone has been registered, please login")
+			So(actualResp.GetMessage(), ShouldEqual, "the telephone or email has been registered, please login")
 		})
 		Convey("user_registration_successful", func() {
 			userReq := &protos.RegisterReq{
