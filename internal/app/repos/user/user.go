@@ -17,7 +17,7 @@ type User struct {
 }
 
 type UserProfile struct {
-	UserID      uint64 `json:"userID" gorm:"column:userID; primary_key; not null"`
+	UserID      string `json:"userID" gorm:"column:userID; type:varchar(32); primary_key; not null"`
 	Telephone   string `json:"telephone" gorm:"column:telephone; type:varchar(11)"`
 	Email       string `json:"email" gorm:"column:email; type:varchar(100)"`
 	Username    string `json:"username" gorm:"column:username; type:varchar(18)"`
@@ -32,7 +32,7 @@ type UserProfile struct {
 type IUserRepo interface {
 	IsTelephoneRegistered(telephone string) (bool, error)
 	Register(newUser *User) error
-	RemoveUserByUserID(userID uint64, isForce bool) error
+	RemoveUserByUserID(userID string, isForce bool) error
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -91,7 +91,7 @@ func (u *User) IsTelephoneRegistered(telephone string) (bool, error) {
 	return true, nil
 }
 
-func (u *User) RemoveUserByUserID(userID uint64, isForce bool) (err error) {
+func (u *User) RemoveUserByUserID(userID string, isForce bool) (err error) {
 	_db := mysqlDB
 	if isForce {
 		_db = mysqlDB.Unscoped()

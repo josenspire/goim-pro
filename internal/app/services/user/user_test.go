@@ -10,7 +10,7 @@ import (
 )
 
 var pbUserProfile1 = &protos.UserProfile{
-	UserID:      "100",
+	UserID:      "13631210001",
 	Telephone:   "13631210001",
 	Email:       "123@qq.com",
 	Username:    "13631210001",
@@ -23,7 +23,7 @@ var pbUserProfile1 = &protos.UserProfile{
 }
 
 var pbUserProfile2 = &protos.UserProfile{
-	UserID:      "101",
+	UserID:      "13631210002",
 	Telephone:   "13631210002",
 	Email:       "123@qq.com",
 	Username:    "13631210001",
@@ -36,7 +36,7 @@ var pbUserProfile2 = &protos.UserProfile{
 }
 
 var modelUserProfile1 = &user.UserProfile{
-	UserID:      100,
+	UserID:      "13631210001",
 	Telephone:   "13631210001",
 	Email:       "123@qq.com",
 	Username:    "13631210001",
@@ -48,7 +48,7 @@ var modelUserProfile1 = &user.UserProfile{
 	Location:    "CHINA-ZHA",
 }
 var modelUserProfile2 = &user.UserProfile{
-	UserID:      101,
+	UserID:      "13631210002",
 	Telephone:   "13631210002",
 	Email:       "123@qq.com",
 	Username:    "13631210001",

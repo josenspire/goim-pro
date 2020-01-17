@@ -87,3 +87,5 @@ message SMSReq {
 
 message SMSResp {
 }
+
+message EmptyResp {}

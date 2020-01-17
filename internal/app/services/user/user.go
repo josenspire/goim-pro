@@ -35,6 +35,11 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
+	if err = registerParameterCalibration(registerReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		return
+	}
 	isValid, err := isVerificationCodeValid(registerReq.GetRegisterType(), registerReq.GetVerificationCode())
 	if !isValid {
 		resp.Code = http.StatusBadRequest
@@ -43,6 +48,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		return
 	}
 	userProfile := registerReq.GetUserProfile()
+	userProfile.UserID = utils.NewULID()
 	isRegistered, err := us.userRepo.IsTelephoneRegistered(userProfile.GetTelephone())
 	if err != nil {
 		resp.Code = http.StatusInternalServerError
@@ -72,6 +78,11 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		logger.Errorf("register response marshal message error: %s", err.Error())
 	}
 	resp.Message = "user registration successful"
+	return
+}
+
+func registerParameterCalibration(req protos.RegisterReq) (err error) {
+
 	return
 }
 

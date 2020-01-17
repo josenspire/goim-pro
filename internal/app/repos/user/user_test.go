@@ -9,7 +9,7 @@ import (
 var user1 = &User{
 	Password: "1234567890",
 	UserProfile: UserProfile{
-		UserID:      2,
+		UserID:      "2",
 		Telephone:   "13631210010",
 		Email:       "294001@qq.com",
 		Username:    "TEST02",
@@ -22,7 +22,7 @@ var user1 = &User{
 var user2 = &User{
 	Password: "1234567890",
 	UserProfile: UserProfile{
-		UserID:      3,
+		UserID:      "3",
 		Telephone:   "13631210022",
 		Email:       "294001@qq.com",
 		Username:    "TEST02",
@@ -81,10 +81,10 @@ func TestUser_RemoveUserByUserID(t *testing.T) {
 			user := &User{
 				Status: "ACTIVE",
 				UserProfile: UserProfile{
-					UserID: 2,
+					UserID: "2",
 				},
 			}
-			err := user.RemoveUserByUserID(1, false)
+			err := user.RemoveUserByUserID("1", false)
 			So(err, ShouldBeNil)
 		})
 	})

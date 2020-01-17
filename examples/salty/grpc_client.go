@@ -1,16 +1,20 @@
 package main
 
 import (
-	"context"
+	"bufio"
 	protos "goim-pro/api/protos/salty"
-	"goim-pro/pkg/utils"
+	"goim-pro/pkg/logs"
 	"google.golang.org/grpc"
 	"log"
+	"os"
 )
 
 const (
-	address = "111.231.238.209:9090"
+	//address = "111.231.238.209:9090"
+	address = "127.0.0.1:9090"
 )
+
+var logger = logs.GetLogger("INFO")
 
 func main() {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
@@ -19,26 +23,44 @@ func main() {
 	}
 	defer conn.Close()
 
-	// create Writer service's client
-	//t := protos.NewUserServiceClient(conn)
-	t := protos.NewSMSServiceClient(conn)
+	exitChain := make(chan string)
+	go func() {
+		for {
+			reader := bufio.NewReader(os.Stdin)
+			char, _, _ := reader.ReadRune()
+			switch char {
+			case 's':
+				// create Writer service's client
+				t := protos.NewSMSServiceClient(conn)
+				obtainSMSCode(t)
+				break
+			case 'r':
+				t := protos.NewUserServiceClient(conn)
+				register(t)
+				break
+			case 'q':
+				logger.Infoln("grpc client disconnected!")
+				exitChain <- string(char)
+				break
+			default:
+				logger.Info("server continue to listen...")
+			}
+			logger.Info("********************************************")
+		}
+	}()
 
-	smsReq := protos.SMSReq{
-		CodeType: protos.SMSReq_REGISTER,
-		TargetAccount: &protos.SMSReq_Telephone{
-			Telephone: "13631210000",
-		},
-	}
-	anyData, _ := utils.MarshalMessageToAny(&smsReq)
-	gprcReq := &protos.GrpcReq{
-		Data: anyData,
-	}
+	toolsIntroduce()
 
-	// 调用 gRPC 接口
-	tr, err := t.ObtainSMSCode(context.Background(), gprcReq)
-	//tr, err := t.Register(context.Background(), gprcReq)
-	if err != nil {
-		log.Fatalf("could not greet: %v", err.Error())
-	}
-	log.Printf("服务端响应：%s", tr.GetMessage())
+	_ = <-exitChain
+	logger.Info("grpc server exit!")
+}
+
+func toolsIntroduce() {
+	logger.Info("********************************************")
+	logger.Info("**** welcome to grpc client tools ****")
+	logger.Info("**** can input the commons to test ****")
+	logger.Info("** 's': obtainSMSCode **")
+	logger.Info("** 'r': register **")
+
+	logger.Info("** 'q': exist grpc client **")
 }

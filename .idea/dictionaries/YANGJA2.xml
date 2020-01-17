@@ -1,11 +1,16 @@
 <component name="ProjectDictionaryState">
   <dictionary name="YANGJA2">
     <words>
+      <w>gorm</w>
       <w>gprc</w>
       <w>grpc</w>
+      <w>mysqlsrv</w>
       <w>protos</w>
       <w>ptypes</w>
+      <w>ulid</w>
       <w>workdir</w>
+      <w>wuid</w>
+      <w>wuids</w>
     </words>
   </dictionary>
 </component>

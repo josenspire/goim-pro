@@ -42,7 +42,7 @@ func (gs *GRPCServer) InitServer() {
 		logger.Errorf("mysql connect error: %v", err)
 	} else {
 		if err := initialMysqlTables(mysqlDB.GetMysqlInstance()); err != nil {
-			logger.Errorf("mysql tables initialization fail: %s", err)
+			logger.Fatalf("mysql tables initialization fail: %s", err)
 		}
 	}
 	redisDB := redsrv.NewRedisConnection()
@@ -109,15 +109,24 @@ func (gs *GRPCServer) ForceStopGRPCServer() {
 }
 
 func initialMysqlTables(db *gorm.DB) (err error) {
-	if !db.HasTable(user.User{}) {
+	//if !db.HasTable(&wuid.Wuid{}) {
+	//	err = db.Set(
+	//		"gorm:table_options",
+	//		"ENGINE=InnoDB DEFAULT CHARSET=utf8",
+	//	).CreateTable(&wuid.Wuid{}).Error
+	//	if err != nil {
+	//		logger.Errorf("initial mysql tables [wuids] error: %s", err.Error())
+	//		return
+	//	}
+	//}
+
+	if !db.HasTable(&user.User{}) {
 		err = db.Set(
 			"gorm:table_options",
 			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
-		).CreateTable(
-			user.User{},
-		).Error
+		).CreateTable(&user.User{}).Error
 		if err != nil {
-			logger.Errorf("initial mysql tables [users] error: %v", err)
+			logger.Errorf("initial mysql tables [users] error: %s", err.Error())
 			return
 		}
 	}

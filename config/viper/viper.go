@@ -19,16 +19,17 @@ func init() {
 	readInConfig(MyViper, "default")
 
 	profileName := os.Getenv("APP_ENV")
-	//profileName := "PROD"
-	if profileName != "" {
-		profileName = strings.ToLower(profileName)
-		profileViper := viper.New()
-		profileViper.AddConfigPath("./config")
-		profileViper.SetConfigName("application-" + profileName)
-		readInConfig(profileViper, profileName)
-
-		_ = MyViper.MergeConfigMap(profileViper.AllSettings())
+	if profileName == "" {
+		profileName = "DEV"
 	}
+
+	profileName = strings.ToLower(profileName)
+	profileViper := viper.New()
+	profileViper.AddConfigPath("./config")
+	profileViper.SetConfigName("application-" + profileName)
+	readInConfig(profileViper, profileName)
+
+	_ = MyViper.MergeConfigMap(profileViper.AllSettings())
 }
 
 func readInConfig(myViper *viper.Viper, appEnv string) {
