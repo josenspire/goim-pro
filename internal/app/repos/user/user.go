@@ -110,24 +110,28 @@ func (u *User) IsTelephoneOrEmailRegistered(telephone string, email string) (boo
 	return isTelExist || isEmailExist, nil
 }
 
-func (u *User) LoginByEmail(email string, password string) (user *User, err error) {
-	db := mysqlDB.First(user, "email = ? and password = ?", email, password)
+func (u *User) LoginByEmail(email string, password string) (*User, error) {
+	var user = &User{}
+	var err error
+	db := mysqlDB.First(&user, "email = ? and password = ?", email, password)
 	if db.RecordNotFound() {
 		err = utils.ErrAccountOrPswInvalid
 	} else {
 		err = db.Error
 	}
-	return
+	return user, err
 }
 
-func (u *User) LoginByTelephone(telephone string, password string) (user *User, err error) {
+func (u *User) LoginByTelephone(telephone string, password string) (*User, error) {
+	var user = &User{}
+	var err error
 	db := mysqlDB.First(user, "telephone = ? and password = ?", telephone, password)
 	if db.RecordNotFound() {
 		err = utils.ErrAccountOrPswInvalid
 	} else {
 		err = db.Error
 	}
-	return
+	return user, err
 }
 
 func (u *User) RemoveUserByUserID(userID string, isForce bool) (err error) {

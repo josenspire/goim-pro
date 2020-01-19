@@ -7,7 +7,7 @@ import (
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
 	"goim-pro/internal/app/repos"
-	"goim-pro/internal/app/repos/user"
+	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -18,7 +18,7 @@ var logger = logs.GetLogger("INFO")
 var crypto = utils.NewCrypto()
 
 type userService struct {
-	userRepo user.IUserRepo
+	userRepo IUserRepo
 }
 
 func New() protos.UserServiceServer {
@@ -66,7 +66,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		resp.Message = "the telephone or email has been registered, please login"
 		return
 	}
-	if err = us.userRepo.Register(&user.User{
+	if err = us.userRepo.Register(&User{
 		Password:    registerReq.GetPassword(),
 		UserProfile: converters.ConvertRegisterUserProfile(userProfile),
 	}); err != nil {
@@ -108,28 +108,27 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 		resp.Message = err.Error()
 		return
 	}
-	var user *user.User
-	if loginReq.GetEmail() != "" {
+	var user *User
+	if loginReq.GetTelephone() != "" {
 		user, err = us.userRepo.LoginByTelephone(loginReq.GetTelephone(), enPassword)
 	} else {
 		user, err = us.userRepo.LoginByEmail(loginReq.GetEmail(), enPassword)
 	}
 	if err != nil {
-		resp.Code = http.StatusInternalServerError
+		resp.Code = http.StatusBadRequest
 		resp.Message = err.Error()
 		logger.Errorf("register user error: %v", err.Error())
 		return
 	}
 
-	// TODO: should verify
-	registerResp := &protos.RegisterResp{
-		Profile: converters.ConvertLoginResp(user.UserProfile),
+	loginResp := &protos.LoginResp{
+		Profile: converters.ConvertLoginResp(&user.UserProfile),
 	}
-	resp.Data, err = utils.MarshalMessageToAny(registerResp)
+	resp.Data, err = utils.MarshalMessageToAny(loginResp)
 	if err != nil {
-		logger.Errorf("register response marshal message error: %s", err.Error())
+		logger.Errorf("login response marshal message error: %s", err.Error())
 	}
-	resp.Message = "user registration successful"
+	resp.Message = "user login successful"
 
 	return
 }
@@ -164,8 +163,18 @@ func registerParameterCalibration(req protos.RegisterReq) (err error) {
 
 func loginParameterCalibration(req *protos.LoginReq) (err error) {
 	csErr := errors.New("bad request, invalid parameters")
-	if utils.IsContainEmptyString(req.GetPassword(), req.GetEmail(), req.GetTelephone()) {
+	if utils.IsContainEmptyString(req.GetPassword()) {
 		err = csErr
+	} else {
+		if req.GetLoginType() == protos.LoginReq_TELEPHONE {
+			if utils.IsContainEmptyString(req.GetTelephone()) {
+				err = csErr
+			}
+		} else {
+			if utils.IsContainEmptyString(req.GetEmail()) {
+				err = csErr
+			}
+		}
 	}
 	return
 }

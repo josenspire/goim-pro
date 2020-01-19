@@ -28,19 +28,28 @@ func main() {
 		for {
 			reader := bufio.NewReader(os.Stdin)
 			char, _, _ := reader.ReadRune()
-			switch char {
-			case 's':
+			var str string = string(char)
+			switch str {
+			case "s":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
 				obtainSMSCode(t)
 				break
-			case 'r':
+			case "r":
 				t := protos.NewUserServiceClient(conn)
 				register(t)
 				break
-			case 'q':
+			case "t":
+				t := protos.NewUserServiceClient(conn)
+				login(t, "TELEPHONE")
+				break
+			case "e":
+				t := protos.NewUserServiceClient(conn)
+				login(t, "EMAIL")
+				break
+			case "q":
 				logger.Infoln("grpc client disconnected!")
-				exitChain <- string(char)
+				exitChain <- str
 				break
 			default:
 				logger.Info("server continue to listen...")
@@ -61,6 +70,8 @@ func toolsIntroduce() {
 	logger.Info("**** Can input the commons to test ****")
 	logger.Info("** ['s']: obtainSMSCode **")
 	logger.Info("** ['r']: register **")
+	logger.Info("** ['l1']: login by telephone **")
+	logger.Info("** ['l2']: login by email **")
 
 	logger.Info("** ['q']: exist [GRPC] client **")
 }

@@ -16,13 +16,13 @@ func ConvertRegisterUserProfile(profile *protos.UserProfile) user.UserProfile {
 		Nickname:    profile.GetNickname(),
 		Avatar:      profile.GetAvatar(),
 		Description: profile.GetDescription(),
-		Sex:         constants.USER_SEX[int32(profile.GetSex())],
+		Sex:         constants.UserSexProtoMapping[profile.GetSex()],
 		Birthday:    profile.GetBirthday(),
 		Location:    profile.GetLocation(),
 	}
 }
 
-func ConvertLoginResp(profile user.UserProfile) *protos.UserProfile {
+func ConvertLoginResp(profile *user.UserProfile) *protos.UserProfile {
 	return &protos.UserProfile{
 		UserID:      profile.UserID,
 		Telephone:   profile.Telephone,
@@ -31,8 +31,7 @@ func ConvertLoginResp(profile user.UserProfile) *protos.UserProfile {
 		Nickname:    profile.Nickname,
 		Avatar:      profile.Avatar,
 		Description: profile.Description,
-		// TODO:
-		//Sex:         constants.UserSex[profile.Sex],
+		Sex:         constants.UserSexStringMapping[profile.Sex],
 		Birthday:    profile.Birthday,
 		Location:    profile.Location,
 	}

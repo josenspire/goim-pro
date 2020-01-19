@@ -1,9 +1,12 @@
 package user
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
+	"goim-pro/config"
 	mysqlsrv "goim-pro/pkg/db/mysql"
+	"goim-pro/pkg/utils"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var user1 = &User{
@@ -46,7 +49,7 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 		Convey("Test_return_FALSE_with_exist_email", func() {
 			isExist, err := u.IsTelephoneOrEmailRegistered("13631210044", "294001@qq.com")
 			So(err, ShouldBeNil)
-			So(isExist, ShouldBeFalse)
+			So(isExist, ShouldBeTrue)
 		})
 		Convey("Test_return_TRUE", func() {
 			isExist, err := u.IsTelephoneOrEmailRegistered("13631210022", "")
@@ -93,4 +96,53 @@ func TestUser_RemoveUserByUserID(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 	})
+}
+
+func TestUser_Login(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	u := &User{}
+	_ = u.Register(user2) // create a user
+
+	Convey("TestUserRepo_LoginByTelephone", t, func() {
+		Convey("login_fail_with_incorrect_telephone_and_password", func() {
+			_, err := u.LoginByTelephone("13631210022", "1234567890")
+			So(err, ShouldNotBeNil)
+			So(err, ShouldEqual, utils.ErrAccountOrPswInvalid)
+		})
+		Convey("login_success_then_return_userProfile", func() {
+			enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
+			currUser, err := u.LoginByTelephone("13631210022", enPassword)
+			So(err, ShouldBeNil)
+			So(currUser.UserID, ShouldEqual, "3")
+			So(currUser.Telephone, ShouldEqual, "13631210022")
+		})
+	})
+	_ = u.RemoveUserByUserID(user2.UserID, true) // remove demo user
+}
+
+func TestUser_LoginByEmail(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	u := &User{}
+	_ = u.Register(user2) // create a user
+	Convey("TestUserRepo_LoginByEmail", t, func() {
+		Convey("login_fail_with_incorrect_email_and_password", func() {
+			_, err := u.LoginByEmail("294001@qq.com", "1234567890")
+			So(err, ShouldNotBeNil)
+			So(err, ShouldEqual, utils.ErrAccountOrPswInvalid)
+		})
+		Convey("login_success_then_return_userProfile", func() {
+			enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
+			currUser, err := u.LoginByEmail("294001@qq.com", enPassword)
+			So(err, ShouldBeNil)
+			So(currUser.UserID, ShouldEqual, "3")
+			So(currUser.Email, ShouldEqual, "294001@qq.com")
+		})
+	})
+	_ = u.RemoveUserByUserID(user2.UserID, true) // remove demo user
 }

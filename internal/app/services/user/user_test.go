@@ -2,11 +2,12 @@ package usersrv
 
 import (
 	"context"
-	. "github.com/smartystreets/goconvey/convey"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/repos/user"
 	"goim-pro/pkg/utils"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var pbUserProfile1 = &protos.UserProfile{
@@ -116,3 +117,8 @@ func Test_Register(t *testing.T) {
 		})
 	})
 }
+
+func Test_userService_Login(t *testing.T) {
+	// TODO：
+}
+

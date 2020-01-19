@@ -62,6 +62,45 @@ func register(t protos.UserServiceClient) {
 	}
 }
 
+func login(t protos.UserServiceClient, typeStr string) {
+	var loginReq *protos.LoginReq
+
+	if typeStr == "TELEPHONE" {
+		loginReq = &protos.LoginReq{
+			LoginType: protos.LoginReq_TELEPHONE,
+			TargetAccount: &protos.LoginReq_Telephone{
+				Telephone: "13631210003",
+			},
+			Password: "1234567890",
+		}
+	} else {
+		loginReq = &protos.LoginReq{
+			LoginType: protos.LoginReq_EMAIL,
+			TargetAccount: &protos.LoginReq_Email{
+				Email: "12345@qq.com",
+			},
+			Password: "1234567890",
+		}
+	}
+
+	anyData, _ := utils.MarshalMessageToAny(loginReq)
+	grpcReq := &protos.GrpcReq{
+		DeviceID: "",
+		Version:  "",
+		Language: 0,
+		Os:       0,
+		Token:    "",
+		Data:     anyData,
+	}
+
+	tr, err := t.Login(context.Background(), grpcReq)
+	if err != nil {
+		logger.Errorf("login error: %s", err.Error())
+	} else {
+		printResp(tr)
+	}
+}
+
 func printResp(resp *protos.GrpcResp) {
 	logger.Infof("[code]: %d", resp.GetCode())
 	logger.Infof("[data]: %s", resp.GetData().GetValue())

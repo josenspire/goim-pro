@@ -40,3 +40,35 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 		})
 	})
 }
+
+func TestConvertLoginResp(t *testing.T) {
+	var userProfile = &user.UserProfile{
+		Telephone:   "13631210000",
+		Email:       "123456@qq.com",
+		Username:    "JAMES01",
+		Nickname:    "JAMES01",
+		Avatar:      "www.baidu.com/1.png",
+		Description: "Never settle",
+		Sex:         "MALE",
+		Birthday:    1578903121862,
+		Location:    "",
+	}
+	var pbUser = &protos.UserProfile{
+		Telephone:   "13631210000",
+		Email:       "123456@qq.com",
+		Username:    "JAMES01",
+		Nickname:    "JAMES01",
+		Avatar:      "www.baidu.com/1.png",
+		Description: "Never settle",
+		Sex:         protos.UserProfile_MALE,
+		Birthday:    1578903121862,
+		Location:    "",
+	}
+
+	Convey("Testing_ConvertLoginResp", t, func() {
+		actual := ConvertLoginResp(userProfile)
+		So(actual.Telephone, ShouldEqual, pbUser.Telephone)
+		So(actual.Sex, ShouldEqual, pbUser.Sex)
+	})
+
+}

@@ -23,3 +23,11 @@ func (m *MockUserRepo) Register(newUser *user.User) error {
 func (m *MockUserRepo) RemoveUserByUserID(userID string, isForce bool) error {
 	panic("implement me")
 }
+
+func (m *MockUserRepo) LoginByTelephone(telephone string, enPassword string) (user *user.User, err error) {
+	panic("implement me")
+}
+
+func (m *MockUserRepo) LoginByEmail(email string, enPassword string) (user *user.User, err error) {
+	panic("implement me")
+}

@@ -75,7 +75,7 @@ func (c *userServiceClient) Register(ctx context.Context, in *GrpcReq, opts ...g
 
 func (c *userServiceClient) Login(ctx context.Context, in *GrpcReq, opts ...grpc.CallOption) (*GrpcResp, error) {
 	out := new(GrpcResp)
-	err := c.cc.Invoke(ctx, "/com.salty.protos.UserService/LoginByEmail", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/com.salty.protos.UserService/Login", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (*UnimplementedUserServiceServer) Register(ctx context.Context, req *GrpcRe
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 func (*UnimplementedUserServiceServer) Login(ctx context.Context, req *GrpcReq) (*GrpcResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LoginByEmail not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
 
 func RegisterUserServiceServer(s *grpc.Server, srv UserServiceServer) {
@@ -131,7 +131,7 @@ func _UserService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.salty.protos.UserService/LoginByEmail",
+		FullMethod: "/com.salty.protos.UserService/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).Login(ctx, req.(*GrpcReq))
@@ -148,7 +148,7 @@ var _UserService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_Register_Handler,
 		},
 		{
-			MethodName: "LoginByEmail",
+			MethodName: "Login",
 			Handler:    _UserService_Login_Handler,
 		},
 	},
