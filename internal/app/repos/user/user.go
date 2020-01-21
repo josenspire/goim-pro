@@ -89,6 +89,8 @@ func (u *User) IsTelephoneOrEmailRegistered(telephone string, email string) (boo
 			logger.Errorf("query user by telephone error: %s", err.Error())
 			return isTelExist, err
 		}
+	} else {
+		isTelExist = false
 	}
 
 	if isTelExist {
@@ -105,6 +107,8 @@ func (u *User) IsTelephoneOrEmailRegistered(telephone string, email string) (boo
 			logger.Errorf("query user by email error: %s", err.Error())
 			return isEmailExist, err
 		}
+	} else {
+		isEmailExist = false
 	}
 
 	return isTelExist || isEmailExist, nil
