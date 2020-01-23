@@ -18,6 +18,6 @@ service UserService {
 
 /* [SMS CODE] */
 service SMSService {
-    rpc ObtainSMSCode (GrpcReq) returns (GrpcResp) {
+    rpc ObtainSMSCode (SMSReq) returns (SMSResp) {
     }
 }

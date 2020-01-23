@@ -15,11 +15,11 @@ type RedisConnectionPool struct {
 }
 
 var (
-	host     string = ""
-	port     string = ""
+	host     string = "0.0.0.0"
+	port     string = "6379"
 	password string = ""
 	dbNum    int    = 1
-	dbKey    string = ""
+	dbKey    string = "SaltyIMPro"
 )
 
 var logger = logs.GetLogger("INFO")
@@ -54,7 +54,7 @@ func (rs *RedisConnectionPool) Connect() (err error) {
 	})
 	_, err = client.Ping().Result()
 	if err == nil {
-		logger.Infoln("[redis] pong successful")
+		logger.Info("[redis] pong successful")
 	}
 	return
 }

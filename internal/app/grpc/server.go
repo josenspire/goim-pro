@@ -7,8 +7,8 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"github.com/jinzhu/gorm"
-	example "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
 	"goim-pro/internal/app/repos/user"
@@ -16,6 +16,7 @@ import (
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/logs"
+	"goim-pro/pkg/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
@@ -75,7 +76,11 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 	var interceptor grpc.UnaryServerInterceptor
 	interceptor = func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		logger.Info(req)
-		return handler(ctx, req)
+		var pb proto.Message
+		if err := utils.UnmarshalGRPCReq(req.(*protos.GrpcReq), pb); err != nil {
+			logger.Error(err.Error())
+		}
+		return handler(ctx, pb)
 	}
 	opts = append(opts, grpc.UnaryInterceptor(interceptor))
 	// 创建 gRPC 服务
@@ -135,7 +140,7 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 
 func handleServiceRegister(srv *grpc.Server) {
 	var gprcService = services.NewService()
-	example.RegisterWaiterServer(srv, gprcService.WaiterServer)
+	protos.RegisterWaiterServer(srv, gprcService.WaiterServer)
 	protos.RegisterSMSServiceServer(srv, gprcService.SMSServer)
 	protos.RegisterUserServiceServer(srv, gprcService.UserServer)
 }

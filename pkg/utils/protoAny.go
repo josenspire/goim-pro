@@ -21,10 +21,11 @@ func MarshalMessageToAny(pb proto.Message) (any *any.Any, err error) {
 }
 
 func UnMarshalAnyToMessage(any *any.Any, pb proto.Message) (err error) {
-	if any == nil {
-		return
-	}
-	if err = ptypes.UnmarshalAny(any, pb); err != nil {
+	//if any == nil {
+	//	return
+	//}
+	if err = ptypes.UnmarshalAny(any, ptypes.DynamicAny{Message: pb}); err != nil {
+	//if err = ptypes.UnmarshalAny(any, pb); err != nil {
 		logger.Errorf("[ptypes] unmarshalAny error: %s", err.Error())
 	}
 	return

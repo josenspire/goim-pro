@@ -8,23 +8,39 @@ import (
 )
 
 func obtainSMSCode(t protos.SMSServiceClient) {
+	//smsReq := protos.SMSReq{
+	//	CodeType: protos.SMSReq_REGISTER,
+	//	TargetAccount: &protos.SMSReq_Telephone{
+	//		Telephone: "13631210000",
+	//	},
+	//}
+	//anyData, _ := utils.MarshalMessageToAny(&smsReq)
+	//gprcReq := &protos.GrpcReq{
+	//	Data: anyData,
+	//}
+	//// 调用 gRPC 接口
+	//tr, err := t.ObtainSMSCode(context.Background(), gprcReq)
+	////tr, err := t.Register(context.Background(), gprcReq)
+	//if err != nil {
+	//	log.Fatalf("could not greet: %v", err.Error())
+	//}
+	//printResp(tr)
+
 	smsReq := protos.SMSReq{
 		CodeType: protos.SMSReq_REGISTER,
 		TargetAccount: &protos.SMSReq_Telephone{
 			Telephone: "13631210000",
 		},
 	}
-	anyData, _ := utils.MarshalMessageToAny(&smsReq)
-	gprcReq := &protos.GrpcReq{
-		Data: anyData,
-	}
+
 	// 调用 gRPC 接口
-	tr, err := t.ObtainSMSCode(context.Background(), gprcReq)
+	tr, err := t.ObtainSMSCode(context.Background(), &smsReq)
 	//tr, err := t.Register(context.Background(), gprcReq)
 	if err != nil {
 		log.Fatalf("could not greet: %v", err.Error())
 	}
-	printResp(tr)
+
+	logger.Infof("[code]: %d", tr)
 }
 
 func register(t protos.UserServiceClient) {

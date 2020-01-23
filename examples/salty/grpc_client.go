@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"context"
+	"github.com/golang/protobuf/proto"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/pkg/logs"
 	"google.golang.org/grpc"
@@ -17,7 +19,22 @@ const (
 var logger = logs.GetLogger("INFO")
 
 func main() {
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	interceptor := grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		logger.Info(req)
+		pb := req.(proto.Message)
+		logger.Info(pb)
+		//gprcReq := protos.GrpcReq{
+		//	DeviceID: "",
+		//	Version:  "",
+		//	Language: 0,
+		//	Os:       0,
+		//	Token:    "",
+		//	Data:     *any.Any{},
+		//}
+		return nil
+	})
+
+	conn, err := grpc.Dial(address, grpc.WithInsecure(), interceptor)
 	if err != nil {
 		log.Fatalf("grpc connect fail: %v", err)
 	}
