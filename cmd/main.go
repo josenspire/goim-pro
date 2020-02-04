@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"goim-pro/internal/app/grpc"
 	"goim-pro/pkg/logs"
 	"os"
@@ -14,6 +16,13 @@ func main() {
 	server = grpc.NewServer()
 	server.InitServer()
 	server.ConnectGRPCServer()
+
+	defer func() {
+		if r := recover(); r != nil {
+			err := errors.New(fmt.Sprint(r))
+			logger.Panicf("uncheck exception: %v", err)
+		}
+	}()
 
 	exitChain := make(chan string)
 	go func() {

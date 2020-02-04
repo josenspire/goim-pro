@@ -11,10 +11,9 @@ import (
 )
 
 var pbUserProfile1 = &protos.UserProfile{
-	UserID:      "13631210001",
+	UserId:      "13631210001",
 	Telephone:   "13631210001",
 	Email:       "123@qq.com",
-	Username:    "13631210001",
 	Nickname:    "JAMES001",
 	Avatar:      "http://www.avatar.goo/123.png",
 	Description: "Never Settle",
@@ -24,10 +23,9 @@ var pbUserProfile1 = &protos.UserProfile{
 }
 
 var pbUserProfile2 = &protos.UserProfile{
-	UserID:      "13631210002",
+	UserId:      "13631210002",
 	Telephone:   "13631210002",
 	Email:       "12345@qq.com",
-	Username:    "13631210001",
 	Nickname:    "JAMES001",
 	Avatar:      "http://www.avatar.goo/123.png",
 	Description: "Never Settle",
@@ -37,10 +35,9 @@ var pbUserProfile2 = &protos.UserProfile{
 }
 
 var modelUserProfile1 = &user.UserProfile{
-	UserID:      "13631210001",
+	UserId:      "13631210001",
 	Telephone:   "13631210001",
 	Email:       "123@qq.com",
-	Username:    "13631210001",
 	Nickname:    "JAMES001",
 	Avatar:      "http://www.avatar.goo/123.png",
 	Description: "Never Settle",
@@ -49,10 +46,9 @@ var modelUserProfile1 = &user.UserProfile{
 	Location:    "CHINA-ZHA",
 }
 var modelUserProfile2 = &user.UserProfile{
-	UserID:      "13631210002",
+	UserId:      "13631210002",
 	Telephone:   "13631210002",
 	Email:       "12345@qq.com",
-	Username:    "13631210001",
 	Nickname:    "JAMES001",
 	Avatar:      "http://www.avatar.goo/123.png",
 	Description: "Never Settle",
@@ -82,9 +78,8 @@ func Test_Register(t *testing.T) {
 		}
 		Convey("user_registration_fail_by_exist_telephone", func() {
 			userReq := &protos.RegisterReq{
-				RegisterType:     0,
 				VerificationCode: "123456",
-				UserProfile:      pbUserProfile1,
+				Profile:          pbUserProfile1,
 				Password:         "1234567890",
 			}
 			any, _ := utils.MarshalMessageToAny(userReq)
@@ -97,9 +92,8 @@ func Test_Register(t *testing.T) {
 		})
 		Convey("user_registration_successful", func() {
 			userReq := &protos.RegisterReq{
-				RegisterType:     0,
 				VerificationCode: "123456",
-				UserProfile:      pbUserProfile2,
+				Profile:          pbUserProfile2,
 				Password:         "1234567890",
 			}
 			any, _ := utils.MarshalMessageToAny(userReq)
@@ -121,4 +115,3 @@ func Test_Register(t *testing.T) {
 func Test_userService_Login(t *testing.T) {
 	// TODO：
 }
-

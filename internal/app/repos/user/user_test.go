@@ -12,10 +12,9 @@ import (
 var user1 = &User{
 	Password: "1234567890",
 	UserProfile: UserProfile{
-		UserID:      "2",
+		UserId:      "2",
 		Telephone:   "13631210010",
 		Email:       "294001@qq.com",
-		Username:    "TEST02",
 		Nickname:    "TEST02",
 		Description: "Never Settle",
 		Birthday:    1578903121862,
@@ -25,10 +24,9 @@ var user1 = &User{
 var user2 = &User{
 	Password: "1234567890",
 	UserProfile: UserProfile{
-		UserID:      "3",
+		UserId:      "3",
 		Telephone:   "13631210022",
 		Email:       "294001@qq.com",
-		Username:    "TEST02",
 		Nickname:    "TEST02",
 		Description: "Never Settle",
 	},
@@ -57,7 +55,7 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 			So(isExist, ShouldBeTrue)
 		})
 	})
-	_ = u.RemoveUserByUserID(user2.UserID, true) // remove demo user
+	_ = u.RemoveUserByUserId(user2.UserId, true) // remove demo user
 }
 
 func TestUser_Register(t *testing.T) {
@@ -76,10 +74,10 @@ func TestUser_Register(t *testing.T) {
 		})
 	})
 
-	_ = u.RemoveUserByUserID(user1.UserID, true)
+	_ = u.RemoveUserByUserId(user1.UserId, true)
 }
 
-func TestUser_RemoveUserByUserID(t *testing.T) {
+func TestUser_RemoveUserByUserId(t *testing.T) {
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
@@ -89,10 +87,10 @@ func TestUser_RemoveUserByUserID(t *testing.T) {
 			user := &User{
 				Status: "ACTIVE",
 				UserProfile: UserProfile{
-					UserID: "2",
+					UserId: "2",
 				},
 			}
-			err := user.RemoveUserByUserID("1", false)
+			err := user.RemoveUserByUserId("1", false)
 			So(err, ShouldBeNil)
 		})
 	})
@@ -116,11 +114,11 @@ func TestUser_Login(t *testing.T) {
 			enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
 			currUser, err := u.LoginByTelephone("13631210022", enPassword)
 			So(err, ShouldBeNil)
-			So(currUser.UserID, ShouldEqual, "3")
+			So(currUser.UserId, ShouldEqual, "3")
 			So(currUser.Telephone, ShouldEqual, "13631210022")
 		})
 	})
-	_ = u.RemoveUserByUserID(user2.UserID, true) // remove demo user
+	_ = u.RemoveUserByUserId(user2.UserId, true) // remove demo user
 }
 
 func TestUser_LoginByEmail(t *testing.T) {
@@ -140,9 +138,9 @@ func TestUser_LoginByEmail(t *testing.T) {
 			enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
 			currUser, err := u.LoginByEmail("294001@qq.com", enPassword)
 			So(err, ShouldBeNil)
-			So(currUser.UserID, ShouldEqual, "3")
+			So(currUser.UserId, ShouldEqual, "3")
 			So(currUser.Email, ShouldEqual, "294001@qq.com")
 		})
 	})
-	_ = u.RemoveUserByUserID(user2.UserID, true) // remove demo user
+	_ = u.RemoveUserByUserId(user2.UserId, true) // remove demo user
 }

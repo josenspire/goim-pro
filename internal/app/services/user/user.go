@@ -44,15 +44,15 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		resp.Message = err.Error()
 		return
 	}
-	isValid, err := isVerificationCodeValid(registerReq.GetRegisterType(), registerReq.GetVerificationCode())
+	isValid, err := isVerificationCodeValid(registerReq.GetVerificationCode())
 	if !isValid {
 		resp.Code = http.StatusBadRequest
 		resp.Message = "verification code is invalid"
 		logger.Warnf("verification code is invalid: %s", registerReq.GetVerificationCode())
 		return
 	}
-	userProfile := registerReq.GetUserProfile()
-	userProfile.UserID = utils.NewULID()
+	userProfile := registerReq.GetProfile()
+	userProfile.UserId = utils.NewULID()
 
 	isRegistered, err := us.userRepo.IsTelephoneOrEmailRegistered(userProfile.GetTelephone(), userProfile.GetEmail())
 	if err != nil {
@@ -133,7 +133,23 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 	return
 }
 
-func isVerificationCodeValid(registerType protos.RegisterReq_RegisterType, verificationCode string) (isValid bool, err error) {
+func (us *userService) UpdateUserInfo(context.Context, *protos.GrpcReq) (*protos.GrpcResp, error) {
+	panic("implement me")
+}
+
+func (us *userService) ResetPassword(context.Context, *protos.GrpcReq) (*protos.GrpcResp, error) {
+	panic("implement me")
+}
+
+func (us *userService) GetUserInfo(context.Context, *protos.GrpcReq) (*protos.GrpcResp, error) {
+	panic("implement me")
+}
+
+func (us *userService) QueryUserInfo(context.Context, *protos.GrpcReq) (*protos.GrpcResp, error) {
+	panic("implement me")
+}
+
+func isVerificationCodeValid(verificationCode string) (isValid bool, err error) {
 	// TODO: should query from db
 	if verificationCode != "123456" {
 		return false, nil
@@ -143,20 +159,24 @@ func isVerificationCodeValid(registerType protos.RegisterReq_RegisterType, verif
 
 func registerParameterCalibration(req protos.RegisterReq) (err error) {
 	csErr := errors.New("bad request, invalid parameters")
-	if utils.IsContainEmptyString(req.GetPassword(), req.GetVerificationCode()) || req.GetUserProfile() == nil {
+	if utils.IsContainEmptyString(req.GetPassword(), req.GetVerificationCode()) || req.GetProfile() == nil {
 		err = csErr
 		return
 	}
-	profile := req.GetUserProfile()
-	registerType := req.RegisterType
-	if registerType == protos.RegisterReq_TELEPHONE {
-		if utils.IsContainEmptyString(profile.GetTelephone()) {
-			err = csErr
-		}
-	} else if registerType == protos.RegisterReq_EMAIL {
-		if utils.IsContainEmptyString(profile.GetEmail()) {
-			err = csErr
-		}
+	profile := req.GetProfile()
+	//if registerType == protos.RegisterReq_TELEPHONE {
+	//	if utils.IsContainEmptyString(profile.GetTelephone()) {
+	//		err = csErr
+	//	}
+	//} else if registerType == protos.RegisterReq_EMAIL {
+	//	if utils.IsContainEmptyString(profile.GetEmail()) {
+	//		err = csErr
+	//	}
+	//}
+
+	// telephone calibration
+	if utils.IsContainEmptyString(profile.GetTelephone()) {
+		err = csErr
 	}
 	return
 }
@@ -166,14 +186,8 @@ func loginParameterCalibration(req *protos.LoginReq) (err error) {
 	if utils.IsContainEmptyString(req.GetPassword()) {
 		err = csErr
 	} else {
-		if req.GetLoginType() == protos.LoginReq_TELEPHONE {
-			if utils.IsContainEmptyString(req.GetTelephone()) {
-				err = csErr
-			}
-		} else {
-			if utils.IsContainEmptyString(req.GetEmail()) {
-				err = csErr
-			}
+		if utils.IsContainEmptyString(req.GetTelephone(), req.GetEmail()) {
+			err = csErr
 		}
 	}
 	return

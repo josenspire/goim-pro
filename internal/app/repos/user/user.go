@@ -18,10 +18,9 @@ type User struct {
 }
 
 type UserProfile struct {
-	UserID      string `json:"userID" gorm:"column:userID; type:varchar(32); primary_key; not null"`
+	UserId      string `json:"userId" gorm:"column:userId; type:varchar(32); primary_key; not null"`
 	Telephone   string `json:"telephone" gorm:"column:telephone; type:varchar(11)"`
 	Email       string `json:"email" gorm:"column:email; type:varchar(100)"`
-	Username    string `json:"username" gorm:"column:username; type:varchar(18)"`
 	Nickname    string `json:"nickname" gorm:"column:nickname; type:varchar(16)"`
 	Avatar      string `json:"avatar" gorm:"column:avatar; type:varchar(255)"`
 	Description string `json:"description" gorm:"column:description; type:varchar(255)"`
@@ -35,7 +34,7 @@ type IUserRepo interface {
 	Register(newUser *User) error
 	LoginByEmail(email string, password string) (user *User, err error)
 	LoginByTelephone(telephone string, password string) (user *User, err error)
-	RemoveUserByUserID(userID string, isForce bool) error
+	RemoveUserByUserId(userId string, isForce bool) error
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -138,14 +137,14 @@ func (u *User) LoginByTelephone(telephone string, password string) (*User, error
 	return user, err
 }
 
-func (u *User) RemoveUserByUserID(userID string, isForce bool) (err error) {
+func (u *User) RemoveUserByUserId(userId string, isForce bool) (err error) {
 	_db := mysqlDB
 	if isForce {
 		_db = mysqlDB.Unscoped()
 	}
-	_db = _db.Delete(&User{}, "userID = ?", userID)
+	_db = _db.Delete(&User{}, "userId = ?", userId)
 	if _db.RecordNotFound() {
-		logger.Warningln("remove user fail, userID not found")
+		logger.Warningln("remove user fail, userId not found")
 	} else if _db.Error != nil {
 		logger.Errorf("error happened to remove user: %v\n", _db.Error)
 		err = _db.Error

@@ -5,7 +5,7 @@
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://localhost:3306/goim</jdbc-url>
+      <jdbc-url>jdbc:mysql://localhost:3306/goim?serverTimezone=UTC</jdbc-url>
     </data-source>
     <data-source source="LOCAL" name="MySQL - @localhost" uuid="d2f51b78-01ab-4e37-8d1d-200ee7814377">
       <driver-ref>mysql.8</driver-ref>
@@ -19,6 +19,7 @@
         <property name="characterEncoding" value="utf8" />
         <property name="characterSetResults" value="utf8" />
         <property name="yearIsDateType" value="false" />
+        <property name="serverTimezone" />
       </driver-properties>
     </data-source>
     <data-source source="LOCAL" name="tx_server" uuid="3a8d8d85-6e71-4a78-b82e-bb00e82b0a2a">

@@ -15,12 +15,12 @@ func (m *MockUserRepo) IsTelephoneOrEmailRegistered(telephone string, email stri
 }
 
 func (m *MockUserRepo) Register(newUser *user.User) error {
-	newUser.UserID = newUser.Telephone
+	newUser.UserId = newUser.Telephone
 	args := m.Called(newUser)
 	return args.Error(0)
 }
 
-func (m *MockUserRepo) RemoveUserByUserID(userID string, isForce bool) error {
+func (m *MockUserRepo) RemoveUserByUserId(userId string, isForce bool) error {
 	panic("implement me")
 }
 

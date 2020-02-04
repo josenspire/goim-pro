@@ -21,7 +21,7 @@ func New() protos.SMSServiceServer {
 func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, grpcErr error) {
 	resp, err := utils.NewGRPCResp(200, nil, "")
 
-	var smsReq protos.SMSReq
+	var smsReq protos.ObtainSMSCodeReq
 	if err = utils.UnMarshalAnyToMessage(req.GetData(), &smsReq); err != nil {
 		logger.Errorf(`data unmarshal error: %s`, err.Error())
 		resp.Code = http.StatusBadRequest
@@ -32,11 +32,11 @@ func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (res
 	resp.Message = "sending sms code success"
 	var verificationCode string = ""
 	switch smsReq.GetCodeType() {
-	case protos.SMSReq_CodeType(constants.CodeTypeRegister):
+	case protos.ObtainSMSCodeReq_CodeType(constants.CodeTypeRegister):
 		verificationCode = "123456"
 		resp.Message = fmt.Sprintf("sending sms code success: %s", verificationCode)
 		break
-	case protos.SMSReq_CodeType(constants.CodeTypeLogin):
+	case protos.ObtainSMSCodeReq_CodeType(constants.CodeTypeLogin):
 		verificationCode = "654321"
 		resp.Message = fmt.Sprintf("sending sms code success: %s", verificationCode)
 		break

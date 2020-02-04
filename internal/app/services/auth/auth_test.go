@@ -13,17 +13,13 @@ func Test_smsServer_ObtainSMSCode(t *testing.T) {
 		ctx context.Context
 		req *protos.GrpcResp
 	}
-	smsReq1 := &protos.SMSReq{
-		CodeType: 0,
-		TargetAccount: &protos.SMSReq_Telephone{
-			Telephone: "13631210000",
-		},
+	smsReq1 := &protos.ObtainSMSCodeReq{
+		CodeType:  0,
+		Telephone: "13631210000",
 	}
-	smsReq2 := &protos.SMSReq{
-		CodeType: 3,
-		TargetAccount: &protos.SMSReq_Telephone{
-			Telephone: "13631210000",
-		},
+	smsReq2 := &protos.ObtainSMSCodeReq{
+		CodeType:  3,
+		Telephone: "13631210000",
 	}
 	ctx := context.Background()
 	any1, _ := utils.MarshalMessageToAny(smsReq1)

@@ -9,10 +9,9 @@ import (
 // convert user register entity
 func ConvertRegisterUserProfile(profile *protos.UserProfile) user.UserProfile {
 	return user.UserProfile{
-		UserID:      profile.GetUserID(),
+		UserId:      profile.GetUserId(),
 		Telephone:   profile.GetTelephone(),
 		Email:       profile.GetEmail(),
-		Username:    profile.GetUsername(),
 		Nickname:    profile.GetNickname(),
 		Avatar:      profile.GetAvatar(),
 		Description: profile.GetDescription(),
@@ -24,10 +23,9 @@ func ConvertRegisterUserProfile(profile *protos.UserProfile) user.UserProfile {
 
 func ConvertLoginResp(profile *user.UserProfile) *protos.UserProfile {
 	return &protos.UserProfile{
-		UserID:      profile.UserID,
+		UserId:      profile.UserId,
 		Telephone:   profile.Telephone,
 		Email:       profile.Email,
-		Username:    profile.Username,
 		Nickname:    profile.Nickname,
 		Avatar:      profile.Avatar,
 		Description: profile.Description,

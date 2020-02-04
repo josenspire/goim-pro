@@ -12,7 +12,6 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 	var pbUser1 = &protos.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
-		Username:    "JAMES01",
 		Nickname:    "JAMES01",
 		Avatar:      "www.baidu.com/1.png",
 		Description: "Never settle",
@@ -23,7 +22,6 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 	var expectation = &user.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
-		Username:    "JAMES01",
 		Nickname:    "JAMES01",
 		Avatar:      "www.baidu.com/1.png",
 		Description: "Never settle",
@@ -45,7 +43,6 @@ func TestConvertLoginResp(t *testing.T) {
 	var userProfile = &user.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
-		Username:    "JAMES01",
 		Nickname:    "JAMES01",
 		Avatar:      "www.baidu.com/1.png",
 		Description: "Never settle",
@@ -56,7 +53,6 @@ func TestConvertLoginResp(t *testing.T) {
 	var pbUser = &protos.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
-		Username:    "JAMES01",
 		Nickname:    "JAMES01",
 		Avatar:      "www.baidu.com/1.png",
 		Description: "Never settle",

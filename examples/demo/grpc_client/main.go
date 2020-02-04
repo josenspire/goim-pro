@@ -26,7 +26,7 @@ func main() {
 		anyThing, _ := ptypes.MarshalAny(_req)
 
 		err = invoker(ctx, method, &protos.GrpcReq{
-			DeviceID: "asdfADF",
+			DeviceId: "asdfADF",
 			Data:     anyThing,
 		}, reply, cc, opts...)
 		if err != nil {
