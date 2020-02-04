@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	SecretKey = "SALTY_IM"
+	SecretKey = "SaltyIM"
 )
 
 type MyClaims struct {
@@ -25,9 +25,9 @@ func NewToken(foo []byte) string {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString(SecretKey)
+	tokenStr, err := token.SignedString([]byte(SecretKey))
 	if err != nil {
-		logger.Errorf("[jwt] signed string error: ", err.Error())
+		logger.Errorf("[jwt] signed string error: %s", err.Error())
 		return ""
 	}
 	return tokenStr
@@ -39,13 +39,12 @@ func TokenVerify(tokenStr string) (bool, error) {
 		return []byte(SecretKey), nil
 	})
 	if err != nil {
-		logger.Error("authorized error: %s", err.Error())
+		logger.Errorf("authorized error: %s", err.Error())
 		return false, err
 	}
-	if token.Valid {
-		return true, nil
-	} else {
+	if !token.Valid {
 		logger.Warnf("unauthorized access to this resource")
 		return false, nil
 	}
+	return true, nil
 }
