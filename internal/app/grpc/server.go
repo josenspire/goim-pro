@@ -15,11 +15,13 @@ import (
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/logs"
+	"goim-pro/pkg/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
+	"net/http"
 	"time"
 )
 
@@ -27,8 +29,10 @@ type GRPCServer struct {
 	grpcServer *grpc.Server
 }
 
-var logger = logs.GetLogger("INFO")
-
+var (
+	logger  = logs.GetLogger("INFO")
+	OpenTLS = true
+)
 // server constructor
 func NewServer() *GRPCServer {
 	return &GRPCServer{}
@@ -82,8 +86,30 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 	//}
 	var interceptor grpc.UnaryServerInterceptor
 	interceptor = func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-		logger.Info(req)
-		return handler(ctx, req)
+		logger.Info(req, info.FullMethod)
+		gRPCReq := req.(*protos.GrpcReq)
+		token := gRPCReq.GetToken()
+
+		// handle method on white list
+		if isOnWhiteList(info.FullMethod) {
+			return handler(ctx, req)
+		}
+
+		if utils.IsEmptyStrings(token) {
+			resp, _ = utils.NewGRPCResp(http.StatusNonAuthoritativeInfo, nil, "unauthorized access to this resource")
+			return resp, nil
+		} else {
+			isValid, err := utils.TokenVerify(token)
+			if err != nil {
+				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, err.Error())
+				return resp, nil
+			}
+			if !isValid {
+				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, "token validation failed")
+				return resp, nil
+			}
+			return handler(ctx, req)
+		}
 	}
 
 	opts = append(opts, grpc.UnaryInterceptor(interceptor))

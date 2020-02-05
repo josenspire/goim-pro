@@ -1,12 +1,11 @@
 package main
 
 import (
-	"bufio"
+	"fmt"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/pkg/logs"
 	"google.golang.org/grpc"
 	"log"
-	"os"
 )
 
 const (
@@ -39,11 +38,10 @@ func main() {
 	defer conn.Close()
 
 	exitChain := make(chan string)
+	var str string
 	go func() {
 		for {
-			reader := bufio.NewReader(os.Stdin)
-			char, _, _ := reader.ReadRune()
-			var str string = string(char)
+			_, _ = fmt.Scanln(&str)
 			switch str {
 			case "s":
 				// create Writer service's client

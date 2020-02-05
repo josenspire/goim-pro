@@ -9,6 +9,10 @@ const (
 	SecretKey = "SaltyIM"
 )
 
+var (
+	OneHour = time.Now().Add(time.Minute * time.Duration(60)).Unix()
+)
+
 type MyClaims struct {
 	Foo []byte `json:"foo"`
 	jwt.StandardClaims
@@ -18,7 +22,7 @@ func NewToken(foo []byte) string {
 	claims := MyClaims{
 		Foo: foo,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Minute * time.Duration(5)).Unix(),
+			ExpiresAt: OneHour,
 			IssuedAt:  time.Now().Unix(),
 			Issuer:    "salty_im",
 		},

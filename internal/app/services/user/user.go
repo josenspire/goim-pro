@@ -121,7 +121,10 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 		return
 	}
 
+	token := utils.NewToken([]byte(user.UserId))
+	// might need to save into redis
 	loginResp := &protos.LoginResp{
+		Token: token,
 		Profile: converters.ConvertLoginResp(&user.UserProfile),
 	}
 	resp.Data, err = utils.MarshalMessageToAny(loginResp)
@@ -186,7 +189,7 @@ func loginParameterCalibration(req *protos.LoginReq) (err error) {
 	if utils.IsContainEmptyString(req.GetPassword()) {
 		err = csErr
 	} else {
-		if utils.IsContainEmptyString(req.GetTelephone(), req.GetEmail()) {
+		if utils.IsEmptyStrings(req.GetTelephone(), req.GetEmail()) {
 			err = csErr
 		}
 	}
