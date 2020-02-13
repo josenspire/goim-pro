@@ -2,7 +2,7 @@ package usersrv
 
 import (
 	"github.com/stretchr/testify/mock"
-	"goim-pro/internal/app/repos/user"
+	. "goim-pro/internal/app/repos/user"
 )
 
 type MockUserRepo struct {
@@ -14,7 +14,7 @@ func (m *MockUserRepo) IsTelephoneOrEmailRegistered(telephone string, email stri
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *MockUserRepo) Register(newUser *user.User) error {
+func (m *MockUserRepo) Register(newUser *User) error {
 	newUser.UserId = newUser.Telephone
 	args := m.Called(newUser)
 	return args.Error(0)
@@ -24,10 +24,27 @@ func (m *MockUserRepo) RemoveUserByUserId(userId string, isForce bool) error {
 	panic("implement me")
 }
 
-func (m *MockUserRepo) LoginByTelephone(telephone string, enPassword string) (user *user.User, err error) {
+func (m *MockUserRepo) QueryByTelephoneAndPassword(telephone string, enPassword string) (user *User, err error) {
+	args := m.Called(telephone, enPassword)
+	return (args.Get(0)).(*User), args.Error(1)
+}
+
+func (m *MockUserRepo) QueryByEmailAndPassword(email string, enPassword string) (user *User, err error) {
+	args := m.Called(email, enPassword)
+	return (args.Get(0)).(*User), args.Error(1)
+}
+
+func (m *MockUserRepo) ResetPassword(email string, enPassword string) (user *User, err error) {
 	panic("implement me")
 }
 
-func (m *MockUserRepo) LoginByEmail(email string, enPassword string) (user *user.User, err error) {
-	panic("implement me")
+func (m *MockUserRepo) ResetPasswordByTelephone(telephone string, newPassword string) error {
+	args := m.Called(telephone, newPassword)
+	return args.Error(0)
+
+}
+
+func (m *MockUserRepo) ResetPasswordByEmail(email string, newPassword string) error {
+	args := m.Called(email, newPassword)
+	return args.Error(0)
 }

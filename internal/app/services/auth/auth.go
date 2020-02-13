@@ -40,6 +40,10 @@ func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (res
 		verificationCode = "654321"
 		resp.Message = fmt.Sprintf("sending sms code success: %s", verificationCode)
 		break
+	case protos.ObtainSMSCodeReq_CodeType(constants.CodeTypeResetPassword):
+		verificationCode = "112233"
+		resp.Message = fmt.Sprintf("sending sms code success: %s", verificationCode)
+		break
 	default:
 		resp.Code = http.StatusBadRequest
 		resp.Message = "invalid request code type"

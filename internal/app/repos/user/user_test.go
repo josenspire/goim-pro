@@ -106,13 +106,13 @@ func TestUser_Login(t *testing.T) {
 
 	Convey("TestUserRepo_LoginByTelephone", t, func() {
 		Convey("login_fail_with_incorrect_telephone_and_password", func() {
-			_, err := u.LoginByTelephone("13631210022", "1234567890")
+			_, err := u.QueryByTelephoneAndPassword("13631210022", "1234567890")
 			So(err, ShouldNotBeNil)
-			So(err, ShouldEqual, utils.ErrAccountOrPswInvalid)
+			So(err, ShouldEqual, utils.ErrAccountOrPwdInvalid)
 		})
 		Convey("login_success_then_return_userProfile", func() {
 			enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
-			currUser, err := u.LoginByTelephone("13631210022", enPassword)
+			currUser, err := u.QueryByTelephoneAndPassword("13631210022", enPassword)
 			So(err, ShouldBeNil)
 			So(currUser.UserId, ShouldEqual, "3")
 			So(currUser.Telephone, ShouldEqual, "13631210022")
@@ -130,17 +130,65 @@ func TestUser_LoginByEmail(t *testing.T) {
 	_ = u.Register(user2) // create a user
 	Convey("TestUserRepo_LoginByEmail", t, func() {
 		Convey("login_fail_with_incorrect_email_and_password", func() {
-			_, err := u.LoginByEmail("294001@qq.com", "1234567890")
+			_, err := u.QueryByEmailAndPassword("294001@qq.com", "1234567890")
 			So(err, ShouldNotBeNil)
-			So(err, ShouldEqual, utils.ErrAccountOrPswInvalid)
+			So(err, ShouldEqual, utils.ErrAccountOrPwdInvalid)
 		})
 		Convey("login_success_then_return_userProfile", func() {
 			enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
-			currUser, err := u.LoginByEmail("294001@qq.com", enPassword)
+			currUser, err := u.QueryByEmailAndPassword("294001@qq.com", enPassword)
 			So(err, ShouldBeNil)
 			So(currUser.UserId, ShouldEqual, "3")
 			So(currUser.Email, ShouldEqual, "294001@qq.com")
 		})
 	})
 	_ = u.RemoveUserByUserId(user2.UserId, true) // remove demo user
+}
+
+func TestUser_ResetPasswordByTelephone(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	u := &User{}
+	_ = u.Register(user1) // create a user
+	Convey("TestUserRepo_ResetPasswordByTelephone", t, func() {
+		Convey("update_successful_by_telephone", func() {
+			var telephone string = "13631210010"
+			var password string = "111111111"
+			newPassword, _ := crypto.AESEncrypt(password, config.GetApiSecretKey())
+
+			err := u.ResetPasswordByTelephone(telephone, newPassword)
+			So(err, ShouldBeNil)
+
+			user, err := u.QueryByTelephoneAndPassword(telephone, newPassword)
+			So(err, ShouldBeNil)
+			So(user.Telephone, ShouldEqual, telephone)
+		})
+	})
+	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user
+}
+
+func TestUser_ResetPasswordByEmail(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	u := &User{}
+	_ = u.Register(user1) // create a user
+	Convey("TestUserRepo_ResetPasswordByEmail", t, func() {
+		Convey("update_successful_by_email", func() {
+			var email string = "294001@qq.com"
+			var password string = "2222222222"
+			newPassword, _ := crypto.AESEncrypt(password, config.GetApiSecretKey())
+
+			err := u.ResetPasswordByEmail(email, newPassword)
+			So(err, ShouldBeNil)
+
+			user, err := u.QueryByEmailAndPassword(email, newPassword)
+			So(err, ShouldBeNil)
+			So(user.Email, ShouldEqual, email)
+		})
+	})
+	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user
 }

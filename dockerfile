@@ -12,4 +12,4 @@ EXPOSE 9090
 CMD ["./main"]
 
 # docker build -t josenspire/goim-pro .
-# docker run --env APP_ENV=PROD -p 9090:9090 --name goim-pro 0620
+# docker run -d -i -t --env APP_ENV=PROD -p 9090:9090 --name goim-pro 0620

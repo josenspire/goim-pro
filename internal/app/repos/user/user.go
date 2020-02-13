@@ -32,9 +32,11 @@ type UserProfile struct {
 type IUserRepo interface {
 	IsTelephoneOrEmailRegistered(telephone string, email string) (bool, error)
 	Register(newUser *User) error
-	LoginByEmail(email string, password string) (user *User, err error)
-	LoginByTelephone(telephone string, password string) (user *User, err error)
+	QueryByEmailAndPassword(email string, password string) (user *User, err error)
+	QueryByTelephoneAndPassword(telephone string, password string) (user *User, err error)
 	RemoveUserByUserId(userId string, isForce bool) error
+	ResetPasswordByTelephone(telephone string, newPassword string) error
+	ResetPasswordByEmail(email string, newPassword string) error
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -113,24 +115,24 @@ func (u *User) IsTelephoneOrEmailRegistered(telephone string, email string) (boo
 	return isTelExist || isEmailExist, nil
 }
 
-func (u *User) LoginByEmail(email string, password string) (*User, error) {
+func (u *User) QueryByEmailAndPassword(email string, enPassword string) (*User, error) {
 	var user = &User{}
 	var err error
-	db := mysqlDB.First(&user, "email = ? and password = ?", email, password)
+	db := mysqlDB.First(&user, "email = ? and password = ?", email, enPassword)
 	if db.RecordNotFound() {
-		err = utils.ErrAccountOrPswInvalid
+		err = utils.ErrAccountOrPwdInvalid
 	} else {
 		err = db.Error
 	}
 	return user, err
 }
 
-func (u *User) LoginByTelephone(telephone string, password string) (*User, error) {
+func (u *User) QueryByTelephoneAndPassword(telephone string, enPassword string) (*User, error) {
 	var user = &User{}
 	var err error
-	db := mysqlDB.First(user, "telephone = ? and password = ?", telephone, password)
+	db := mysqlDB.First(user, "telephone = ? and password = ?", telephone, enPassword)
 	if db.RecordNotFound() {
-		err = utils.ErrAccountOrPswInvalid
+		err = utils.ErrAccountOrPwdInvalid
 	} else {
 		err = db.Error
 	}
@@ -146,8 +148,24 @@ func (u *User) RemoveUserByUserId(userId string, isForce bool) (err error) {
 	if _db.RecordNotFound() {
 		logger.Warningln("remove user fail, userId not found")
 	} else if _db.Error != nil {
-		logger.Errorf("error happened to remove user: %v\n", _db.Error)
+		logger.Errorf("error happened to remove user: %v", _db.Error)
 		err = _db.Error
+	}
+	return
+}
+
+func (u *User) ResetPasswordByTelephone(telephone string, newPassword string) (err error) {
+	db := mysqlDB.Model(&User{}).Where("telephone = ?", telephone).Update("password", newPassword)
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to reset password by telephone: %v", err)
+	}
+	return
+}
+
+func (u *User) ResetPasswordByEmail(email string, newPassword string) (err error) {
+	db := mysqlDB.Model(&User{}).Where("email = ?", email).Update("password", newPassword)
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to reset password by email: %v", err)
 	}
 	return
 }

@@ -12,6 +12,7 @@ import (
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"net/http"
+	"strings"
 )
 
 var logger = logs.GetLogger("INFO")
@@ -28,7 +29,7 @@ func New() protos.UserServiceServer {
 	}
 }
 
-func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, grpcErr error) {
+func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -86,7 +87,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 	return
 }
 
-func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, grpcErr error) {
+func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -110,21 +111,21 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 	}
 	var user *User
 	if loginReq.GetTelephone() != "" {
-		user, err = us.userRepo.LoginByTelephone(loginReq.GetTelephone(), enPassword)
+		user, err = us.userRepo.QueryByTelephoneAndPassword(loginReq.GetTelephone(), enPassword)
 	} else {
-		user, err = us.userRepo.LoginByEmail(loginReq.GetEmail(), enPassword)
+		user, err = us.userRepo.QueryByEmailAndPassword(loginReq.GetEmail(), enPassword)
 	}
 	if err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Message = err.Error()
-		logger.Errorf("register user error: %v", err.Error())
+		logger.Errorf("user login error: %v", err.Error())
 		return
 	}
 
 	token := utils.NewToken([]byte(user.UserId))
 	// might need to save into redis
 	loginResp := &protos.LoginResp{
-		Token: token,
+		Token:   token,
 		Profile: converters.ConvertLoginResp(&user.UserProfile),
 	}
 	resp.Data, err = utils.MarshalMessageToAny(loginResp)
@@ -136,19 +137,95 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 	return
 }
 
-func (us *userService) UpdateUserInfo(context.Context, *protos.GrpcReq) (*protos.GrpcResp, error) {
+func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	panic("implement me")
 }
 
-func (us *userService) ResetPassword(context.Context, *protos.GrpcReq) (*protos.GrpcResp, error) {
+func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var resetPwdReq protos.ResetPasswordReq
+	if err = utils.UnmarshalGRPCReq(req, &resetPwdReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+	if err = resetPwdParameterCalibration(&resetPwdReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		return
+	}
+	if resetPwdReq.GetOldPassword() == resetPwdReq.GetNewPassword() {
+		resp.Code = http.StatusBadRequest
+		resp.Message = "the new password cannot be the same as the old one"
+		return
+	}
+	// TODO: should refactor to read from db
+	if resetPwdReq.GetVerificationCode() != "112233" {
+		resp.Code = http.StatusBadRequest
+		resp.Message = "invalid verification code"
+		return
+	}
+
+	enPassword, err := crypto.AESEncrypt(resetPwdReq.GetOldPassword(), config.GetApiSecretKey())
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	var (
+		telephone   string = resetPwdReq.GetTelephone()
+		email       string = resetPwdReq.GetEmail()
+	)
+	if telephone != "" {
+		_, err = us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
+	} else {
+		_, err = us.userRepo.QueryByEmailAndPassword(email, enPassword)
+	}
+	if err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf("reset password error: %s", err.Error())
+		return
+	}
+	enNewPassword, err := crypto.AESEncrypt(resetPwdReq.GetNewPassword(), config.GetApiSecretKey())
+	if err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf("reset password error: %s", err.Error())
+		return
+	}
+	if telephone != "" {
+		err = us.userRepo.ResetPasswordByTelephone(telephone, enNewPassword)
+	} else {
+		err = us.userRepo.ResetPasswordByEmail(email, enNewPassword)
+	}
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		logger.Errorf("reset password error: %s", err.Error())
+		return
+	}
+	resetPwdResp := &protos.ResetPasswordResp{
+		// TODO: should check with this logic
+		IsNeedReLogin: true,
+	}
+	resp.Data, err = utils.MarshalMessageToAny(resetPwdResp)
+	if err != nil {
+		logger.Errorf("[reset password] response marshal message error: %s", err.Error())
+	}
+	resp.Message = "password reset successful"
+
+	return
+}
+
+func (us *userService) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	panic("implement me")
 }
 
-func (us *userService) GetUserInfo(context.Context, *protos.GrpcReq) (*protos.GrpcResp, error) {
-	panic("implement me")
-}
-
-func (us *userService) QueryUserInfo(context.Context, *protos.GrpcReq) (*protos.GrpcResp, error) {
+func (us *userService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	panic("implement me")
 }
 
@@ -186,7 +263,26 @@ func registerParameterCalibration(req protos.RegisterReq) (err error) {
 
 func loginParameterCalibration(req *protos.LoginReq) (err error) {
 	csErr := errors.New("bad request, invalid parameters")
+	req.VerificationCode = strings.Trim(req.GetVerificationCode(), "")
+	req.Password = strings.Trim(req.GetPassword(), "")
+
 	if utils.IsContainEmptyString(req.GetPassword()) {
+		err = csErr
+	} else {
+		if utils.IsEmptyStrings(req.GetTelephone(), req.GetEmail()) {
+			err = csErr
+		}
+	}
+	return
+}
+
+func resetPwdParameterCalibration(req *protos.ResetPasswordReq) (err error) {
+	csErr := errors.New("bad request, invalid parameters")
+	req.VerificationCode = strings.Trim(req.GetVerificationCode(), "")
+	req.OldPassword = strings.Trim(req.GetOldPassword(), "")
+	req.NewPassword = strings.Trim(req.GetNewPassword(), "")
+
+	if utils.IsContainEmptyString(req.VerificationCode, req.OldPassword, req.NewPassword) {
 		err = csErr
 	} else {
 		if utils.IsEmptyStrings(req.GetTelephone(), req.GetEmail()) {
