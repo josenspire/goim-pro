@@ -48,3 +48,18 @@ func (m *MockUserRepo) ResetPasswordByEmail(email string, newPassword string) er
 	args := m.Called(email, newPassword)
 	return args.Error(0)
 }
+
+func (m *MockUserRepo) GetUserByUserId(userId string) (user *User, err error) {
+	args := m.Called(userId)
+	return args.Get(0).(*User), args.Error(1)
+}
+
+func (m *MockUserRepo) FindOneUser(us *User) (user *User, err error) {
+	args := m.Called(us)
+	return args.Get(0).(*User), args.Error(1)
+}
+
+func (m *MockUserRepo) FindOneAndUpdateProfile(us *User, profile map[string]interface{}) (err error) {
+	args := m.Called(us, profile)
+	return args.Error(0)
+}

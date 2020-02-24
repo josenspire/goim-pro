@@ -196,3 +196,203 @@ func Test_userService_ResetPassword(t *testing.T) {
 		})
 	})
 }
+
+func Test_userService_GetUserInfo(t *testing.T) {
+	m := &MockUserRepo{}
+	m.On("GetUserByUserId", "13631210001").Return(modelUser1, nil)
+
+	Convey("testing_grpc_get_user_by_userId", t, func() {
+		var ctx context.Context
+		var req *protos.GrpcReq
+		us := &userService{
+			userRepo: m,
+		}
+		Convey("should_return_user_when_given_correct_userId", func() {
+			userReq := &protos.GetUserInfoReq{
+				UserId: "13631210001",
+			}
+			any, _ := utils.MarshalMessageToAny(userReq)
+			req = &protos.GrpcReq{
+				Data: any,
+			}
+			actualResp, err := us.GetUserInfo(ctx, req)
+
+			getUserProfileResp := &protos.GetUserInfoResp{}
+			err = utils.UnMarshalAnyToMessage(actualResp.GetData(), getUserProfileResp)
+
+			So(err, ShouldBeNil)
+			So(getUserProfileResp.Profile.GetTelephone(), ShouldEqual, "13631210001")
+		})
+	})
+}
+
+func Test_userService_QueryUserInfo(t *testing.T) {
+	userCriteria1 := &user.User{}
+	userCriteria1.Telephone = "13631210001"
+
+	userCriteria2 := &user.User{}
+	userCriteria2.Email = "123@qq.com"
+
+	userCriteria3 := &user.User{}
+	userCriteria3.Telephone = "13631210012"
+
+	m := &MockUserRepo{}
+	m.On("FindOneUser", userCriteria1).Return(modelUser1, nil)
+	m.On("FindOneUser", userCriteria2).Return(modelUser1, nil)
+	m.On("FindOneUser", userCriteria3).Return(&user.User{}, utils.ErrUserNotExists)
+
+	Convey("testing_grpc_query_user_info", t, func() {
+		var ctx context.Context
+		var req *protos.GrpcReq
+		us := &userService{
+			userRepo: m,
+		}
+		Convey("should_return_user_when_given_correct_telephone", func() {
+			userReq := &protos.QueryUserInfoReq{
+				TargetAccount: &protos.QueryUserInfoReq_Telephone{
+					Telephone: "13631210001",
+				},
+			}
+			any, _ := utils.MarshalMessageToAny(userReq)
+			req = &protos.GrpcReq{
+				Data: any,
+			}
+			actualResp, err := us.QueryUserInfo(ctx, req)
+
+			queryUserInfoResp := &protos.QueryUserInfoResp{}
+			err = utils.UnMarshalAnyToMessage(actualResp.GetData(), queryUserInfoResp)
+
+			So(err, ShouldBeNil)
+			So(queryUserInfoResp.Profile.GetTelephone(), ShouldEqual, "13631210001")
+		})
+		Convey("should_return_user_when_given_correct_email", func() {
+			userReq := &protos.QueryUserInfoReq{
+				TargetAccount: &protos.QueryUserInfoReq_Email{
+					Email: "123@qq.com",
+				},
+			}
+			any, _ := utils.MarshalMessageToAny(userReq)
+			req = &protos.GrpcReq{
+				Data: any,
+			}
+			actualResp, err := us.QueryUserInfo(ctx, req)
+
+			queryUserInfoResp := &protos.QueryUserInfoResp{}
+			err = utils.UnMarshalAnyToMessage(actualResp.GetData(), queryUserInfoResp)
+
+			So(err, ShouldBeNil)
+			So(queryUserInfoResp.Profile.GetTelephone(), ShouldEqual, "13631210001")
+		})
+		Convey("should_return_err_when_given_un_exists_telephone", func() {
+			userReq := &protos.QueryUserInfoReq{
+				TargetAccount: &protos.QueryUserInfoReq_Telephone{
+					Telephone: "13631210012",
+				},
+			}
+			any, _ := utils.MarshalMessageToAny(userReq)
+			req = &protos.GrpcReq{
+				Data: any,
+			}
+			actualResp, _ := us.QueryUserInfo(ctx, req)
+
+			queryUserInfoResp := &protos.QueryUserInfoResp{}
+			_ = utils.UnMarshalAnyToMessage(actualResp.GetData(), queryUserInfoResp)
+
+			So(actualResp.GetMessage(), ShouldEqual, utils.ErrUserNotExists.Error())
+		})
+	})
+}
+
+func Test_userService_UpdateUserInfo(t *testing.T) {
+	criteria1 := &user.User{}
+	criteria1.UserId = "13631210001"
+
+	criteria2 := &user.User{}
+	criteria2.UserId = "13631210002"
+
+	newProfile1 := user.UserProfile{
+		UserId:      "13631210001",
+		Telephone:   "13631214444",
+		Email:       "123456@qq.com",
+		Nickname:    "JAMESYANG01",
+		Avatar:      "",
+		Description: "",
+		Sex:         "0",
+		Birthday:    0,
+		Location:    "ZHA",
+	}
+	newProfile2 := user.UserProfile{
+		UserId:      "13631210002",
+		Telephone:   "13631214444",
+		Email:       "123456@qq.com",
+		Nickname:    "JAMESYANG01",
+		Avatar:      "",
+		Description: "",
+		Sex:         "0",
+		Birthday:    0,
+		Location:    "ZHA",
+	}
+
+	m := &MockUserRepo{}
+	m.On("GetUserByUserId", "13631210001").Return(modelUser1, nil)
+	m.On("GetUserByUserId", "13631210002").Return(&user.User{}, nil)
+	m.On("FindOneAndUpdateProfile", criteria1,  utils.TransformStructToMap(newProfile1)).Return(nil)
+	m.On("FindOneAndUpdateProfile", criteria2,  utils.TransformStructToMap(newProfile2)).Return(nil)
+
+	Convey("testing_grpc_update_user_profile", t, func() {
+		var ctx context.Context
+		var req *protos.GrpcReq
+		us := &userService{
+			userRepo: m,
+		}
+		Convey("should_update_profile_success_when_given_correct_newProfile", func() {
+			newProfile1 := &protos.UserProfile{
+				UserId:      "13631210001",
+				Telephone:   "13631214444",
+				Email:       "123456@qq.com",
+				Nickname:    "JAMESYANG01",
+				Avatar:      "",
+				Description: "",
+				Sex:         0,
+				Birthday:    0,
+				Location:    "ZHA",
+			}
+			updateUserReq := &protos.UpdateUserInfoReq{
+				Profile: newProfile1,
+			}
+			any, _ := utils.MarshalMessageToAny(updateUserReq)
+			req = &protos.GrpcReq{
+				Data: any,
+			}
+			actualResp, err := us.UpdateUserInfo(ctx, req)
+
+			So(err, ShouldBeNil)
+			So(actualResp.Code, ShouldEqual, 200)
+		})
+
+		Convey("should_update_profile_failed_when_given_incorrect_profile_with_userId", func() {
+			newProfile2 := &protos.UserProfile{
+				UserId:      "13631210003",
+				Telephone:   "13631214444",
+				Email:       "123456@qq.com",
+				Nickname:    "JAMESYANG01",
+				Avatar:      "",
+				Description: "",
+				Sex:         0,
+				Birthday:    0,
+				Location:    "ZHA",
+			}
+			updateUserReq := &protos.UpdateUserInfoReq{
+				Profile: newProfile2,
+			}
+			any, _ := utils.MarshalMessageToAny(updateUserReq)
+			req = &protos.GrpcReq{
+				Data: any,
+			}
+			actualResp, _ := us.UpdateUserInfo(ctx, req)
+
+			So(actualResp.Code, ShouldEqual, 400)
+			So(actualResp.Message, ShouldEqual, utils.ErrInvalidUserId)
+		})
+	})
+}

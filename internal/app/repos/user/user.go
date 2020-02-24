@@ -37,6 +37,9 @@ type IUserRepo interface {
 	RemoveUserByUserId(userId string, isForce bool) error
 	ResetPasswordByTelephone(telephone string, newPassword string) error
 	ResetPasswordByEmail(email string, newPassword string) error
+	GetUserByUserId(userId string) (*User, error)
+	FindOneUser(user *User) (*User, error)
+	FindOneAndUpdateProfile(user *User, profile map[string]interface{}) error
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -166,6 +169,36 @@ func (u *User) ResetPasswordByEmail(email string, newPassword string) (err error
 	db := mysqlDB.Model(&User{}).Where("email = ?", email).Update("password", newPassword)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to reset password by email: %v", err)
+	}
+	return
+}
+
+func (u *User) GetUserByUserId(userId string) (user *User, err error) {
+	user = &User{}
+	db := mysqlDB.First(user, "userId = ?", userId)
+	if db.RecordNotFound() {
+		err = utils.ErrInvalidUserId
+	} else if err = db.Error; err != nil {
+		logger.Errorf("error happend to get user by userId: %v", err)
+	}
+	return
+}
+
+func (u *User) FindOneUser(us *User) (user *User, err error) {
+	user = &User{}
+	db := mysqlDB.Where(us).First(&user)
+	if db.RecordNotFound() {
+		err = utils.ErrUserNotExists
+	} else if err = db.Error; err != nil {
+		logger.Errorf("error happend to query user information: %v", err)
+	}
+	return
+}
+
+func (u *User) FindOneAndUpdateProfile(us *User, profile map[string]interface{}) (err error) {
+	db := mysqlDB.Table("users").Where(us).Update(profile)
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to update user profile: %v", err)
 	}
 	return
 }

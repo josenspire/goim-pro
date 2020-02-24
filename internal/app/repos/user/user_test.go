@@ -192,3 +192,103 @@ func TestUser_ResetPasswordByEmail(t *testing.T) {
 	})
 	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user
 }
+
+func TestUser_GetUserByUserId(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	u := &User{}
+	_ = u.Register(user1) // create a user
+	Convey("TestUserRepo_GetUserByUserId", t, func() {
+		Convey("get_user_info_success_then_return", func() {
+			var userId = "2"
+
+			user, err := u.GetUserByUserId(userId)
+			So(err, ShouldBeNil)
+			So(user.Email, ShouldEqual, "294001@qq.com")
+		})
+		Convey("get_user_info_failed_by_invalid_userId", func() {
+			var userId = "3"
+
+			_, err := u.GetUserByUserId(userId)
+			So(err, ShouldNotBeNil)
+			So(err, ShouldEqual, utils.ErrInvalidUserId)
+		})
+	})
+	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user
+}
+
+func TestUser_FindOneUser(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	u := &User{}
+	_ = u.Register(user1) // create a user
+	Convey("TestUserRepo_FindOneUser", t, func() {
+		Convey("get_user_info_success_by_telephone_then_return", func() {
+			userCriteria := &User{}
+			userCriteria.Telephone = "13631210010"
+
+			user, err := u.FindOneUser(userCriteria)
+			So(err, ShouldBeNil)
+			So(user.Email, ShouldEqual, "294001@qq.com")
+		})
+		Convey("get_user_info_success_by_telephone_and_email_then_return", func() {
+			userCriteria := &User{}
+			userCriteria.Email = "294001@qq.com"
+			userCriteria.Telephone = "13631210010"
+
+			user, err := u.FindOneUser(userCriteria)
+			So(err, ShouldBeNil)
+			So(user.Email, ShouldEqual, "294001@qq.com")
+		})
+		Convey("get_user_info_failed_by_invalid_email_then_return_error", func() {
+			userCriteria := &User{}
+			userCriteria.Email = "294001@qq.com"
+			userCriteria.Telephone = "13631210015"
+
+			_, err := u.FindOneUser(userCriteria)
+			So(err, ShouldNotBeNil)
+			So(err, ShouldEqual, utils.ErrUserNotExists)
+		})
+	})
+	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user
+}
+
+func TestUser_FindOneAndUpdateProfile(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	u := &User{}
+	_ = u.Register(user1) // create a user
+	Convey("TestUserRepo_FindOneAndUpdateProfile", t, func() {
+		Convey("find_user_by_userId_and_update_profile_success", func() {
+			userCriteria := &User{}
+			userCriteria.UserId = "2"
+
+			newProfile := UserProfile{
+				UserId:      "2",
+				Telephone:   "13631210111",
+				Email:       "29400123@qq.com",
+				Nickname:    "TEST03",
+				Avatar:      "",
+				Description: "Never Settle ..",
+				Sex:         "0",
+				Birthday:    1578903121862,
+				Location:    "",
+			}
+
+			err := u.FindOneAndUpdateProfile(userCriteria, utils.TransformStructToMap(newProfile))
+			user, _ := u.GetUserByUserId(newProfile.UserId)
+
+			So(err, ShouldBeNil)
+			So(user.Telephone, ShouldEqual, "13631210111")
+			So(user.Email, ShouldEqual, "29400123@qq.com")
+			So(user.Nickname, ShouldEqual, "TEST03")
+		})
+	})
+	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user
+}

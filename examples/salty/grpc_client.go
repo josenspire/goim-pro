@@ -52,13 +52,29 @@ func main() {
 				t := protos.NewUserServiceClient(conn)
 				register(t)
 				break
-			case "t":
+			case "lt":
 				t := protos.NewUserServiceClient(conn)
 				login(t, "TELEPHONE")
 				break
-			case "e":
+			case "le":
 				t := protos.NewUserServiceClient(conn)
 				login(t, "EMAIL")
+				break
+			case "gu":
+				t := protos.NewUserServiceClient(conn)
+				getUserInfo(t)
+				break
+			case "qt":
+				t := protos.NewUserServiceClient(conn)
+				queryUserInfo(t, "TELEPHONE")
+				break
+			case "qe":
+				t := protos.NewUserServiceClient(conn)
+				queryUserInfo(t, "EMAIL")
+				break
+			case "ud":
+				t := protos.NewUserServiceClient(conn)
+				updateUserInfo(t)
 				break
 			case "q":
 				logger.Infoln("grpc client disconnected!")
@@ -83,8 +99,12 @@ func toolsIntroduce() {
 	logger.Info("**** Can input the commons to test ****")
 	logger.Info("** ['s']: obtainSMSCode **")
 	logger.Info("** ['r']: register **")
-	logger.Info("** ['l1']: login by telephone **")
-	logger.Info("** ['l2']: login by email **")
+	logger.Info("** ['lt']: login by telephone **")
+	logger.Info("** ['le']: login by email **")
+	logger.Info("** ['gu']: get user info by userId **")
+	logger.Info("** ['qt']: query user info by telephone **")
+	logger.Info("** ['qe']: query user info by email **")
+	logger.Info("** ['ud']: update user profile **")
 
 	logger.Info("** ['q']: exist [GRPC] client **")
 }

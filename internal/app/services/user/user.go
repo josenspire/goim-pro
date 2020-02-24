@@ -69,7 +69,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 	}
 	if err = us.userRepo.Register(&User{
 		Password:    registerReq.GetPassword(),
-		UserProfile: converters.ConvertRegisterUserProfile(userProfile),
+		UserProfile: converters.ConvertProtoUserProfile2Entity(userProfile),
 	}); err != nil {
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
@@ -126,7 +126,7 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 	// might need to save into redis
 	loginResp := &protos.LoginResp{
 		Token:   token,
-		Profile: converters.ConvertLoginResp(&user.UserProfile),
+		Profile: converters.ConvertProfileEntity2Proto(&user.UserProfile),
 	}
 	resp.Data, err = utils.MarshalMessageToAny(loginResp)
 	if err != nil {
@@ -138,7 +138,59 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 }
 
 func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var updateUserInfoReq protos.UpdateUserInfoReq
+	if err = utils.UnmarshalGRPCReq(req, &updateUserInfoReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	pbProfile := updateUserInfoReq.GetProfile()
+	if pbProfile == nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrInvalidParameters.Error()
+		return
+	}
+
+	userProfile := converters.ConvertProtoUserProfile2Entity(pbProfile)
+	// TODO: should get userId from token and double verify
+	originUserProfile, err := us.userRepo.GetUserByUserId(userProfile.UserId)
+	if err == utils.ErrInvalidUserId {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrInvalidUserId.Error()
+		return
+	}
+	if err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrInvalidParameters.Error()
+		return
+	}
+	// nothing change, don't need to update
+	if isProfileNothing2Update(originUserProfile.UserProfile, userProfile) {
+		resp.Message = "profile unchanged"
+		return
+	}
+
+	criteria := &User{}
+	criteria.UserId = userProfile.UserId
+
+	err = us.userRepo.FindOneAndUpdateProfile(criteria, utils.TransformStructToMap(userProfile))
+	if err != nil {
+		logger.Errorf("[get user info] response marshal message error: %s", err.Error())
+
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	return
+}
+
+func isProfileNothing2Update(originProfile UserProfile, newProfile UserProfile) bool {
+	return utils.DeepEqual(originProfile, newProfile)
 }
 
 func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
@@ -176,8 +228,8 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 		return
 	}
 	var (
-		telephone   string = resetPwdReq.GetTelephone()
-		email       string = resetPwdReq.GetEmail()
+		telephone string = resetPwdReq.GetTelephone()
+		email     string = resetPwdReq.GetEmail()
 	)
 	if telephone != "" {
 		_, err = us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
@@ -222,11 +274,90 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 }
 
 func (us *userService) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var getUserReq protos.GetUserInfoReq
+	if err = utils.UnmarshalGRPCReq(req, &getUserReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+	if utils.IsEmptyStrings(getUserReq.GetUserId()) {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrInvalidParameters.Error()
+		return
+	}
+
+	user, err := us.userRepo.GetUserByUserId(getUserReq.GetUserId())
+
+	if err != nil {
+		if err == utils.ErrInvalidUserId {
+			resp.Code = http.StatusBadRequest
+		} else {
+			resp.Code = http.StatusInternalServerError
+		}
+		resp.Message = err.Error()
+		return
+	}
+	userInfoResp := &protos.GetUserInfoResp{
+		Profile: converters.ConvertProfileEntity2Proto(&user.UserProfile),
+	}
+
+	resp.Data, err = utils.MarshalMessageToAny(userInfoResp)
+	if err != nil {
+		logger.Errorf("[get user info] response marshal message error: %s", err.Error())
+	}
+	return
 }
 
 func (us *userService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var queryUserInfoReq protos.QueryUserInfoReq
+	if err = utils.UnmarshalGRPCReq(req, &queryUserInfoReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	telephone := queryUserInfoReq.GetTelephone()
+	email := queryUserInfoReq.GetEmail()
+	if utils.IsEmptyStrings(telephone, email) {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrInvalidParameters.Error()
+		return
+	}
+
+	userCriteria := &User{}
+	if utils.IsEmptyStrings(telephone) {
+		userCriteria.Email = email
+	} else {
+		userCriteria.Telephone = telephone
+	}
+	user, err := us.userRepo.FindOneUser(userCriteria)
+
+	if err != nil {
+		if err == utils.ErrUserNotExists {
+			resp.Code = http.StatusBadRequest
+		} else {
+			resp.Code = http.StatusInternalServerError
+		}
+		resp.Message = err.Error()
+		return
+	}
+	userInfoResp := &protos.QueryUserInfoResp{
+		Profile: converters.ConvertProfileEntity2Proto(&user.UserProfile),
+	}
+
+	resp.Data, err = utils.MarshalMessageToAny(userInfoResp)
+	if err != nil {
+		logger.Errorf("[get user info] response marshal message error: %s", err.Error())
+	}
+	return
 }
 
 func isVerificationCodeValid(verificationCode string) (isValid bool, err error) {

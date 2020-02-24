@@ -7,6 +7,10 @@ import (
 	"log"
 )
 
+var (
+	UserId = "01E07SG858N3CGV5M1APVQKZYR"
+)
+
 func obtainSMSCode(t protos.SMSServiceClient) {
 	smsReq := protos.ObtainSMSCodeReq{
 		CodeType:  protos.ObtainSMSCodeReq_REGISTER,
@@ -14,12 +18,12 @@ func obtainSMSCode(t protos.SMSServiceClient) {
 	}
 	anyData, _ := utils.MarshalMessageToAny(&smsReq)
 	gprcReq := &protos.GrpcReq{
-		DeviceId:             "One Plus 7 Pro",
-		Version:              "1",
-		Language:             0,
-		Os:                   0,
-		Token:                "",
-		Data:                 anyData,
+		DeviceId: "One Plus 7 Pro",
+		Version:  "1",
+		Language: 0,
+		Os:       0,
+		Token:    "",
+		Data:     anyData,
 	}
 	// 调用 gRPC 接口
 	tr, err := t.ObtainSMSCode(context.Background(), gprcReq)
@@ -107,6 +111,101 @@ func login(t protos.UserServiceClient, typeStr string) {
 	}
 
 	tr, err := t.Login(context.Background(), grpcReq)
+	if err != nil {
+		logger.Errorf("login error: %s", err.Error())
+	} else {
+		printResp(tr)
+	}
+}
+
+func getUserInfo(t protos.UserServiceClient) {
+	var getUserInfoReq *protos.GetUserInfoReq
+
+	getUserInfoReq = &protos.GetUserInfoReq{
+		UserId: UserId,
+	}
+
+	anyData, _ := utils.MarshalMessageToAny(getUserInfoReq)
+	grpcReq := &protos.GrpcReq{
+		DeviceId: "",
+		Version:  "",
+		Language: 0,
+		Os:       0,
+		Token:    "1234567890",
+		Data:     anyData,
+	}
+
+	tr, err := t.GetUserInfo(context.Background(), grpcReq)
+	if err != nil {
+		logger.Errorf("login error: %s", err.Error())
+	} else {
+		printResp(tr)
+	}
+}
+
+func queryUserInfo(t protos.UserServiceClient, typeStr string) {
+	var queryUserInfoReq *protos.QueryUserInfoReq
+	switch typeStr {
+	case "TELEPHONE":
+		queryUserInfoReq = &protos.QueryUserInfoReq{
+			TargetAccount: &protos.QueryUserInfoReq_Telephone{
+				Telephone: "13631210003",
+			},
+		}
+		break
+	case "EMAIL":
+		queryUserInfoReq = &protos.QueryUserInfoReq{
+			TargetAccount: &protos.QueryUserInfoReq_Email{
+				Email: "12345@qq.com",
+			},
+		}
+		break
+	}
+
+	anyData, _ := utils.MarshalMessageToAny(queryUserInfoReq)
+	grpcReq := &protos.GrpcReq{
+		DeviceId: "",
+		Version:  "",
+		Language: 0,
+		Os:       0,
+		Token:    "1234567890",
+		Data:     anyData,
+	}
+
+	tr, err := t.QueryUserInfo(context.Background(), grpcReq)
+	if err != nil {
+		logger.Errorf("login error: %s", err.Error())
+	} else {
+		printResp(tr)
+	}
+}
+
+func updateUserInfo(t protos.UserServiceClient) {
+	var updateUserInfoReq *protos.UpdateUserInfoReq
+	updateUserInfoReq = &protos.UpdateUserInfoReq{
+		Profile: &protos.UserProfile{
+			UserId:      UserId,
+			Telephone:   "13631210003",
+			Email:       "12345@qq.com",
+			Nickname:    "JAMES00012",
+			Avatar:      "http://test/123456.jpg",
+			Description: "de ma xiya",
+			Sex:         1,
+			Birthday:    0,
+			Location:    "ZHA-CH",
+		},
+	}
+	anyData, _ := utils.MarshalMessageToAny(updateUserInfoReq)
+	grpcReq := &protos.GrpcReq{
+		DeviceId: "",
+		Version:  "",
+		Language: 0,
+		Os:       0,
+		Token:    "1234567890",
+		Data:     anyData,
+	}
+
+	tr, err := t.UpdateUserInfo(context.Background(), grpcReq)
 	if err != nil {
 		logger.Errorf("login error: %s", err.Error())
 	} else {
