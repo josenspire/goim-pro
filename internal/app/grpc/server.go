@@ -91,6 +91,7 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 		token := gRPCReq.GetToken()
 
 		// handle method on white list
+		logger.Infof("[request method]: %s", info.FullMethod)
 		if isOnWhiteList(info.FullMethod) {
 			return handler(ctx, req)
 		}

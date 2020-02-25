@@ -48,6 +48,51 @@ func obtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_C
 	//logger.Infof("[code]: %d", tr)
 }
 
+func resetPasswordByTelephone(t protos.UserServiceClient, channel string) {
+	var resetPasswordReq *protos.ResetPasswordReq
+	switch channel {
+	case "OLD_PASSWORD":
+		resetPasswordReq = &protos.ResetPasswordReq{
+			NewPassword: "112233445566",
+			ResetCertificate: &protos.ResetPasswordReq_OldPassword{
+				OldPassword: "1234567890",
+			},
+			TargetAccount: &protos.ResetPasswordReq_Telephone{
+				Telephone: "13631210003",
+			},
+		}
+		break
+	case "VERIFICATION":
+		resetPasswordReq = &protos.ResetPasswordReq{
+			NewPassword: "1234567890",
+			ResetCertificate: &protos.ResetPasswordReq_VerificationCode{
+				VerificationCode: "112233",
+			},
+			TargetAccount: &protos.ResetPasswordReq_Telephone{
+				Telephone: "13631210003",
+			},
+		}
+		break
+	}
+
+	anyData, _ := utils.MarshalMessageToAny(resetPasswordReq)
+	grpcReq := &protos.GrpcReq{
+		DeviceId: "",
+		Version:  "",
+		Language: 0,
+		Os:       0,
+		Token:    "",
+		Data:     anyData,
+	}
+
+	tr, err := t.ResetPassword(context.Background(), grpcReq)
+	if err != nil {
+		logger.Errorf("reset password error: %s", err.Error())
+	} else {
+		printResp(tr)
+	}
+}
+
 func register(t protos.UserServiceClient) {
 	registerReq := &protos.RegisterReq{
 		Password:         "1234567890",

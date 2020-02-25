@@ -204,45 +204,67 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
-	if err = resetPwdParameterCalibration(&resetPwdReq); err != nil {
+	verificationCode := strings.Trim(resetPwdReq.GetVerificationCode(), "")
+	oldPassword := strings.Trim(resetPwdReq.GetOldPassword(), "")
+	newPassword := strings.Trim(resetPwdReq.GetNewPassword(), "")
+	telephone := strings.Trim(resetPwdReq.GetTelephone(), "")
+	email := strings.Trim(resetPwdReq.GetEmail(), "")
+
+	if err = resetPwdParameterCalibration(verificationCode, oldPassword, newPassword, telephone, email); err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Message = err.Error()
-		return
-	}
-	if resetPwdReq.GetOldPassword() == resetPwdReq.GetNewPassword() {
-		resp.Code = http.StatusBadRequest
-		resp.Message = "the new password cannot be the same as the old one"
-		return
-	}
-	// TODO: should refactor to read from db
-	if resetPwdReq.GetVerificationCode() != "112233" {
-		resp.Code = http.StatusBadRequest
-		resp.Message = "invalid verification code"
 		return
 	}
 
-	enPassword, err := crypto.AESEncrypt(resetPwdReq.GetOldPassword(), config.GetApiSecretKey())
-	if err != nil {
-		resp.Code = http.StatusInternalServerError
-		resp.Message = err.Error()
-		return
-	}
-	var (
-		telephone string = resetPwdReq.GetTelephone()
-		email     string = resetPwdReq.GetEmail()
-	)
-	if telephone != "" {
-		_, err = us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
-	} else {
-		_, err = us.userRepo.QueryByEmailAndPassword(email, enPassword)
-	}
+	isRegistered, err := us.userRepo.IsTelephoneOrEmailRegistered(telephone, email)
 	if err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Message = err.Error()
 		logger.Errorf("reset password error: %s", err.Error())
 		return
 	}
-	enNewPassword, err := crypto.AESEncrypt(resetPwdReq.GetNewPassword(), config.GetApiSecretKey())
+	if !isRegistered {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrUserNotExists.Error()
+		logger.Warn("reset password failed: account not exist")
+		return
+	}
+
+	if verificationCode != "" {
+		// 1. code + newPassword
+		// TODO: should refactor to read from db
+		if verificationCode != "112233" {
+			resp.Code = http.StatusBadRequest
+			resp.Message = "invalid verification code"
+			return
+		}
+	} else {
+		// 2. oldPassword + newPassword
+		if oldPassword == newPassword {
+			resp.Code = http.StatusBadRequest
+			resp.Message = "the new password cannot be the same as the old one"
+			return
+		}
+		enPassword, err := crypto.AESEncrypt(oldPassword, config.GetApiSecretKey())
+		if err != nil {
+			resp.Code = http.StatusInternalServerError
+			resp.Message = err.Error()
+			return
+		}
+		if telephone != "" {
+			_, err = us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
+		} else {
+			_, err = us.userRepo.QueryByEmailAndPassword(email, enPassword)
+		}
+		if err != nil {
+			resp.Code = http.StatusBadRequest
+			resp.Message = err.Error()
+			logger.Errorf("reset password error: %s", err.Error())
+			return
+		}
+	}
+
+	enNewPassword, err := crypto.AESEncrypt(newPassword, config.GetApiSecretKey())
 	if err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Message = err.Error()
@@ -407,16 +429,13 @@ func loginParameterCalibration(req *protos.LoginReq) (err error) {
 	return
 }
 
-func resetPwdParameterCalibration(req *protos.ResetPasswordReq) (err error) {
+func resetPwdParameterCalibration(verificationCode, oldPassword, newPassword string, telephone, email string) (err error) {
 	csErr := errors.New("bad request, invalid parameters")
-	req.VerificationCode = strings.Trim(req.GetVerificationCode(), "")
-	req.OldPassword = strings.Trim(req.GetOldPassword(), "")
-	req.NewPassword = strings.Trim(req.GetNewPassword(), "")
 
-	if utils.IsContainEmptyString(req.VerificationCode, req.OldPassword, req.NewPassword) {
+	if utils.IsEmptyStrings(verificationCode, newPassword) || utils.IsEmptyStrings(oldPassword, newPassword) {
 		err = csErr
 	} else {
-		if utils.IsEmptyStrings(req.GetTelephone(), req.GetEmail()) {
+		if utils.IsEmptyStrings(telephone, email) {
 			err = csErr
 		}
 	}

@@ -127,11 +127,17 @@ func Test_userService_Login(t *testing.T) {
 func Test_userService_ResetPassword(t *testing.T) {
 	//telephone, email := "13631210001", "123@qq.com"
 	enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
+	errEnPassword, _ := crypto.AESEncrypt("1234567891", config.GetApiSecretKey())
 	newEnPassword, _ := crypto.AESEncrypt("1122334455", config.GetApiSecretKey())
 
 	m := &MockUserRepo{}
 	m.On("QueryByTelephoneAndPassword", "13631210001", enPassword).Return(modelUser1, nil)
 	m.On("QueryByEmailAndPassword", "123@qq.com", enPassword).Return(modelUser1, nil)
+	m.On("QueryByTelephoneAndPassword", "13631210001", errEnPassword).Return(&user.User{}, utils.ErrAccountOrPwdInvalid)
+
+	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(true, nil)
+	m.On("IsTelephoneOrEmailRegistered", "", "123@qq.com").Return(true, nil)
+	m.On("IsTelephoneOrEmailRegistered", "", "123456@qq.com").Return(false, utils.ErrUserNotExists)
 
 	m.On("ResetPasswordByTelephone", "13631210001", newEnPassword).Return(nil)
 	m.On("ResetPasswordByEmail", "123@qq.com", newEnPassword).Return(nil)
@@ -142,11 +148,12 @@ func Test_userService_ResetPassword(t *testing.T) {
 		us := &userService{
 			userRepo: m,
 		}
-		Convey("user_reset_password_successful_by_telephone", func() {
+		Convey("user_reset_password_successful_by_telephone_with_old_password", func() {
 			resetPwdReq := &protos.ResetPasswordReq{
-				OldPassword:      "1234567890",
-				NewPassword:      "1122334455",
-				VerificationCode: "112233",
+				NewPassword: "1122334455",
+				ResetCertificate: &protos.ResetPasswordReq_OldPassword{
+					OldPassword: "1234567890",
+				},
 				TargetAccount: &protos.ResetPasswordReq_Telephone{
 					Telephone: "13631210001",
 				},
@@ -159,11 +166,12 @@ func Test_userService_ResetPassword(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(actualResp.GetCode(), ShouldEqual, 200)
 		})
-		Convey("user_reset_password_successful_by_email", func() {
+		Convey("user_reset_password_successful_by_email_with_verification_code", func() {
 			resetPwdReq := &protos.ResetPasswordReq{
-				OldPassword:      "1234567890",
-				NewPassword:      "1122334455",
-				VerificationCode: "112233",
+				NewPassword: "1122334455",
+				ResetCertificate: &protos.ResetPasswordReq_VerificationCode{
+					VerificationCode: "112233",
+				},
 				TargetAccount: &protos.ResetPasswordReq_Email{
 					Email: "123@qq.com",
 				},
@@ -176,12 +184,12 @@ func Test_userService_ResetPassword(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(actualResp.GetCode(), ShouldEqual, 200)
 		})
-
 		Convey("failed_by_newPassword_same_as_old", func() {
 			resetPwdReq := &protos.ResetPasswordReq{
-				OldPassword:      "1234567890",
-				NewPassword:      "1234567890",
-				VerificationCode: "112233",
+				NewPassword: "1234567890",
+				ResetCertificate: &protos.ResetPasswordReq_OldPassword{
+					OldPassword: "1234567890",
+				},
 				TargetAccount: &protos.ResetPasswordReq_Email{
 					Email: "123@qq.com",
 				},
@@ -193,6 +201,40 @@ func Test_userService_ResetPassword(t *testing.T) {
 			actualResp, err := us.ResetPassword(ctx, req)
 			So(err, ShouldBeNil)
 			So(actualResp.GetMessage(), ShouldEqual, "the new password cannot be the same as the old one")
+		})
+		Convey("failed_by_not_exist_account", func() {
+			resetPwdReq := &protos.ResetPasswordReq{
+				NewPassword: "1234567890",
+				ResetCertificate: &protos.ResetPasswordReq_OldPassword{
+					OldPassword: "1234567891",
+				},
+				TargetAccount: &protos.ResetPasswordReq_Email{
+					Email: "123456@qq.com",
+				},
+			}
+			any, _ := utils.MarshalMessageToAny(resetPwdReq)
+			req = &protos.GrpcReq{
+				Data: any,
+			}
+			actualResp, _ := us.ResetPassword(ctx, req)
+			So(actualResp.GetMessage(), ShouldEqual, utils.ErrUserNotExists.Error())
+		})
+		Convey("failed_by_invalid_oldPassword", func() {
+			resetPwdReq := &protos.ResetPasswordReq{
+				NewPassword: "1234567890",
+				ResetCertificate: &protos.ResetPasswordReq_OldPassword{
+					OldPassword: "1234567891",
+				},
+				TargetAccount: &protos.ResetPasswordReq_Telephone{
+					Telephone: "13631210001",
+				},
+			}
+			any, _ := utils.MarshalMessageToAny(resetPwdReq)
+			req = &protos.GrpcReq{
+				Data: any,
+			}
+			actualResp, _ := us.ResetPassword(ctx, req)
+			So(actualResp.GetMessage(), ShouldEqual, utils.ErrAccountOrPwdInvalid.Error())
 		})
 	})
 }
@@ -336,8 +378,8 @@ func Test_userService_UpdateUserInfo(t *testing.T) {
 	m := &MockUserRepo{}
 	m.On("GetUserByUserId", "13631210001").Return(modelUser1, nil)
 	m.On("GetUserByUserId", "13631210002").Return(&user.User{}, nil)
-	m.On("FindOneAndUpdateProfile", criteria1,  utils.TransformStructToMap(newProfile1)).Return(nil)
-	m.On("FindOneAndUpdateProfile", criteria2,  utils.TransformStructToMap(newProfile2)).Return(nil)
+	m.On("FindOneAndUpdateProfile", criteria1, utils.TransformStructToMap(newProfile1)).Return(nil)
+	m.On("FindOneAndUpdateProfile", criteria2, utils.TransformStructToMap(newProfile2)).Return(nil)
 
 	Convey("testing_grpc_update_user_profile", t, func() {
 		var ctx context.Context

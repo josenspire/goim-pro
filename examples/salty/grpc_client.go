@@ -52,6 +52,14 @@ func main() {
 				t := protos.NewSMSServiceClient(conn)
 				obtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD)
 				break
+			case "rst1":
+				t := protos.NewUserServiceClient(conn)
+				resetPasswordByTelephone(t, "OLD_PASSWORD")
+				break
+			case "rst2":
+				t := protos.NewUserServiceClient(conn)
+				resetPasswordByTelephone(t, "VERIFICATION")
+				break
 			case "r":
 				t := protos.NewUserServiceClient(conn)
 				register(t)
@@ -103,6 +111,8 @@ func toolsIntroduce() {
 	logger.Info("**** Can input the commons to test ****")
 	logger.Info("** ['s']: obtainSMSCode **")
 	logger.Info("** ['sr']: obtain reset password sms code**")
+	logger.Info("** ['rst1']: resetPassword by telephone with oldPassword**")
+	logger.Info("** ['rst2']: resetPassword by telephone with verification**")
 	logger.Info("** ['r']: register **")
 	logger.Info("** ['lt']: login by telephone **")
 	logger.Info("** ['le']: login by email **")
