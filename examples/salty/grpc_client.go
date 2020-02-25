@@ -46,7 +46,11 @@ func main() {
 			case "s":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
-				obtainSMSCode(t)
+				obtainSMSCode(t, protos.ObtainSMSCodeReq_REGISTER)
+				break
+			case "sr":
+				t := protos.NewSMSServiceClient(conn)
+				obtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD)
 				break
 			case "r":
 				t := protos.NewUserServiceClient(conn)
@@ -98,6 +102,7 @@ func toolsIntroduce() {
 	logger.Info("**** Welcome to [GRPC] client tools ****")
 	logger.Info("**** Can input the commons to test ****")
 	logger.Info("** ['s']: obtainSMSCode **")
+	logger.Info("** ['sr']: obtain reset password sms code**")
 	logger.Info("** ['r']: register **")
 	logger.Info("** ['lt']: login by telephone **")
 	logger.Info("** ['le']: login by email **")

@@ -11,9 +11,9 @@ var (
 	UserId = "01E07SG858N3CGV5M1APVQKZYR"
 )
 
-func obtainSMSCode(t protos.SMSServiceClient) {
+func obtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_CodeType) {
 	smsReq := protos.ObtainSMSCodeReq{
-		CodeType:  protos.ObtainSMSCodeReq_REGISTER,
+		CodeType:  codeType,
 		Telephone: "13631210000",
 	}
 	anyData, _ := utils.MarshalMessageToAny(&smsReq)

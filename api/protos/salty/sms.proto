@@ -21,7 +21,7 @@ message ObtainSMSCodeReq {
     enum CodeType {
         REGISTER = 0;
         LOGIN = 1;
-        ResetPassword = 2;
+        RESET_PASSWORD = 2;
     }
 }
 
