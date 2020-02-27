@@ -7,6 +7,7 @@ var whiteList = map[string]bool{
 
 	"/com.salty.protos.UserService/Register":      true,
 	"/com.salty.protos.UserService/Login":         true,
+	"/com.salty.protos.UserService/Logout":        true,
 	"/com.salty.protos.UserService/ResetPassword": true,
 }
 

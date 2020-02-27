@@ -1,0 +1,3 @@
+[submodule "api/protos/salty"]
+	path = api/protos/salty
+	url = https://github.com/SuperSaltedFish/salty-im-proto

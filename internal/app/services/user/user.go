@@ -137,8 +137,35 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 	return
 }
 
+func (us *userService) Logout(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var logoutReq protos.LogoutReq
+	if err = utils.UnmarshalGRPCReq(req, &logoutReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	// if true, mandatory and will remove all online user
+	if logoutReq.GetIsMandatoryLogout(){
+		//TODO: remove all token from redis
+	} else {
+		//TODO: remove current token from redis
+	}
+
+	resp.Message = "user logout successful"
+
+	return
+}
+
 func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	// will over write the token value at rpc interceptor
+	userId := req.GetToken()
 
 	var err error
 	var updateUserInfoReq protos.UpdateUserInfoReq
@@ -157,8 +184,9 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 	}
 
 	userProfile := converters.ConvertProtoUserProfile2Entity(pbProfile)
-	// TODO: should get userId from token and double verify
-	originUserProfile, err := us.userRepo.GetUserByUserId(userProfile.UserId)
+	userProfile.UserId = userId
+
+	originUserProfile, err := us.userRepo.GetUserByUserId(userId)
 	if err == utils.ErrInvalidUserId {
 		resp.Code = http.StatusBadRequest
 		resp.Message = utils.ErrInvalidUserId.Error()
@@ -176,7 +204,7 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 	}
 
 	criteria := &User{}
-	criteria.UserId = userProfile.UserId
+	criteria.UserId = userId
 
 	err = us.userRepo.FindOneAndUpdateProfile(criteria, utils.TransformStructToMap(userProfile))
 	if err != nil {
@@ -187,10 +215,6 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 		return
 	}
 	return
-}
-
-func isProfileNothing2Update(originProfile UserProfile, newProfile UserProfile) bool {
-	return utils.DeepEqual(originProfile, newProfile)
 }
 
 func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
@@ -380,6 +404,10 @@ func (us *userService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (
 		logger.Errorf("[get user info] response marshal message error: %s", err.Error())
 	}
 	return
+}
+
+func isProfileNothing2Update(originProfile UserProfile, newProfile UserProfile) bool {
+	return utils.DeepEqual(originProfile, newProfile)
 }
 
 func isVerificationCodeValid(verificationCode string) (isValid bool, err error) {
