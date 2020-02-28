@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"fmt"
-	"goim-pro/api/protos/salty"
+	"goim-pro/api/protos/example"
 	"goim-pro/pkg/logs"
 )
 

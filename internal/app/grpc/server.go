@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jinzhu/gorm"
+	demo "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
 	"goim-pro/internal/app/repos/user"
@@ -178,7 +179,7 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 
 func handleServiceRegister(srv *grpc.Server) {
 	var gprcService = services.NewService()
-	protos.RegisterWaiterServer(srv, gprcService.WaiterServer)
+	demo.RegisterWaiterServer(srv, gprcService.WaiterServer)
 	protos.RegisterSMSServiceServer(srv, gprcService.SMSServer)
 	protos.RegisterUserServiceServer(srv, gprcService.UserServer)
 }

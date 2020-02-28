@@ -1,6 +1,7 @@
 package services
 
 import (
+	demo "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
 	authsrv "goim-pro/internal/app/services/auth"
 	waitersrv "goim-pro/internal/app/services/demowaiter"
@@ -8,7 +9,7 @@ import (
 )
 
 type Service struct {
-	WaiterServer protos.WaiterServer
+	WaiterServer demo.WaiterServer
 	SMSServer    protos.SMSServiceServer
 	UserServer   protos.UserServiceServer
 }
