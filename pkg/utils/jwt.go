@@ -37,18 +37,20 @@ func NewToken(foo []byte) string {
 	return tokenStr
 }
 
-func TokenVerify(tokenStr string) (bool, error) {
+func TokenVerify(tokenStr string) (isValid bool, payload []byte, err error) {
 	logger.Infof("token string: %s", tokenStr)
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (i interface{}, err error) {
+	claims := &MyClaims{}
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (i interface{}, e error) {
 		return []byte(SecretKey), nil
 	})
+
 	if err != nil {
 		logger.Errorf("authorized error: %s", err.Error())
-		return false, err
+		return false, nil, err
 	}
 	if !token.Valid {
 		logger.Warnf("unauthorized access to this resource")
-		return false, nil
+		return false, nil, nil
 	}
-	return true, nil
+	return true, claims.Foo, nil
 }

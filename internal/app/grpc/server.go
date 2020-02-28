@@ -104,7 +104,8 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 			resp, _ = utils.NewGRPCResp(http.StatusNonAuthoritativeInfo, nil, "unauthorized access to this resource")
 			return resp, nil
 		} else {
-			isValid, err := utils.TokenVerify(token)
+			isValid, payload, err := utils.TokenVerify(token)
+			logger.Infof("[userID]: %s", string(payload))
 			if err != nil {
 				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, err.Error())
 				return resp, nil
@@ -113,6 +114,7 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, "token validation failed")
 				return resp, nil
 			}
+			gRPCReq.Token = string(payload)
 			return handler(ctx, req)
 		}
 	}
