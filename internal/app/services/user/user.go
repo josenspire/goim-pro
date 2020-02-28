@@ -206,7 +206,10 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 	criteria := &User{}
 	criteria.UserId = userId
 
-	err = us.userRepo.FindOneAndUpdateProfile(criteria, utils.TransformStructToMap(userProfile))
+	updateMap := utils.TransformStructToMap(userProfile)
+	utils.RemoveMapProperties(updateMap, "UserId", "Telephone", "Email", "Avatar")
+
+	err = us.userRepo.FindOneAndUpdateProfile(criteria, updateMap)
 	if err != nil {
 		logger.Errorf("[get user info] response marshal message error: %s", err.Error())
 
