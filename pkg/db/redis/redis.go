@@ -27,16 +27,6 @@ var redisOnce sync.Once
 var redisInstance *RedisConnectionPool
 var client *redis.Client
 
-func init() {
-	host = config.GetRedisDBHost()
-	port = config.GetRedisDBPort()
-	password = config.GetRedisDBPassword()
-	dbNum = config.GetRedisDBNum()
-	dbKey = config.GetRedisDBKey()
-
-	redis.SetLogger(log.New(os.Stderr, "redis: ", log.LstdFlags))
-}
-
 func NewRedisConnection() *RedisConnectionPool {
 	redisOnce.Do(func() {
 		redisInstance = &RedisConnectionPool{}
@@ -45,6 +35,14 @@ func NewRedisConnection() *RedisConnectionPool {
 }
 
 func (rs *RedisConnectionPool) Connect() (err error) {
+	host = config.GetRedisDBHost()
+	port = config.GetRedisDBPort()
+	password = config.GetRedisDBPassword()
+	dbNum = config.GetRedisDBNum()
+	dbKey = config.GetRedisDBKey()
+
+	redis.SetLogger(log.New(os.Stderr, "redis: ", log.LstdFlags))
+
 	uriAddr := fmt.Sprintf("%s:%s", host, port)
 	client = redis.NewClient(&redis.Options{
 		Addr:        uriAddr,

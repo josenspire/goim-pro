@@ -2,52 +2,47 @@ package authsrv
 
 import (
 	"context"
+	"fmt"
 	. "github.com/smartystreets/goconvey/convey"
 	protos "goim-pro/api/protos/salty"
+	usersrv "goim-pro/internal/app/services/user"
 	"goim-pro/pkg/utils"
+	"net/http"
 	"testing"
 )
 
 func Test_smsServer_ObtainSMSCode(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		req *protos.GrpcResp
-	}
-	smsReq1 := &protos.ObtainSMSCodeReq{
-		CodeType:  0,
-		Telephone: "13631210000",
-	}
-	smsReq2 := &protos.ObtainSMSCodeReq{
-		CodeType:  3,
-		Telephone: "13631210000",
-	}
-	ctx := context.Background()
-	any1, _ := utils.MarshalMessageToAny(smsReq1)
-	req1 := &protos.GrpcReq{
-		Data: any1,
-	}
-	any2, _ := utils.MarshalMessageToAny(smsReq2)
-	req2 := &protos.GrpcReq{
-		Data: any2,
-	}
-	Convey("obtain_sms_code", t, func() {
-		Convey("testing_for_obtain_sms_code_of_register", func() {
-			s := &smsServer{}
-			gotRes, err := s.ObtainSMSCode(ctx, req1)
-			if err != nil {
-				t.Errorf("ObtainSMSCode() error = %v", err)
-				return
+	m := &usersrv.MockUserRepo{}
+	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(false, nil)
+	m.On("IsTelephoneOrEmailRegistered", "13631210002", "").Return(true, nil)
+	m.On("IsTelephoneOrEmailRegistered", "13631210003", "").Return(true, nil)
+	m.On("IsTelephoneOrEmailRegistered", "13631210004", "").Return(false, nil)
+
+	Convey("testing_ObtainSMSCodeReq", t, func() {
+		var ctx context.Context
+		var req *protos.GrpcReq
+
+		smsServer := &smsServer{
+			userRepo: m,
+		}
+		Convey("should_return_correct_sms_code_for_register", func() {
+			smsReq := &protos.ObtainSMSCodeReq{
+				CodeType:  protos.ObtainSMSCodeReq_REGISTER,
+				Telephone: "13631210001",
 			}
-			So(gotRes.GetMessage(), ShouldEqual, "sending sms code success: 123456")
-		})
-		Convey("testing_for_invalid_code_type", func() {
-			s := &smsServer{}
-			gotRes, err := s.ObtainSMSCode(ctx, req2)
-			if err != nil {
-				t.Errorf("ObtainSMSCode() error = %v", err)
-				return
+			any, _ := utils.MarshalMessageToAny(smsReq)
+			req = &protos.GrpcReq{
+				Data: any,
 			}
-			So(gotRes.GetMessage(), ShouldEqual, "invalid request code type")
+			actualResp, err := smsServer.ObtainSMSCode(ctx, req)
+
+			fmt.Println(actualResp.GetMessage())
+
+			str := myRedis.Get(fmt.Sprintf("%d-%s", protos.ObtainSMSCodeReq_REGISTER, "13631210001"))
+
+			So(err, ShouldBeNil)
+			So(actualResp.Code, ShouldEqual, http.StatusOK)
+			So(len(str.String()), ShouldEqual, 6)
 		})
 	})
 }

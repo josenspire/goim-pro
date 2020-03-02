@@ -7,6 +7,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
 	demo "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
@@ -33,6 +34,8 @@ type GRPCServer struct {
 var (
 	logger  = logs.GetLogger("INFO")
 	OpenTLS = true
+
+	myRedis *redis.Client
 )
 // server constructor
 func NewServer() *GRPCServer {
@@ -49,9 +52,11 @@ func (gs *GRPCServer) InitServer() {
 			logger.Fatalf("mysql tables initialization fail: %s", err)
 		}
 	}
-	redisDB := redsrv.NewRedisConnection()
-	if err := redisDB.Connect(); err != nil {
+	rdsClient := redsrv.NewRedisConnection()
+	if err := rdsClient.Connect(); err != nil {
 		logger.Errorf("redis connect error: %v", err.Error())
+	} else {
+		myRedis = rdsClient.GetRedisClient()
 	}
 }
 
@@ -105,14 +110,26 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 			resp, _ = utils.NewGRPCResp(http.StatusNonAuthoritativeInfo, nil, "unauthorized access to this resource")
 			return resp, nil
 		} else {
+			// TODO: maybe remove token verify logic and only query from redis
 			isValid, payload, err := utils.TokenVerify(token)
 			logger.Infof("[userID]: %s", string(payload))
 			if err != nil {
-				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, err.Error())
+				resp, _ = utils.NewGRPCResp(http.StatusInternalServerError, nil, err.Error())
 				return resp, nil
 			}
 			if !isValid {
 				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, "token validation failed")
+				return resp, nil
+			}
+
+			redisToken, err := myRedis.Get(fmt.Sprintf("TK-%s", string(payload))).Bytes()
+			if redisToken == nil {
+				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, "the token has expired")
+				return resp, nil
+			}
+			if err != nil {
+				logger.Errorf("interceptor redis read error: %v", err)
+				resp, _ = utils.NewGRPCResp(http.StatusInternalServerError, nil, err.Error())
 				return resp, nil
 			}
 			gRPCReq.Token = string(payload)

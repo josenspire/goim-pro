@@ -14,7 +14,7 @@ var (
 func obtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_CodeType) {
 	smsReq := protos.ObtainSMSCodeReq{
 		CodeType:  codeType,
-		Telephone: "13631210000",
+		Telephone: "13631210003",
 	}
 	anyData, _ := utils.MarshalMessageToAny(&smsReq)
 	gprcReq := &protos.GrpcReq{
@@ -213,7 +213,7 @@ func queryUserInfo(t protos.UserServiceClient, typeStr string) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "1234567890",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTURkVFJ6ZzFPRTR6UTBkV05VMHhRVkJXVVV0YVdWST0iLCJleHAiOjE1ODM0MTY1MDAsImlhdCI6MTU4MzE1NzMwMCwiaXNzIjoic2FsdHlfaW0ifQ.rvvCMfds-w52BpxIBZQLIDwGUuuZyAk02zrIixVXNRM",
 		Data:     anyData,
 	}
 

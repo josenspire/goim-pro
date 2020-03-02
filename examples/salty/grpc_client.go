@@ -43,12 +43,17 @@ func main() {
 		for {
 			_, _ = fmt.Scanln(&str)
 			switch str {
-			case "s":
+			case "s1":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
 				obtainSMSCode(t, protos.ObtainSMSCodeReq_REGISTER)
 				break
-			case "sr":
+			case "s2":
+				// create Writer service's client
+				t := protos.NewSMSServiceClient(conn)
+				obtainSMSCode(t, protos.ObtainSMSCodeReq_LOGIN)
+				break
+			case "s3":
 				t := protos.NewSMSServiceClient(conn)
 				obtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD)
 				break
@@ -109,8 +114,9 @@ func toolsIntroduce() {
 	logger.Info("********************************************")
 	logger.Info("**** Welcome to [GRPC] client tools ****")
 	logger.Info("**** Can input the commons to test ****")
-	logger.Info("** ['s']: obtainSMSCode **")
-	logger.Info("** ['sr']: obtain reset password sms code**")
+	logger.Info("** ['s1']: obtainSMSCode - register**")
+	logger.Info("** ['s2']: obtainSMSCode - login**")
+	logger.Info("** ['s3']: obtainSMSCode - resetPassword**")
 	logger.Info("** ['rst1']: resetPassword by telephone with oldPassword**")
 	logger.Info("** ['rst2']: resetPassword by telephone with verification**")
 	logger.Info("** ['r']: register **")

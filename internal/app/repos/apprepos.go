@@ -12,7 +12,6 @@ type RepoServer struct {
 }
 
 func New() *RepoServer {
-	//redisDB := redsrv.GetRedisClient()
 	mysqlDB := mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 	return &RepoServer{
 		UserRepo:    user.NewUserRepo(mysqlDB),

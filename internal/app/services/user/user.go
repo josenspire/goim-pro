@@ -4,25 +4,35 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/go-redis/redis/v7"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
 	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
+	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"net/http"
 	"strings"
+	"time"
 )
 
-var logger = logs.GetLogger("INFO")
-var crypto = utils.NewCrypto()
+var (
+	logger  = logs.GetLogger("INFO")
+	crypto  = utils.NewCrypto()
+
+	expiresTime = time.Hour * time.Duration(24*3)	// 3 days
+	myRedis *redis.Client
+)
 
 type userService struct {
 	userRepo IUserRepo
 }
 
 func New() protos.UserServiceServer {
+	myRedis = redsrv.NewRedisConnection().GetRedisClient()
+
 	repoServer := repos.New()
 	return &userService{
 		userRepo: repoServer.UserRepo,
@@ -122,8 +132,15 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 		return
 	}
 
+	// gen and save token
 	token := utils.NewToken([]byte(user.UserId))
-	// might need to save into redis
+	if err = myRedis.Set(fmt.Sprintf("TK-%s", user.UserId), token, expiresTime).Err(); err != nil {
+		logger.Errorf("redis save token error: %v", err)
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+
 	loginResp := &protos.LoginResp{
 		Token:   token,
 		Profile: converters.ConvertProfileEntity2Proto(&user.UserProfile),
@@ -150,7 +167,7 @@ func (us *userService) Logout(ctx context.Context, req *protos.GrpcReq) (resp *p
 	}
 
 	// if true, mandatory and will remove all online user
-	if logoutReq.GetIsMandatoryLogout(){
+	if logoutReq.GetIsMandatoryLogout() {
 		//TODO: remove all token from redis
 	} else {
 		//TODO: remove current token from redis

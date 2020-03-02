@@ -5,7 +5,10 @@ import (
 	"time"
 )
 
-const StrSource string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+	strSource string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	numSource string = "0123456789"
+)
 
 var r *rand.Rand
 
@@ -14,7 +17,7 @@ func init() {
 }
 
 func GenerateRandString(length int) string {
-	bytes := []byte(StrSource)
+	bytes := []byte(strSource)
 	var result []byte
 	for i := 0; i < length; i++ {
 		result = append(result, bytes[r.Intn(len(bytes))])
@@ -42,4 +45,15 @@ func IsContainEmptyString(strArgs ...string) bool {
 		}
 	}
 	return result
+}
+
+// generate random number string
+// {int} numSize
+func GenerateRandomNum(numSize int) string {
+	bytes := []byte(numSource)
+	var result []byte
+	for i := 0; i < numSize; i++ {
+		result = append(result, bytes[r.Intn(len(bytes))])
+	}
+	return string(result)
 }
