@@ -6,11 +6,8 @@ import (
 )
 
 const (
-	SecretKey = "SaltyIM"
-)
-
-var (
-	OneHour = time.Now().Add(time.Minute * time.Duration(60)).Unix()
+	secretKey   = "SaltyIM"
+	expiresTime = time.Hour * time.Duration(24*3) // 3 days
 )
 
 type MyClaims struct {
@@ -22,14 +19,14 @@ func NewToken(foo []byte) string {
 	claims := MyClaims{
 		Foo: foo,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: OneHour,
+			ExpiresAt: time.Now().Add(expiresTime).Unix(),
 			IssuedAt:  time.Now().Unix(),
 			Issuer:    "salty_im",
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString([]byte(SecretKey))
+	tokenStr, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		logger.Errorf("[jwt] signed string error: %s", err.Error())
 		return ""
@@ -41,7 +38,7 @@ func TokenVerify(tokenStr string) (isValid bool, payload []byte, err error) {
 	logger.Infof("token string: %s", tokenStr)
 	claims := &MyClaims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (i interface{}, e error) {
-		return []byte(SecretKey), nil
+		return []byte(secretKey), nil
 	})
 
 	if err != nil {
