@@ -16,7 +16,8 @@ type RedisConnectionPool struct {
 
 var (
 	host     string = "0.0.0.0"
-	port     string = "6379"
+	// port     string = "6379"
+	port     string = "6767"
 	password string = ""
 	dbNum    int    = 1
 	dbKey    string = "SaltyIMPro"

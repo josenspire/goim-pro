@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	//address = "111.231.238.209:9090"
-	address = "127.0.0.1:9090"
+	address = "111.231.238.209:9090"
+	// address = "127.0.0.1:9090"
 )
 
 var logger = logs.GetLogger("INFO")

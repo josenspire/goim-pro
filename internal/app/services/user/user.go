@@ -7,6 +7,7 @@ import (
 	"github.com/go-redis/redis/v7"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
+	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
@@ -19,11 +20,11 @@ import (
 )
 
 var (
-	logger  = logs.GetLogger("INFO")
-	crypto  = utils.NewCrypto()
+	logger = logs.GetLogger("INFO")
+	crypto = utils.NewCrypto()
 
-	expiresTime = time.Hour * time.Duration(24*3)	// 3 days
-	myRedis *redis.Client
+	expiresTime = time.Hour * time.Duration(24*3) // 3 days
+	myRedis     *redis.Client
 )
 
 type userService struct {
@@ -55,11 +56,14 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		resp.Message = err.Error()
 		return
 	}
-	isValid, err := isVerificationCodeValid(registerReq.GetVerificationCode())
+
+	verificationCode := registerReq.GetVerificationCode()
+	telephone := registerReq.GetProfile().GetTelephone()
+	isValid, err := isVerificationCodeValid(verificationCode, telephone)
 	if !isValid {
 		resp.Code = http.StatusBadRequest
 		resp.Message = "verification code is invalid"
-		logger.Warnf("verification code is invalid: %s", registerReq.GetVerificationCode())
+		logger.Warnf("verification code is invalid: %s", verificationCode)
 		return
 	}
 	userProfile := registerReq.GetProfile()
@@ -86,6 +90,9 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		logger.Errorf("register user error: %v", err.Error())
 		return
 	}
+	// remove cache
+	myRedis.Del(fmt.Sprintf("%d-%s", constants.CodeTypeRegister, telephone))
+
 	registerResp := &protos.RegisterResp{
 		Profile: userProfile,
 	}
@@ -276,8 +283,14 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 
 	if verificationCode != "" {
 		// 1. code + newPassword
-		// TODO: should refactor to read from db
-		if verificationCode != "112233" {
+		code, err := myRedis.Get(fmt.Sprintf("%d-%s", constants.CodeTypeResetPassword, telephone)).Bytes()
+		if err != nil {
+			logger.Errorf("read verification code error: %v", err)
+			resp.Code = http.StatusInternalServerError
+			resp.Message = err.Error()
+			return
+		}
+		if verificationCode != string(code) {
 			resp.Code = http.StatusBadRequest
 			resp.Message = "invalid verification code"
 			return
@@ -316,18 +329,22 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 		return
 	}
 	if telephone != "" {
-		err = us.userRepo.ResetPasswordByTelephone(telephone, enNewPassword)
+		if err = us.userRepo.ResetPasswordByTelephone(telephone, enNewPassword); err != nil {
+			resp.Code = http.StatusInternalServerError
+			resp.Message = err.Error()
+			logger.Errorf("reset password error: %s", err.Error())
+			return
+		}
+		myRedis.Del(fmt.Sprintf("%d-%s", constants.CodeTypeResetPassword, telephone))
 	} else {
-		err = us.userRepo.ResetPasswordByEmail(email, enNewPassword)
-	}
-	if err != nil {
-		resp.Code = http.StatusInternalServerError
-		resp.Message = err.Error()
-		logger.Errorf("reset password error: %s", err.Error())
-		return
+		if err = us.userRepo.ResetPasswordByEmail(email, enNewPassword); err != nil {
+			resp.Code = http.StatusInternalServerError
+			resp.Message = err.Error()
+			logger.Errorf("reset password error: %s", err.Error())
+			return
+		}
 	}
 	resetPwdResp := &protos.ResetPasswordResp{
-		// TODO: should check with this logic
 		IsNeedReLogin: true,
 	}
 	resp.Data, err = utils.MarshalMessageToAny(resetPwdResp)
@@ -430,9 +447,13 @@ func isProfileNothing2Update(originProfile UserProfile, newProfile UserProfile) 
 	return utils.DeepEqual(originProfile, newProfile)
 }
 
-func isVerificationCodeValid(verificationCode string) (isValid bool, err error) {
-	// TODO: should query from db
-	if verificationCode != "123456" {
+func isVerificationCodeValid(verificationCode, telephone string) (isValid bool, err error) {
+	code, err := myRedis.Get(fmt.Sprintf("%d-%s", constants.CodeTypeRegister, telephone)).Bytes()
+	if err != nil {
+		logger.Errorf("read verification code error: %v", err)
+		return false, err
+	}
+	if verificationCode != string(code) {
 		return false, nil
 	}
 	return true, nil

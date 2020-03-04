@@ -17,8 +17,8 @@
   },
   "redisProfile": {
     "dbHost": "111.231.238.209",
-    "dbPort": "6379",
-    "dbPassword": "",
+    "dbPort": "6797",
+    "dbPassword": "Password1@",
     "dbNum": "1",
     "dbKey": "SaltyIMPro"
   },
