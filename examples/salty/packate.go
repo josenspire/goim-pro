@@ -14,7 +14,7 @@ var (
 func obtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_CodeType) {
 	smsReq := protos.ObtainSMSCodeReq{
 		CodeType:  codeType,
-		Telephone: "13631210007",
+		Telephone: "13631210008",
 	}
 	anyData, _ := utils.MarshalMessageToAny(&smsReq)
 	gprcReq := &protos.GrpcReq{
@@ -96,11 +96,11 @@ func resetPasswordByTelephone(t protos.UserServiceClient, channel string) {
 func register(t protos.UserServiceClient) {
 	registerReq := &protos.RegisterReq{
 		Password:         "1234567890",
-		VerificationCode: "824102",
+		VerificationCode: "738725",
 		Profile: &protos.UserProfile{
-			Telephone:   "13631210001",
-			Email:       "123456@qq.com",
-			Nickname:    "JAMES001",
+			Telephone:   "13631210008",
+			Email:       "12345678@qq.com",
+			Nickname:    "JAMES011",
 			Avatar:      "https://www.baidu.com/avatar/header1.png",
 			Description: "Never settle",
 			Sex:         protos.UserProfile_MALE,
@@ -132,7 +132,7 @@ func login(t protos.UserServiceClient, typeStr string) {
 	if typeStr == "TELEPHONE" {
 		loginReq = &protos.LoginReq{
 			TargetAccount: &protos.LoginReq_Telephone{
-				Telephone: "13631210003",
+				Telephone: "13631210008",
 			},
 			Password: "1234567890",
 		}

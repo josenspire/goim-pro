@@ -120,17 +120,24 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 		resp.Message = err.Error()
 		return
 	}
-	enPassword, err := crypto.AESEncrypt(loginReq.GetPassword(), config.GetApiSecretKey())
-	if err != nil {
-		resp.Code = http.StatusInternalServerError
-		resp.Message = err.Error()
-		return
+
+	telephone, email, password, verificationCode := loginReq.GetTelephone(), loginReq.GetEmail(), loginReq.GetPassword(), loginReq.GetVerificationCode()
+
+	var enPassword string = ""
+	if password != "" {
+		enPassword, err = crypto.AESEncrypt(password, config.GetApiSecretKey())
+		if err != nil {
+			resp.Code = http.StatusInternalServerError
+			resp.Message = err.Error()
+			return
+		}
 	}
+
 	var user *User
-	if loginReq.GetTelephone() != "" {
-		user, err = us.userRepo.QueryByTelephoneAndPassword(loginReq.GetTelephone(), enPassword)
+	if telephone != "" {
+		user, err = loginByTelephone(us, telephone, enPassword, verificationCode)
 	} else {
-		user, err = us.userRepo.QueryByEmailAndPassword(loginReq.GetEmail(), enPassword)
+		user, err = loginByEmail(us, email, enPassword, verificationCode)
 	}
 	if err != nil {
 		resp.Code = http.StatusBadRequest
@@ -283,13 +290,7 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 
 	if verificationCode != "" {
 		// 1. code + newPassword
-		code, err := myRedis.Get(fmt.Sprintf("%d-%s", constants.CodeTypeResetPassword, telephone)).Bytes()
-		if err != nil {
-			logger.Errorf("read verification code error: %v", err)
-			resp.Code = http.StatusInternalServerError
-			resp.Message = err.Error()
-			return
-		}
+		code := myRedis.Get(fmt.Sprintf("%d-%s", constants.CodeTypeResetPassword, telephone)).Val()
 		if verificationCode != string(code) {
 			resp.Code = http.StatusBadRequest
 			resp.Message = "invalid verification code"
@@ -448,11 +449,7 @@ func isProfileNothing2Update(originProfile UserProfile, newProfile UserProfile) 
 }
 
 func isVerificationCodeValid(verificationCode, telephone string) (isValid bool, err error) {
-	code, err := myRedis.Get(fmt.Sprintf("%d-%s", constants.CodeTypeRegister, telephone)).Bytes()
-	if err != nil {
-		logger.Errorf("read verification code error: %v", err)
-		return false, err
-	}
+	code := myRedis.Get(fmt.Sprintf("%d-%s", constants.CodeTypeRegister, telephone)).Val()
 	if verificationCode != string(code) {
 		return false, nil
 	}
@@ -509,4 +506,68 @@ func resetPwdParameterCalibration(verificationCode, oldPassword, newPassword str
 		}
 	}
 	return
+}
+
+func loginByTelephone(us *userService, telephone, enPassword, verificationCode string) (user *User, err error) {
+	// 1. login by password
+	if enPassword != "" {
+		user, err = us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
+		if err != nil {
+			if err != utils.ErrAccountOrPwdInvalid {
+				logger.Errorf("login by telephone and passwor error: %s", err)
+				return nil, err
+			}
+		} else {
+			return user, err
+		}
+	}
+	// 2. login by verification code
+	if verificationCode != "" {
+		codeKey := fmt.Sprintf("%d-%s", constants.CodeTypeLogin, telephone)
+		code := myRedis.Get(codeKey).Val()
+		if verificationCode == string(code) {
+			criteria := &User{}
+			criteria.Telephone = telephone
+			if user, err = us.userRepo.FindOneUser(criteria); err != nil {
+				logger.Errorf("find user by telephone error: %s", err.Error())
+				return nil, err
+			}
+			myRedis.Del(codeKey)
+			return user, nil
+		}
+	}
+	return user, err
+}
+
+func loginByEmail(us *userService, email, enPassword, verificationCode string) (user *User, err error) {
+	// 1. login by password
+	if enPassword != "" {
+		user, err = us.userRepo.QueryByEmailAndPassword(email, enPassword)
+		if err != nil {
+			if err != utils.ErrAccountOrPwdInvalid {
+				logger.Errorf("login by email and passwor error: %s", err)
+				return nil, err
+			}
+		} else {
+			return user, nil
+		}
+
+	}
+	// 2. login by verification code
+	if verificationCode != "" {
+		codeKey := fmt.Sprintf("%d-%s", constants.CodeTypeLogin, email)
+		code := myRedis.Get(codeKey).Val()
+		if verificationCode == string(code) {
+			criteria := &User{}
+			criteria.Email = email
+			if user, err = us.userRepo.FindOneUser(criteria); err != nil {
+				logger.Errorf("find user by email error: %s", err.Error())
+				return nil, err
+			}
+			myRedis.Del(codeKey)
+			return user, nil
+		}
+	}
+	return user, nil
+
 }

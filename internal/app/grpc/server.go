@@ -122,14 +122,9 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 				return resp, nil
 			}
 
-			redisToken, err := myRedis.Get(fmt.Sprintf("TK-%s", string(payload))).Bytes()
-			if redisToken == nil {
+			redisToken := myRedis.Get(fmt.Sprintf("TK-%s", string(payload))).Val()
+			if redisToken == "" {
 				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, "the token has expired")
-				return resp, nil
-			}
-			if err != nil {
-				logger.Errorf("interceptor redis read error: %v", err)
-				resp, _ = utils.NewGRPCResp(http.StatusInternalServerError, nil, err.Error())
 				return resp, nil
 			}
 			gRPCReq.Token = string(payload)
