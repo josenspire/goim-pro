@@ -77,6 +77,10 @@ func main() {
 				t := protos.NewUserServiceClient(conn)
 				login(t, "EMAIL")
 				break
+			case "lq":
+				t := protos.NewUserServiceClient(conn)
+				logout(t)
+				break
 			case "gu":
 				t := protos.NewUserServiceClient(conn)
 				getUserInfo(t)
@@ -122,6 +126,7 @@ func toolsIntroduce() {
 	logger.Info("** ['r']: register **")
 	logger.Info("** ['lt']: login by telephone **")
 	logger.Info("** ['le']: login by email **")
+	logger.Info("** ['lq']: user logout **")
 	logger.Info("** ['gu']: get user info by userId **")
 	logger.Info("** ['qt']: query user info by telephone **")
 	logger.Info("** ['qe']: query user info by email **")

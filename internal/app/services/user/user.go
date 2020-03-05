@@ -180,15 +180,36 @@ func (us *userService) Logout(ctx context.Context, req *protos.GrpcReq) (resp *p
 		return
 	}
 
-	// if true, mandatory and will remove all online user
+	token := req.GetToken()
+	isValid, payload, err := utils.TokenVerify(token)
+	if err != nil {
+		logger.Errorf("logout by token error: %s", err.Error())
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	if !isValid {
+		resp.Code = http.StatusBadRequest
+		resp.Message = "this user has logged out"
+		return
+	}
+
+	key := fmt.Sprintf("TK-%s", string(payload))
+
+	_token := myRedis.Get(key).Val()
+	if _token == "" {
+		resp.Code = http.StatusBadRequest
+		resp.Message = "this user has logged out"
+		return
+	}
+	// TODO: if true, mandatory and will remove all online user
 	if logoutReq.GetIsMandatoryLogout() {
-		//TODO: remove all token from redis
+		myRedis.Del(key).Val()
 	} else {
-		//TODO: remove current token from redis
+		myRedis.Del(key).Val()
 	}
 
 	resp.Message = "user logout successful"
-
 	return
 }
 

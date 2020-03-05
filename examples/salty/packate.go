@@ -163,6 +163,31 @@ func login(t protos.UserServiceClient, typeStr string) {
 	}
 }
 
+func logout(t protos.UserServiceClient) {
+	var logoutReq *protos.LogoutReq
+
+	logoutReq = &protos.LogoutReq{
+		IsMandatoryLogout: true,
+	}
+
+	anyData, _ := utils.MarshalMessageToAny(logoutReq)
+	grpcReq := &protos.GrpcReq{
+		DeviceId: "",
+		Version:  "",
+		Language: 0,
+		Os:       0,
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTWtwV1YxcFVSell3VGtjeVUxaEdXVTVGVUU1TlEwST0iLCJleHAiOjE1ODM1ODc5ODQsImlhdCI6MTU4MzMyODc4NCwiaXNzIjoic2FsdHlfaW0ifQ.t5MGVTe4znN2QcZZKUulv0j3POwIVaqknSldQsnBF8g",
+		Data:     anyData,
+	}
+
+	tr, err := t.Logout(context.Background(), grpcReq)
+	if err != nil {
+		logger.Errorf("login error: %s", err.Error())
+	} else {
+		printResp(tr)
+	}
+}
+
 func getUserInfo(t protos.UserServiceClient) {
 	var getUserInfoReq *protos.GetUserInfoReq
 
