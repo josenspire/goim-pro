@@ -176,7 +176,7 @@ func logout(t protos.UserServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTWtwV1YxcFVSell3VGtjeVUxaEdXVTVGVUU1TlEwST0iLCJleHAiOjE1ODM1ODc5ODQsImlhdCI6MTU4MzMyODc4NCwiaXNzIjoic2FsdHlfaW0ifQ.t5MGVTe4znN2QcZZKUulv0j3POwIVaqknSldQsnBF8g",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTWtwWVRVTTVPRk5hV0UxSFJVZFdWRVJGUTFORU56Zz0iLCJleHAiOjE1ODM2NzYyNTYsImlhdCI6MTU4MzQxNzA1NiwiaXNzIjoic2FsdHlfaW0ifQ.TW40l918nMLITbHD4shmGHUOomlw2WC-SyFdimnG-cE",
 		Data:     anyData,
 	}
 
@@ -276,6 +276,29 @@ func updateUserInfo(t protos.UserServiceClient) {
 	}
 
 	tr, err := t.UpdateUserInfo(context.Background(), grpcReq)
+	if err != nil {
+		logger.Errorf("login error: %s", err.Error())
+	} else {
+		printResp(tr)
+	}
+}
+
+func requestContact(t protos.ContactServiceClient) {
+	reqContactReq := &protos.RequestContactReq{
+		UserId: "01E07SG858N3CGV5M1APVQKZYR",
+		Reason: "你好，交个朋友！",
+	}
+	anyData, _ := utils.MarshalMessageToAny(reqContactReq)
+	grpcReq := &protos.GrpcReq{
+		DeviceId: "",
+		Version:  "",
+		Language: 0,
+		Os:       0,
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTWtwWVRVTTVPRk5hV0UxSFJVZFdWRVJGUTFORU56Zz0iLCJleHAiOjE1ODM2NzYyNTYsImlhdCI6MTU4MzQxNzA1NiwiaXNzIjoic2FsdHlfaW0ifQ.TW40l918nMLITbHD4shmGHUOomlw2WC-SyFdimnG-cE",
+		Data:     anyData,
+	}
+
+	tr, err := t.RequestContact(context.Background(), grpcReq)
 	if err != nil {
 		logger.Errorf("login error: %s", err.Error())
 	} else {

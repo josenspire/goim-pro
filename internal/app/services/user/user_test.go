@@ -241,7 +241,7 @@ func Test_userService_ResetPassword(t *testing.T) {
 
 func Test_userService_GetUserInfo(t *testing.T) {
 	m := &MockUserRepo{}
-	m.On("GetUserByUserId", "13631210001").Return(modelUser1, nil)
+	m.On("FindByUserId", "13631210001").Return(modelUser1, nil)
 
 	Convey("testing_grpc_get_user_by_userId", t, func() {
 		var ctx context.Context
@@ -376,8 +376,8 @@ func Test_userService_UpdateUserInfo(t *testing.T) {
 	}
 
 	m := &MockUserRepo{}
-	m.On("GetUserByUserId", "13631210001").Return(modelUser1, nil)
-	m.On("GetUserByUserId", "13631210002").Return(&user.User{}, nil)
+	m.On("FindByUserId", "13631210001").Return(modelUser1, nil)
+	m.On("FindByUserId", "13631210002").Return(&user.User{}, nil)
 	m.On("FindOneAndUpdateProfile", criteria1, utils.TransformStructToMap(newProfile1)).Return(nil)
 	m.On("FindOneAndUpdateProfile", criteria2, utils.TransformStructToMap(newProfile2)).Return(nil)
 

@@ -47,60 +47,51 @@ func main() {
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
 				obtainSMSCode(t, protos.ObtainSMSCodeReq_REGISTER)
-				break
 			case "s2":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
 				obtainSMSCode(t, protos.ObtainSMSCodeReq_LOGIN)
-				break
 			case "s3":
 				t := protos.NewSMSServiceClient(conn)
 				obtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD)
-				break
 			case "rst1":
 				t := protos.NewUserServiceClient(conn)
 				resetPasswordByTelephone(t, "OLD_PASSWORD")
-				break
 			case "rst2":
 				t := protos.NewUserServiceClient(conn)
 				resetPasswordByTelephone(t, "VERIFICATION")
-				break
 			case "r":
 				t := protos.NewUserServiceClient(conn)
 				register(t)
-				break
 			case "lt":
 				t := protos.NewUserServiceClient(conn)
 				login(t, "TELEPHONE")
-				break
 			case "le":
 				t := protos.NewUserServiceClient(conn)
 				login(t, "EMAIL")
-				break
 			case "lq":
 				t := protos.NewUserServiceClient(conn)
 				logout(t)
-				break
 			case "gu":
 				t := protos.NewUserServiceClient(conn)
 				getUserInfo(t)
-				break
 			case "qt":
 				t := protos.NewUserServiceClient(conn)
 				queryUserInfo(t, "TELEPHONE")
-				break
 			case "qe":
 				t := protos.NewUserServiceClient(conn)
 				queryUserInfo(t, "EMAIL")
-				break
 			case "ud":
 				t := protos.NewUserServiceClient(conn)
 				updateUserInfo(t)
-				break
+
+			// contacts
+			case "ct-rq":
+				t := protos.NewContactServiceClient(conn)
+				requestContact(t)
 			case "q":
 				logger.Infoln("grpc client disconnected!")
 				exitChain <- str
-				break
 			default:
 				logger.Info("server continue to listen...")
 			}
@@ -131,6 +122,9 @@ func toolsIntroduce() {
 	logger.Info("** ['qt']: query user info by telephone **")
 	logger.Info("** ['qe']: query user info by email **")
 	logger.Info("** ['ud']: update user profile **")
+
+	logger.Info("** *********************** **")
+	logger.Info("** ['ct-rq']: request add contact **")
 
 	logger.Info("** ['q']: exist [GRPC] client **")
 }

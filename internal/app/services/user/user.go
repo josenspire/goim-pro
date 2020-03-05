@@ -238,7 +238,7 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 	userProfile := converters.ConvertProtoUserProfile2Entity(pbProfile)
 	userProfile.UserId = userId
 
-	originUserProfile, err := us.userRepo.GetUserByUserId(userId)
+	originUserProfile, err := us.userRepo.FindByUserId(userId)
 	if err == utils.ErrInvalidUserId {
 		resp.Code = http.StatusBadRequest
 		resp.Message = utils.ErrInvalidUserId.Error()
@@ -395,7 +395,7 @@ func (us *userService) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (re
 		return
 	}
 
-	user, err := us.userRepo.GetUserByUserId(getUserReq.GetUserId())
+	user, err := us.userRepo.FindByUserId(getUserReq.GetUserId())
 
 	if err != nil {
 		if err == utils.ErrInvalidUserId {

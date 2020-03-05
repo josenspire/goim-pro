@@ -4,7 +4,9 @@ import "errors"
 
 var (
 	// error
-	ErrInvalidParameters = errors.New("invalid parameters")
+	ErrIllegalOperation = errors.New("illegal operation")
+
+	ErrInvalidParameters = errors.New("bad request, invalid parameters")
 
 	ErrAccountOrPwdInvalid = errors.New("account or password is incorrect")
 
@@ -13,4 +15,10 @@ var (
 	ErrInvalidUserId = errors.New("invalid user id")
 
 	ErrUserNotExists = errors.New("user not exists")
+
+	// contact
+	ErrContactNotExists       = errors.New("contact not exists")
+	ErrContactAlreadyExists   = errors.New("user are already your contact")
+	ErrIllegalRequestContacts = errors.New("illegal request contacts")
+	ErrInvalidContact         = errors.New("invalid contacts")
 )

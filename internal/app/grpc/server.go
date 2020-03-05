@@ -12,6 +12,7 @@ import (
 	demo "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
+	"goim-pro/internal/app/repos/contact"
 	"goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services"
 	mysqlsrv "goim-pro/pkg/db/mysql"
@@ -186,6 +187,16 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 			return
 		}
 	}
+	if !db.HasTable(&contact.Contact{}) {
+		err = db.Set(
+			"gorm:table_options",
+			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
+		).CreateTable(&contact.Contact{}).Error
+		if err != nil {
+			logger.Errorf("initial mysql tables [contacts] error: %s", err.Error())
+			return
+		}
+	}
 	return
 }
 
@@ -194,4 +205,5 @@ func handleServiceRegister(srv *grpc.Server) {
 	demo.RegisterWaiterServer(srv, gprcService.WaiterServer)
 	protos.RegisterSMSServiceServer(srv, gprcService.SMSServer)
 	protos.RegisterUserServiceServer(srv, gprcService.UserServer)
+	protos.RegisterContactServiceServer(srv, gprcService.ContactServer)
 }

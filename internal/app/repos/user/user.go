@@ -37,7 +37,7 @@ type IUserRepo interface {
 	RemoveUserByUserId(userId string, isForce bool) error
 	ResetPasswordByTelephone(telephone string, newPassword string) error
 	ResetPasswordByEmail(email string, newPassword string) error
-	GetUserByUserId(userId string) (*User, error)
+	FindByUserId(userId string) (*User, error)
 	FindOneUser(user *User) (*User, error)
 	FindOneAndUpdateProfile(user *User, profile map[string]interface{}) error
 }
@@ -173,7 +173,7 @@ func (u *User) ResetPasswordByEmail(email string, newPassword string) (err error
 	return
 }
 
-func (u *User) GetUserByUserId(userId string) (user *User, err error) {
+func (u *User) FindByUserId(userId string) (user *User, err error) {
 	user = &User{}
 	db := mysqlDB.First(user, "userId = ?", userId)
 	if db.RecordNotFound() {

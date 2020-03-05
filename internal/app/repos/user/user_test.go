@@ -204,14 +204,14 @@ func TestUser_GetUserByUserId(t *testing.T) {
 		Convey("get_user_info_success_then_return", func() {
 			var userId = "2"
 
-			user, err := u.GetUserByUserId(userId)
+			user, err := u.FindByUserId(userId)
 			So(err, ShouldBeNil)
 			So(user.Email, ShouldEqual, "294001@qq.com")
 		})
 		Convey("get_user_info_failed_by_invalid_userId", func() {
 			var userId = "3"
 
-			_, err := u.GetUserByUserId(userId)
+			_, err := u.FindByUserId(userId)
 			So(err, ShouldNotBeNil)
 			So(err, ShouldEqual, utils.ErrInvalidUserId)
 		})
@@ -282,7 +282,7 @@ func TestUser_FindOneAndUpdateProfile(t *testing.T) {
 			}
 
 			err := u.FindOneAndUpdateProfile(userCriteria, utils.TransformStructToMap(newProfile))
-			user, _ := u.GetUserByUserId(newProfile.UserId)
+			user, _ := u.FindByUserId(newProfile.UserId)
 
 			So(err, ShouldBeNil)
 			So(user.Telephone, ShouldEqual, "13631210111")

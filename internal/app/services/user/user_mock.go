@@ -49,7 +49,7 @@ func (m *MockUserRepo) ResetPasswordByEmail(email string, newPassword string) er
 	return args.Error(0)
 }
 
-func (m *MockUserRepo) GetUserByUserId(userId string) (user *User, err error) {
+func (m *MockUserRepo) FindByUserId(userId string) (user *User, err error) {
 	args := m.Called(userId)
 	return args.Get(0).(*User), args.Error(1)
 }
