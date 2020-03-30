@@ -25,7 +25,10 @@ type RemarkProfile struct {
 
 type IContactRepo interface {
 	IsExistContact(userId, contactId string) (isExist bool, err error)
+	FindOne(condition *Contact) (contact *Contact, err error)
 	InsertContacts(newContacts ...*Contact) (err error)
+	RemoveContactsByIds(userId string, contactIds ...string) (err error)
+	FindOneAndUpdateRemark(ct *Contact, remarkInfo map[string]interface{}) (err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -50,6 +53,18 @@ func (cta *Contact) IsExistContact(userId, contactId string) (isExists bool, err
 	return true, err
 }
 
+func (cta *Contact) FindOne(condition *Contact) (contact *Contact, err error) {
+	contact = &Contact{}
+	db := mysqlDB.Where(condition).First(&contact)
+	if db.RecordNotFound() {
+		return nil, nil
+	}
+	if err = db.Error; err != nil {
+		logger.Errorf("error happend to query user information: %v", err)
+	}
+	return
+}
+
 func (cta *Contact) InsertContacts(newContacts ...*Contact) (err error) {
 	// BatchSave 批量插入数据
 	var buffer bytes.Buffer
@@ -67,6 +82,24 @@ func (cta *Contact) InsertContacts(newContacts ...*Contact) (err error) {
 	}
 	if err = mysqlDB.Exec(buffer.String()).Error; err != nil {
 		logger.Errorf("exec insert contacts error: %v", err)
+	}
+	return
+}
+
+// remove user's contacts by contact ids, by force
+func (cta *Contact) RemoveContactsByIds(userId string, contactIds ...string) (err error) {
+	_db := mysqlDB.Unscoped().Delete(&Contact{}, "userId = ? and contactId IN (?)", userId, contactIds)
+	if _db.Error != nil {
+		logger.Errorf("error happened to remove user: %v", _db.Error)
+		err = _db.Error
+	}
+	return
+}
+
+func (cta *Contact) FindOneAndUpdateRemark(ct *Contact, remarkProfile map[string]interface{}) (err error) {
+	db := mysqlDB.Table("contacts").Where(ct).Update(remarkProfile)
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to update user profile: %v", err)
 	}
 	return
 }

@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v7"
+	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	. "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/user"
+	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -26,12 +28,14 @@ var (
 	expiresTime = 15 * time.Minute // 15 min
 	logger      = logs.GetLogger("INFO")
 	myRedis     *redis.Client
+	mysqlDB     *gorm.DB
 )
 
 func New() protos.SMSServiceServer {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
+	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
-	repoServer := repos.New()
+	repoServer := repos.New(mysqlDB)
 	return &smsServer{
 		userRepo: repoServer.UserRepo,
 	}

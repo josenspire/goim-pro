@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v7"
+	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
 	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
+	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -25,6 +27,7 @@ var (
 
 	expiresTime = time.Hour * time.Duration(24*3) // 3 days
 	myRedis     *redis.Client
+	mysqlDB     *gorm.DB
 )
 
 type userService struct {
@@ -33,8 +36,9 @@ type userService struct {
 
 func New() protos.UserServiceServer {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
+	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
-	repoServer := repos.New()
+	repoServer := repos.New(mysqlDB)
 	return &userService{
 		userRepo: repoServer.UserRepo,
 	}
