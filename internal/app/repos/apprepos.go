@@ -1,10 +1,10 @@
 package repos
 
 import (
+	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/repos/address"
 	"goim-pro/internal/app/repos/contact"
 	"goim-pro/internal/app/repos/user"
-	mysqlsrv "goim-pro/pkg/db/mysql"
 )
 
 type RepoServer struct {
@@ -13,8 +13,7 @@ type RepoServer struct {
 	ContactRepo contact.IContactRepo
 }
 
-func New() *RepoServer {
-	mysqlDB := mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+func New(mysqlDB *gorm.DB) *RepoServer {
 	return &RepoServer{
 		UserRepo:    user.NewUserRepo(mysqlDB),
 		AddressRepo: address.New(),
