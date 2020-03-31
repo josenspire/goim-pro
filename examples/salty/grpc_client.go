@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	protos "goim-pro/api/protos/salty"
+	"goim-pro/examples/salty/contact"
+	"goim-pro/examples/salty/user"
 	"goim-pro/pkg/logs"
 	"google.golang.org/grpc"
 	"log"
@@ -46,49 +48,55 @@ func main() {
 			case "s1":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
-				obtainSMSCode(t, protos.ObtainSMSCodeReq_REGISTER)
+				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_REGISTER)
 			case "s2":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
-				obtainSMSCode(t, protos.ObtainSMSCodeReq_LOGIN)
+				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_LOGIN)
 			case "s3":
 				t := protos.NewSMSServiceClient(conn)
-				obtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD)
+				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD)
 			case "rst1":
 				t := protos.NewUserServiceClient(conn)
-				resetPasswordByTelephone(t, "OLD_PASSWORD")
+				user.ResetPasswordByTelephone(t, "OLD_PASSWORD")
 			case "rst2":
 				t := protos.NewUserServiceClient(conn)
-				resetPasswordByTelephone(t, "VERIFICATION")
+				user.ResetPasswordByTelephone(t, "VERIFICATION")
 			case "r":
 				t := protos.NewUserServiceClient(conn)
-				register(t)
+				user.Register(t)
 			case "lt":
 				t := protos.NewUserServiceClient(conn)
-				login(t, "TELEPHONE")
+				user.Login(t, "TELEPHONE")
 			case "le":
 				t := protos.NewUserServiceClient(conn)
-				login(t, "EMAIL")
+				user.Login(t, "EMAIL")
 			case "lq":
 				t := protos.NewUserServiceClient(conn)
-				logout(t)
+				user.Logout(t)
 			case "gu":
 				t := protos.NewUserServiceClient(conn)
-				getUserInfo(t)
+				user.GetUserInfo(t)
 			case "qt":
 				t := protos.NewUserServiceClient(conn)
-				queryUserInfo(t, "TELEPHONE")
+				user.QueryUserInfo(t, "TELEPHONE")
 			case "qe":
 				t := protos.NewUserServiceClient(conn)
-				queryUserInfo(t, "EMAIL")
+				user.QueryUserInfo(t, "EMAIL")
 			case "ud":
 				t := protos.NewUserServiceClient(conn)
-				updateUserInfo(t)
+				user.UpdateUserInfo(t)
 
 			// contacts
 			case "ct-rq":
 				t := protos.NewContactServiceClient(conn)
-				requestContact(t)
+				contact.RequestContact(t)
+			case "ct-acp":
+				t := protos.NewContactServiceClient(conn)
+				contact.AcceptContact(t)
+			case "ct-udt":
+				t := protos.NewContactServiceClient(conn)
+				contact.UpdateRemarkInfo(t)
 			case "q":
 				logger.Infoln("grpc client disconnected!")
 				exitChain <- str
@@ -125,6 +133,8 @@ func toolsIntroduce() {
 
 	logger.Info("** *********************** **")
 	logger.Info("** ['ct-rq']: request add contact **")
+	logger.Info("** ['ct-acp']: accept add contact **")
+	logger.Info("** ['ct-udt']: update contact remark profile **")
 
 	logger.Info("** ['q']: exist [GRPC] client **")
 }

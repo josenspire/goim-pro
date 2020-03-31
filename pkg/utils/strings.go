@@ -2,6 +2,7 @@ package utils
 
 import (
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -56,4 +57,14 @@ func GenerateRandomNum(numSize int) string {
 		result = append(result, bytes[r.Intn(len(bytes))])
 	}
 	return string(result)
+}
+
+func StrArray2String(strArr []string, split string) (str string) {
+	for i, item := range strArr {
+		str += strings.Trim(item, "")
+		if i != len(strArr)-1 {
+			str += split
+		}
+	}
+	return
 }

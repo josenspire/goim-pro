@@ -1,20 +1,22 @@
-package main
+package user
 
 import (
 	"context"
 	protos "goim-pro/api/protos/salty"
+	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"log"
 )
 
 var (
 	UserId = "01E07SG858N3CGV5M1APVQKZYR"
+	logger = logs.GetLogger("INFO")
 )
 
-func obtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_CodeType) {
+func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_CodeType) {
 	smsReq := protos.ObtainSMSCodeReq{
 		CodeType:  codeType,
-		Telephone: "13631210008",
+		Telephone: "13631210002",
 	}
 	anyData, _ := utils.MarshalMessageToAny(&smsReq)
 	gprcReq := &protos.GrpcReq{
@@ -48,7 +50,7 @@ func obtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_C
 	//logger.Infof("[code]: %d", tr)
 }
 
-func resetPasswordByTelephone(t protos.UserServiceClient, channel string) {
+func ResetPasswordByTelephone(t protos.UserServiceClient, channel string) {
 	var resetPasswordReq *protos.ResetPasswordReq
 	switch channel {
 	case "OLD_PASSWORD":
@@ -93,14 +95,14 @@ func resetPasswordByTelephone(t protos.UserServiceClient, channel string) {
 	}
 }
 
-func register(t protos.UserServiceClient) {
+func Register(t protos.UserServiceClient) {
 	registerReq := &protos.RegisterReq{
 		Password:         "1234567890",
-		VerificationCode: "738725",
+		VerificationCode: "386392",
 		Profile: &protos.UserProfile{
-			Telephone:   "13631210008",
-			Email:       "12345678@qq.com",
-			Nickname:    "JAMES011",
+			Telephone:   "13631210002",
+			Email:       "12345672@qq.com",
+			Nickname:    "JAMES013",
 			Avatar:      "https://www.baidu.com/avatar/header1.png",
 			Description: "Never settle",
 			Sex:         protos.UserProfile_MALE,
@@ -126,13 +128,13 @@ func register(t protos.UserServiceClient) {
 	}
 }
 
-func login(t protos.UserServiceClient, typeStr string) {
+func Login(t protos.UserServiceClient, typeStr string) {
 	var loginReq *protos.LoginReq
 
 	if typeStr == "TELEPHONE" {
 		loginReq = &protos.LoginReq{
 			TargetAccount: &protos.LoginReq_Telephone{
-				Telephone: "13631210008",
+				Telephone: "13631210001",
 			},
 			Password: "1234567890",
 		}
@@ -163,7 +165,7 @@ func login(t protos.UserServiceClient, typeStr string) {
 	}
 }
 
-func logout(t protos.UserServiceClient) {
+func Logout(t protos.UserServiceClient) {
 	var logoutReq *protos.LogoutReq
 
 	logoutReq = &protos.LogoutReq{
@@ -188,7 +190,7 @@ func logout(t protos.UserServiceClient) {
 	}
 }
 
-func getUserInfo(t protos.UserServiceClient) {
+func GetUserInfo(t protos.UserServiceClient) {
 	var getUserInfoReq *protos.GetUserInfoReq
 
 	getUserInfoReq = &protos.GetUserInfoReq{
@@ -213,7 +215,7 @@ func getUserInfo(t protos.UserServiceClient) {
 	}
 }
 
-func queryUserInfo(t protos.UserServiceClient, typeStr string) {
+func QueryUserInfo(t protos.UserServiceClient, typeStr string) {
 	var queryUserInfoReq *protos.QueryUserInfoReq
 	switch typeStr {
 	case "TELEPHONE":
@@ -250,7 +252,7 @@ func queryUserInfo(t protos.UserServiceClient, typeStr string) {
 	}
 }
 
-func updateUserInfo(t protos.UserServiceClient) {
+func UpdateUserInfo(t protos.UserServiceClient) {
 	var updateUserInfoReq *protos.UpdateUserInfoReq
 	updateUserInfoReq = &protos.UpdateUserInfoReq{
 		Profile: &protos.UserProfile{
@@ -276,29 +278,6 @@ func updateUserInfo(t protos.UserServiceClient) {
 	}
 
 	tr, err := t.UpdateUserInfo(context.Background(), grpcReq)
-	if err != nil {
-		logger.Errorf("login error: %s", err.Error())
-	} else {
-		printResp(tr)
-	}
-}
-
-func requestContact(t protos.ContactServiceClient) {
-	reqContactReq := &protos.RequestContactReq{
-		UserId: "01E07SG858N3CGV5M1APVQKZYR",
-		Reason: "你好，交个朋友！",
-	}
-	anyData, _ := utils.MarshalMessageToAny(reqContactReq)
-	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
-		Version:  "",
-		Language: 0,
-		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTWtwWVRVTTVPRk5hV0UxSFJVZFdWRVJGUTFORU56Zz0iLCJleHAiOjE1ODM2NzYyNTYsImlhdCI6MTU4MzQxNzA1NiwiaXNzIjoic2FsdHlfaW0ifQ.TW40l918nMLITbHD4shmGHUOomlw2WC-SyFdimnG-cE",
-		Data:     anyData,
-	}
-
-	tr, err := t.RequestContact(context.Background(), grpcReq)
 	if err != nil {
 		logger.Errorf("login error: %s", err.Error())
 	} else {

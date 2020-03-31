@@ -8,7 +8,7 @@ import (
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/contact"
-	"goim-pro/internal/app/repos/user"
+	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
@@ -16,18 +16,16 @@ import (
 	"goim-pro/pkg/utils"
 	"net/http"
 	"strings"
-	"time"
 )
 
 var (
-	logger      = logs.GetLogger("INFO")
-	expiresTime = time.Hour * time.Duration(24*7) // 7 days
-	myRedis     *redis.Client
-	mysqlDB     *gorm.DB
+	logger  = logs.GetLogger("INFO")
+	myRedis *redis.Client
+	mysqlDB *gorm.DB
 )
 
 type contactService struct {
-	userRepo    user.IUserRepo
+	userRepo    IUserRepo
 	contactRepo IContactRepo
 }
 
@@ -273,19 +271,6 @@ func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq
 	if strings.EqualFold(userId, contactId) {
 		resp.Code = http.StatusBadRequest
 		resp.Message = utils.ErrIllegalOperation.Error()
-		return
-	}
-
-	_, err = cs.userRepo.FindByUserId(contactId)
-	if err != nil {
-		if err == utils.ErrInvalidUserId {
-			resp.Code = http.StatusBadRequest
-			resp.Message = utils.ErrInvalidContact.Error()
-			return
-		}
-		logger.Errorf("find contact by userId error: %s", err.Error())
-		resp.Code = http.StatusInternalServerError
-		resp.Message = err.Error()
 		return
 	}
 

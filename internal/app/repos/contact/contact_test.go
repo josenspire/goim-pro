@@ -79,3 +79,42 @@ func TestContact_RemoveContactsByIds(t *testing.T) {
 	})
 
 }
+
+func TestContact_FindOneAndUpdateRemark(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	newContact1 := &Contact{
+		UserId:    "TEST001",
+		ContactId: "TEST002",
+	}
+
+	ct := &Contact{}
+	_ = ct.InsertContacts(newContact1)
+
+	Convey("Test_FindOneAndUpdateRemark", t, func() {
+		Convey("should_update_contact_remark_profile_successfully", func() {
+			criteria := &Contact{}
+			criteria.UserId = "TEST001"
+			criteria.ContactId = "TEST002"
+
+			remarkProfile := map[string]interface{}{
+				"RemarkName":  "JAMES001",
+				"Telephone":   "13631210001;13631210001",
+				"Description": "Crazy boy..",
+				"Tags":        "Friend;Boy",
+			}
+			err := ct.FindOneAndUpdateRemark(criteria, remarkProfile)
+			ShouldBeNil(err)
+
+			result, _ := ct.FindOne(criteria)
+			So(result.RemarkName, ShouldEqual, "JAMES001")
+			So(result.Telephone, ShouldEqual, "13631210001;13631210001")
+			So(result.Description, ShouldEqual, "Crazy boy..")
+			So(result.Tags, ShouldEqual, "Friend;Boy")
+		})
+	})
+
+	_ = ct.RemoveContactsByIds("TEST001", "TEST002")
+}

@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"goim-pro/config"
 	"goim-pro/internal/app/repos/base"
+	tbl "goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 )
@@ -47,7 +48,7 @@ var crypto = utils.NewCrypto()
 var mysqlDB *gorm.DB
 
 func (User) TableName() string {
-	return "users"
+	return tbl.TableUsers
 }
 
 func NewUserRepo(db *gorm.DB) IUserRepo {
@@ -196,7 +197,7 @@ func (u *User) FindOneUser(us *User) (user *User, err error) {
 }
 
 func (u *User) FindOneAndUpdateProfile(us *User, profile map[string]interface{}) (err error) {
-	db := mysqlDB.Table("users").Where(us).Update(profile)
+	db := mysqlDB.Table(u.TableName()).Where(us).Update(profile)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to update user profile: %v", err)
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/repos/base"
+	"goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
 )
 
@@ -35,7 +36,7 @@ var logger = logs.GetLogger("ERROR")
 var mysqlDB *gorm.DB
 
 func (Contact) TableName() string {
-	return "contacts"
+	return tbl.TableContacts
 }
 
 func NewContactRepo(db *gorm.DB) IContactRepo {
@@ -60,7 +61,7 @@ func (cta *Contact) FindOne(condition *Contact) (contact *Contact, err error) {
 		return nil, nil
 	}
 	if err = db.Error; err != nil {
-		logger.Errorf("error happend to query user information: %v", err)
+		logger.Errorf("error happened to query user information: %v", err)
 	}
 	return
 }
@@ -97,7 +98,7 @@ func (cta *Contact) RemoveContactsByIds(userId string, contactIds ...string) (er
 }
 
 func (cta *Contact) FindOneAndUpdateRemark(ct *Contact, remarkProfile map[string]interface{}) (err error) {
-	db := mysqlDB.Table("contacts").Where(ct).Update(remarkProfile)
+	db := mysqlDB.Table(cta.TableName()).Where(ct).Update(remarkProfile)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to update user profile: %v", err)
 	}
