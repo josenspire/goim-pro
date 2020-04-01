@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	. "goim-pro/internal/app/constants"
@@ -16,7 +15,6 @@ import (
 	"goim-pro/pkg/utils"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type smsServer struct {
@@ -24,11 +22,10 @@ type smsServer struct {
 }
 
 var (
-	codeSize    = 6
-	expiresTime = 15 * time.Minute // 15 min
-	logger      = logs.GetLogger("INFO")
-	myRedis     *redis.Client
-	mysqlDB     *gorm.DB
+	codeSize = 6
+	logger   = logs.GetLogger("INFO")
+	myRedis  *redsrv.BaseClient
+	mysqlDB  *gorm.DB
 )
 
 func New() protos.SMSServiceServer {
@@ -108,7 +105,7 @@ func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (res
 		resp.Message = "invalid request code type"
 		return
 	}
-	if err = myRedis.Set(redisKey, verificationCode, expiresTime).Err(); err != nil {
+	if err = myRedis.Set(redisKey, verificationCode, MinuteOf15); err != nil {
 		logger.Errorf("redis save error: %v", err)
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()

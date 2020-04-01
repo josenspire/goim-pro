@@ -94,6 +94,9 @@ func main() {
 			case "ct-acp":
 				t := protos.NewContactServiceClient(conn)
 				contact.AcceptContact(t)
+			case "ct-rf":
+				t := protos.NewContactServiceClient(conn)
+				contact.RefusedContact(t)
 			case "ct-udt":
 				t := protos.NewContactServiceClient(conn)
 				contact.UpdateRemarkInfo(t)
@@ -134,6 +137,7 @@ func toolsIntroduce() {
 	logger.Info("** *********************** **")
 	logger.Info("** ['ct-rq']: request add contact **")
 	logger.Info("** ['ct-acp']: accept add contact **")
+	logger.Info("** ['ct-rf']: refused contact request **")
 	logger.Info("** ['ct-udt']: update contact remark profile **")
 
 	logger.Info("** ['q']: exist [GRPC] client **")

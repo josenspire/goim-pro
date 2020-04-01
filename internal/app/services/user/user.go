@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
-	"goim-pro/internal/app/constants"
+	. "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
@@ -18,16 +17,14 @@ import (
 	"goim-pro/pkg/utils"
 	"net/http"
 	"strings"
-	"time"
 )
 
 var (
 	logger = logs.GetLogger("INFO")
 	crypto = utils.NewCrypto()
 
-	expiresTime = time.Hour * time.Duration(24*3) // 3 days
-	myRedis     *redis.Client
-	mysqlDB     *gorm.DB
+	myRedis *redsrv.BaseClient
+	mysqlDB *gorm.DB
 )
 
 type userService struct {
@@ -95,7 +92,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		return
 	}
 	// remove cache
-	myRedis.Del(fmt.Sprintf("%d-%s", constants.CodeTypeRegister, telephone))
+	myRedis.Del(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
 
 	registerResp := &protos.RegisterResp{
 		Profile: userProfile,
@@ -152,7 +149,7 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 
 	// gen and save token
 	token := utils.NewToken([]byte(user.UserId))
-	if err = myRedis.Set(fmt.Sprintf("TK-%s", user.UserId), token, expiresTime).Err(); err != nil {
+	if err = myRedis.Set(fmt.Sprintf("TK-%s", user.UserId), token, ThreeDays); err != nil {
 		logger.Errorf("redis save token error: %v", err)
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
@@ -200,7 +197,7 @@ func (us *userService) Logout(ctx context.Context, req *protos.GrpcReq) (resp *p
 
 	key := fmt.Sprintf("TK-%s", string(payload))
 
-	_token := myRedis.Get(key).Val()
+	_token := myRedis.Get(key)
 	if _token == "" {
 		resp.Code = http.StatusBadRequest
 		resp.Message = "this user has logged out"
@@ -208,9 +205,9 @@ func (us *userService) Logout(ctx context.Context, req *protos.GrpcReq) (resp *p
 	}
 	// TODO: if true, mandatory and will remove all online user
 	if logoutReq.GetIsMandatoryLogout() {
-		myRedis.Del(key).Val()
+		myRedis.Del(key)
 	} else {
-		myRedis.Del(key).Val()
+		myRedis.Del(key)
 	}
 
 	resp.Message = "user logout successful"
@@ -315,7 +312,7 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 
 	if verificationCode != "" {
 		// 1. code + newPassword
-		code := myRedis.Get(fmt.Sprintf("%d-%s", constants.CodeTypeResetPassword, telephone)).Val()
+		code := myRedis.Get(fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone))
 		if verificationCode != string(code) {
 			resp.Code = http.StatusBadRequest
 			resp.Message = "invalid verification code"
@@ -361,7 +358,7 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 			logger.Errorf("reset password error: %s", err.Error())
 			return
 		}
-		myRedis.Del(fmt.Sprintf("%d-%s", constants.CodeTypeResetPassword, telephone))
+		myRedis.Del(fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone))
 	} else {
 		if err = us.userRepo.ResetPasswordByEmail(email, enNewPassword); err != nil {
 			resp.Code = http.StatusInternalServerError
@@ -474,7 +471,7 @@ func isProfileNothing2Update(originProfile UserProfile, newProfile UserProfile) 
 }
 
 func isVerificationCodeValid(verificationCode, telephone string) (isValid bool, err error) {
-	code := myRedis.Get(fmt.Sprintf("%d-%s", constants.CodeTypeRegister, telephone)).Val()
+	code := myRedis.Get(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
 	if verificationCode != string(code) {
 		return false, nil
 	}
@@ -548,8 +545,8 @@ func loginByTelephone(us *userService, telephone, enPassword, verificationCode s
 	}
 	// 2. login by verification code
 	if verificationCode != "" {
-		codeKey := fmt.Sprintf("%d-%s", constants.CodeTypeLogin, telephone)
-		code := myRedis.Get(codeKey).Val()
+		codeKey := fmt.Sprintf("%d-%s", CodeTypeLogin, telephone)
+		code := myRedis.Get(codeKey)
 		if verificationCode == string(code) {
 			criteria := &User{}
 			criteria.Telephone = telephone
@@ -580,8 +577,8 @@ func loginByEmail(us *userService, email, enPassword, verificationCode string) (
 	}
 	// 2. login by verification code
 	if verificationCode != "" {
-		codeKey := fmt.Sprintf("%d-%s", constants.CodeTypeLogin, email)
-		code := myRedis.Get(codeKey).Val()
+		codeKey := fmt.Sprintf("%d-%s", CodeTypeLogin, email)
+		code := myRedis.Get(codeKey)
 		if verificationCode == string(code) {
 			criteria := &User{}
 			criteria.Email = email

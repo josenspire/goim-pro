@@ -3,9 +3,9 @@ package contactsrv
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
+	. "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/contact"
 	. "goim-pro/internal/app/repos/user"
@@ -20,7 +20,7 @@ import (
 
 var (
 	logger  = logs.GetLogger("INFO")
-	myRedis *redis.Client
+	myRedis *redsrv.BaseClient
 	mysqlDB *gorm.DB
 )
 
@@ -94,10 +94,12 @@ func (cs *contactService) RequestContact(ctx context.Context, req *protos.GrpcRe
 	cacheContent := make(map[string]interface{})
 	cacheContent["contactId"] = contactId
 	cacheContent["reason"] = requestReason
-
-	for field, value := range cacheContent {
-		err = myRedis.HSet(ctKey, field, value).Err()
+	jsonStr, err := utils.TransformMapToJSONString(cacheContent)
+	if err != nil {
+		logger.Errorf("redis operations error, transform map error: %s", err.Error())
 	}
+	err = myRedis.Set(ctKey, jsonStr, DefaultExpiresTime)
+
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -164,9 +166,12 @@ func (cs *contactService) RefusedContact(ctx context.Context, req *protos.GrpcRe
 	cacheContent["contactId"] = contactId
 	cacheContent["reason"] = refusedReason
 
-	for field, value := range cacheContent {
-		err = myRedis.HSet(ctKey, field, value).Err()
+	jsonStr, err := utils.TransformMapToJSONString(cacheContent)
+	if err != nil {
+		logger.Errorf("redis operations error, transform map error: %s", err.Error())
 	}
+	err = myRedis.Set(ctKey, jsonStr, DefaultExpiresTime)
+
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -176,6 +181,7 @@ func (cs *contactService) RefusedContact(ctx context.Context, req *protos.GrpcRe
 	return
 }
 
+// accept contact request
 func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
@@ -230,7 +236,7 @@ func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq
 
 	// TODO: cache in redis, should replace to Push notification server
 	ctKey := fmt.Sprintf("CT-ACP-%s-%s", userId, contactId)
-	err = myRedis.HSet(ctKey, "contactId", contactId).Err()
+	err = myRedis.Set(ctKey, contactId, DefaultExpiresTime)
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -248,6 +254,7 @@ func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq
 	return
 }
 
+// delete contact
 func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
@@ -290,7 +297,7 @@ func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq
 	go func() {
 		// TODO: cache in redis, should replace to Push notification server
 		ctKey := fmt.Sprintf("CT-DEL-%s-%s", userId, contactId)
-		err = myRedis.HSet(ctKey, "contactId", contactId).Err()
+		err = myRedis.Set(ctKey, contactId, DefaultExpiresTime)
 		if err != nil {
 			// TODO: should log down exception information
 			logger.Errorf("redis cache error: %s", err.Error())
@@ -307,6 +314,7 @@ func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq
 	return
 }
 
+// update contact remark profile
 func (cs *contactService) UpdateRemarkInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
@@ -345,7 +353,7 @@ func (cs *contactService) UpdateRemarkInfo(ctx context.Context, req *protos.Grpc
 	go func() {
 		// TODO: cache in redis, should replace to Push notification server
 		ctKey := fmt.Sprintf("CT-UDT-%s-%s", userId, contactId)
-		err = myRedis.HSet(ctKey, "contactId", contactId).Err()
+		err = myRedis.Set(ctKey, contactId, DefaultExpiresTime)
 		if err != nil {
 			// TODO: should log down exception information
 			logger.Errorf("redis cache error: %s", err.Error())
@@ -359,6 +367,21 @@ func (cs *contactService) UpdateRemarkInfo(ctx context.Context, req *protos.Grpc
 		return
 	}
 	resp.Message = "contact remark profile updated successfully"
+	return
+}
+
+// query user's contact list
+func (cs *contactService) GetContacts(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	userId := req.GetToken()
+
+	// TODO: should consider the black list function
+	criteria := &Contact{
+		UserId: userId,
+	}
+	// TODO:
+	_, _ = cs.contactRepo.FindAll(criteria)
+
 	return
 }
 

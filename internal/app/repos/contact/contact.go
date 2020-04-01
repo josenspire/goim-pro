@@ -14,6 +14,7 @@ type Contact struct {
 	UserId    string `json:"userId" gorm:"column:userId; type:varchar(32); primary_key; not null"`
 	ContactId string `json:"contactId" gorm:"column:contactId; type:varchar(32); primary_key; not null"`
 	RemarkProfile
+	Status string `json:"status" gorm:"column:status; type:varchar(32);"`
 	base.BaseModel
 }
 
@@ -27,6 +28,7 @@ type RemarkProfile struct {
 type IContactRepo interface {
 	IsExistContact(userId, contactId string) (isExist bool, err error)
 	FindOne(condition *Contact) (contact *Contact, err error)
+	FindAll(condition *Contact) (contacts *[]Contact, err error)
 	InsertContacts(newContacts ...*Contact) (err error)
 	RemoveContactsByIds(userId string, contactIds ...string) (err error)
 	FindOneAndUpdateRemark(ct *Contact, remarkInfo map[string]interface{}) (err error)
@@ -63,6 +65,11 @@ func (cta *Contact) FindOne(condition *Contact) (contact *Contact, err error) {
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to query user information: %v", err)
 	}
+	return
+}
+
+func (cta *Contact) FindAll(condition *Contact) (contacts *[]Contact, err error) {
+	// TODO:
 	return
 }
 

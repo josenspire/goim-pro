@@ -38,7 +38,7 @@ func Test_smsServer_ObtainSMSCode(t *testing.T) {
 
 			fmt.Println(actualResp.GetMessage())
 
-			str := myRedis.Get(fmt.Sprintf("%d-%s", protos.ObtainSMSCodeReq_REGISTER, "13631210001")).Val()
+			str := myRedis.Get(fmt.Sprintf("%d-%s", protos.ObtainSMSCodeReq_REGISTER, "13631210001"))
 
 			So(err, ShouldBeNil)
 			So(actualResp.Code, ShouldEqual, http.StatusOK)

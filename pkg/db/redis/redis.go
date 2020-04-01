@@ -8,25 +8,23 @@ import (
 	"log"
 	"os"
 	"sync"
-	"time"
 )
 
 type RedisConnectionPool struct {
 }
 
+var logger = logs.GetLogger("INFO")
+var redisOnce sync.Once
+var redisInstance *RedisConnectionPool
+var client *BaseClient
+
 var (
 	host     string = "0.0.0.0"
-	// port     string = "6379"
 	port     string = "6767"
 	password string = ""
 	dbNum    int    = 1
 	dbKey    string = "SaltyIMPro"
 )
-
-var logger = logs.GetLogger("INFO")
-var redisOnce sync.Once
-var redisInstance *RedisConnectionPool
-var client *redis.Client
 
 func NewRedisConnection() *RedisConnectionPool {
 	redisOnce.Do(func() {
@@ -45,19 +43,14 @@ func (rs *RedisConnectionPool) Connect() (err error) {
 	redis.SetLogger(log.New(os.Stderr, "redis: ", log.LstdFlags))
 
 	uriAddr := fmt.Sprintf("%s:%s", host, port)
-	client = redis.NewClient(&redis.Options{
-		Addr:        uriAddr,
-		Password:    password,
-		DB:          dbNum,
-		DialTimeout: time.Second * 10,
-	})
-	_, err = client.Ping().Result()
+	client = NewBaseClient(uriAddr, password, dbNum)
+	_, err = client.Ping()
 	if err == nil {
-		logger.Info("[redis] pong successful")
+		logger.Info("[redis] pong successfully!")
 	}
 	return
 }
 
-func (rs *RedisConnectionPool) GetRedisClient() *redis.Client {
+func (rs *RedisConnectionPool) GetRedisClient() *BaseClient {
 	return client
 }

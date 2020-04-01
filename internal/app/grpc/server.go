@@ -7,7 +7,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
 	demo "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
@@ -36,8 +35,9 @@ var (
 	logger  = logs.GetLogger("INFO")
 	OpenTLS = true
 
-	myRedis *redis.Client
+	myRedis *redsrv.BaseClient
 )
+
 // server constructor
 func NewServer() *GRPCServer {
 	return &GRPCServer{}
@@ -123,7 +123,7 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 				return resp, nil
 			}
 
-			redisToken := myRedis.Get(fmt.Sprintf("TK-%s", string(payload))).Val()
+			redisToken := myRedis.Get(fmt.Sprintf("TK-%s", string(payload)))
 			if redisToken == "" {
 				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, "the token has expired")
 				return resp, nil

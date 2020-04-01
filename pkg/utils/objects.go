@@ -1,6 +1,9 @@
 package utils
 
-import "reflect"
+import (
+	"encoding/json"
+	"reflect"
+)
 
 func DeepEqual(if1 interface{}, if2 interface{}) bool {
 	return reflect.DeepEqual(if1, if2)
@@ -21,4 +24,12 @@ func RemoveMapProperties(source map[string]interface{}, keys ...string) {
 	for _, key := range keys {
 		delete(source, key)
 	}
+}
+
+func TransformMapToJSONString(originalMap map[string]interface{}) (jsonStr string, err error) {
+	bytes, err := json.Marshal(originalMap)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }
