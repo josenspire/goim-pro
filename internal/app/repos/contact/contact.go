@@ -28,7 +28,7 @@ type RemarkProfile struct {
 type IContactRepo interface {
 	IsExistContact(userId, contactId string) (isExist bool, err error)
 	FindOne(condition *Contact) (contact *Contact, err error)
-	FindAll(condition *Contact) (contacts *[]Contact, err error)
+	FindAll(condition *Contact) (contacts []Contact, err error)
 	InsertContacts(newContacts ...*Contact) (err error)
 	RemoveContactsByIds(userId string, contactIds ...string) (err error)
 	FindOneAndUpdateRemark(ct *Contact, remarkInfo map[string]interface{}) (err error)
@@ -68,9 +68,11 @@ func (cta *Contact) FindOne(condition *Contact) (contact *Contact, err error) {
 	return
 }
 
-func (cta *Contact) FindAll(condition *Contact) (contacts *[]Contact, err error) {
-	// TODO:
-	return
+// TODO: should verify
+func (cta *Contact) FindAll(condition *Contact) (contacts []Contact, err error) {
+	err = mysqlDB.Where(condition).Joins("left join users on users.status = 'ACTIVE' and contacts.userId = users.userId ORDER BY contacts.createdAt DESC;").Scan(&contacts).Error
+	logger.Error(contacts)
+	return contacts, err
 }
 
 func (cta *Contact) InsertContacts(newContacts ...*Contact) (err error) {

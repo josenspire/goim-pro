@@ -14,6 +14,7 @@ type Service struct {
 	SMSServer     protos.SMSServiceServer
 	UserServer    protos.UserServiceServer
 	ContactServer protos.ContactServiceServer
+	GroupServer	  protos.GroupServiceServer
 }
 
 func NewService() *Service {
@@ -22,5 +23,6 @@ func NewService() *Service {
 		SMSServer:    authsrv.New(),
 		UserServer:   usersrv.New(),
 		ContactServer: contactsrv.New(),
+		GroupServer: groupsrv.New(),
 	}
 }

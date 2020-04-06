@@ -2,7 +2,6 @@ package authsrv
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
@@ -114,7 +113,7 @@ func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (res
 }
 
 func parameterCalibration(req *protos.ObtainSMSCodeReq) (err error) {
-	csErr := errors.New("bad request, invalid parameters")
+	csErr := utils.ErrInvalidParameters
 	req.Telephone = strings.Trim(req.GetTelephone(), "")
 
 	if utils.IsEmptyStrings(req.GetTelephone()) {

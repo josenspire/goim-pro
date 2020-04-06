@@ -2,7 +2,6 @@ package usersrv
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
@@ -84,7 +83,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 	}
 	if err = us.userRepo.Register(&User{
 		Password:    registerReq.GetPassword(),
-		UserProfile: converters.ConvertProtoUserProfile2Entity(userProfile),
+		UserProfile: converters.ConvertProto2EntityForUserProfile(userProfile),
 	}); err != nil {
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
@@ -158,7 +157,7 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 
 	loginResp := &protos.LoginResp{
 		Token:   token,
-		Profile: converters.ConvertProfileEntity2Proto(&user.UserProfile),
+		Profile: converters.ConvertEntity2ProtoForUserProfile(&user.UserProfile),
 	}
 	resp.Data, err = utils.MarshalMessageToAny(loginResp)
 	if err != nil {
@@ -236,7 +235,7 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 		return
 	}
 
-	userProfile := converters.ConvertProtoUserProfile2Entity(pbProfile)
+	userProfile := converters.ConvertProto2EntityForUserProfile(pbProfile)
 	userProfile.UserId = userId
 
 	originUserProfile, err := us.userRepo.FindByUserId(userId)
@@ -408,7 +407,7 @@ func (us *userService) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (re
 		return
 	}
 	userInfoResp := &protos.GetUserInfoResp{
-		Profile: converters.ConvertProfileEntity2Proto(&user.UserProfile),
+		Profile: converters.ConvertEntity2ProtoForUserProfile(&user.UserProfile),
 	}
 
 	resp.Data, err = utils.MarshalMessageToAny(userInfoResp)
@@ -456,7 +455,7 @@ func (us *userService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (
 		return
 	}
 	userInfoResp := &protos.QueryUserInfoResp{
-		Profile: converters.ConvertProfileEntity2Proto(&user.UserProfile),
+		Profile: converters.ConvertEntity2ProtoForUserProfile(&user.UserProfile),
 	}
 
 	resp.Data, err = utils.MarshalMessageToAny(userInfoResp)
@@ -479,7 +478,7 @@ func isVerificationCodeValid(verificationCode, telephone string) (isValid bool, 
 }
 
 func registerParameterCalibration(req protos.RegisterReq) (err error) {
-	csErr := errors.New("bad request, invalid parameters")
+	csErr := utils.ErrInvalidParameters
 	if utils.IsContainEmptyString(req.GetPassword(), req.GetVerificationCode()) || req.GetProfile() == nil {
 		err = csErr
 		return
@@ -503,7 +502,7 @@ func registerParameterCalibration(req protos.RegisterReq) (err error) {
 }
 
 func loginParameterCalibration(req *protos.LoginReq) (err error) {
-	csErr := errors.New("bad request, invalid parameters")
+	csErr := utils.ErrInvalidParameters
 	req.VerificationCode = strings.Trim(req.GetVerificationCode(), "")
 	req.Password = strings.Trim(req.GetPassword(), "")
 
@@ -518,7 +517,7 @@ func loginParameterCalibration(req *protos.LoginReq) (err error) {
 }
 
 func resetPwdParameterCalibration(verificationCode, oldPassword, newPassword string, telephone, email string) (err error) {
-	csErr := errors.New("bad request, invalid parameters")
+	csErr := utils.ErrInvalidParameters
 
 	if utils.IsEmptyStrings(verificationCode, newPassword) || utils.IsEmptyStrings(oldPassword, newPassword) {
 		err = csErr

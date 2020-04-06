@@ -9,4 +9,6 @@ const (
 	CodeTypeRegister      CodeType = 0
 	CodeTypeLogin         CodeType = 1
 	CodeTypeResetPassword CodeType = 2
+
+	MaxGroupCount int = 10
 )

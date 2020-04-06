@@ -21,4 +21,7 @@ var (
 	ErrContactAlreadyExists   = errors.New("user are already your contact")
 	ErrIllegalRequestContacts = errors.New("illegal request contacts")
 	ErrInvalidContact         = errors.New("invalid contacts")
+
+	// group
+	ErrGroupReachedLimit = errors.New("groups has reached the limit")
 )

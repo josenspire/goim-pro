@@ -7,7 +7,7 @@ import (
 )
 
 // convert user register entity
-func ConvertProtoUserProfile2Entity(profile *protos.UserProfile) user.UserProfile {
+func ConvertProto2EntityForUserProfile(profile *protos.UserProfile) user.UserProfile {
 	return user.UserProfile{
 		UserId:      profile.GetUserId(),
 		Telephone:   profile.GetTelephone(),
@@ -21,7 +21,7 @@ func ConvertProtoUserProfile2Entity(profile *protos.UserProfile) user.UserProfil
 	}
 }
 
-func ConvertProfileEntity2Proto(profile *user.UserProfile) *protos.UserProfile {
+func ConvertEntity2ProtoForUserProfile(profile *user.UserProfile) *protos.UserProfile {
 	return &protos.UserProfile{
 		UserId:      profile.UserId,
 		Telephone:   profile.Telephone,

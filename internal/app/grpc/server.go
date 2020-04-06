@@ -201,9 +201,10 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 }
 
 func handleServiceRegister(srv *grpc.Server) {
-	var gprcService = services.NewService()
-	demo.RegisterWaiterServer(srv, gprcService.WaiterServer)
-	protos.RegisterSMSServiceServer(srv, gprcService.SMSServer)
-	protos.RegisterUserServiceServer(srv, gprcService.UserServer)
-	protos.RegisterContactServiceServer(srv, gprcService.ContactServer)
+	var grpcService = services.NewService()
+	demo.RegisterWaiterServer(srv, grpcService.WaiterServer)
+	protos.RegisterSMSServiceServer(srv, grpcService.SMSServer)
+	protos.RegisterUserServiceServer(srv, grpcService.UserServer)
+	protos.RegisterContactServiceServer(srv, grpcService.ContactServer)
+	protos.RegisterGroupServiceServer(srv, grpcService.GroupServer)
 }

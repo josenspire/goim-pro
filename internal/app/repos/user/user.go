@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"goim-pro/config"
 	"goim-pro/internal/app/repos/base"
+	"goim-pro/internal/app/repos/contact"
 	tbl "goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"

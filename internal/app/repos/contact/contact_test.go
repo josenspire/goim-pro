@@ -2,9 +2,11 @@ package contact
 
 import (
 	"fmt"
-	. "github.com/smartystreets/goconvey/convey"
+	. "goim-pro/internal/app/repos/user"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestContact_InsertContacts(t *testing.T) {
@@ -117,4 +119,65 @@ func TestContact_FindOneAndUpdateRemark(t *testing.T) {
 	})
 
 	_ = ct.RemoveContactsByIds("TEST001", "TEST002")
+}
+
+func TestContact_FindAll(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	//newContact1 := &Contact{
+	//	UserId:    "TEST001",
+	//	ContactId: "TEST002",
+	//}
+	//
+	//newContact2 := &Contact{
+	//	UserId:    "TEST001",
+	//	ContactId: "TEST003",
+	//}
+
+	ct := &Contact{}
+	//_ = ct.InsertContacts(newContact1, newContact2)
+
+	var user1 = &User{
+		Password: "1234567890",
+		UserProfile: UserProfile{
+			UserId:      "TEST001",
+			Telephone:   "13631210010",
+			Email:       "294001@qq.com",
+			Nickname:    "TEST02",
+			Description: "Never Settle",
+			Birthday:    1578903121862,
+		},
+	}
+
+	var user2 = &User{
+		Password: "1234567890",
+		UserProfile: UserProfile{
+			UserId:      "TEST002",
+			Telephone:   "13631210022",
+			Email:       "294001@qq.com",
+			Nickname:    "TEST02",
+			Description: "Never Settle",
+		},
+	}
+
+	u := &User{}
+	_ = u.Register(user1)
+	_ = u.Register(user2)
+
+	Convey("Test_FindAll", t, func() {
+		Convey("should_find_all_contacts_with_profile", func() {
+			condition := &Contact{
+				UserId: "TEST001",
+			}
+			contacts, err := ct.FindAll(condition)
+			ShouldBeNil(err)
+			fmt.Print(contacts)
+		})
+	})
+
+	_ = u.RemoveUserByUserId("TEST001", true)
+	_ = u.RemoveUserByUserId("TEST002", true)
 }

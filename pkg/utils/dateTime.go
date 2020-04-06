@@ -58,3 +58,8 @@ func ParseDateTimeStrToTimestamp(dateTimeFormat string, dateTimeStr string) (int
 func MakeTimestamp() int64 {
 	return time.Now().In(loc).UnixNano() / int64(time.Millisecond)
 }
+
+// parse Go time to timestamp
+func ParseTimeToTimestamp(dateTime time.Time) int64 {
+	return dateTime.Unix() / int64(time.Millisecond)
+}

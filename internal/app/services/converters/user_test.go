@@ -31,7 +31,7 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 	}
 	Convey("Testing_ConvertRegisterUserProfile", t, func() {
 		Convey("should return UserProfile entity data", func() {
-			actual := ConvertProtoUserProfile2Entity(pbUser1)
+			actual := ConvertProto2EntityForUserProfile(pbUser1)
 			So(actual.Telephone, ShouldEqual, expectation.Telephone)
 			So(actual.Sex, ShouldEqual, expectation.Sex)
 			So(actual.Birthday, ShouldEqual, expectation.Birthday)
@@ -62,7 +62,7 @@ func TestConvertLoginResp(t *testing.T) {
 	}
 
 	Convey("Testing_ConvertLoginResp", t, func() {
-		actual := ConvertProfileEntity2Proto(userProfile)
+		actual := ConvertEntity2ProtoForUserProfile(userProfile)
 		So(actual.Telephone, ShouldEqual, pbUser.Telephone)
 		So(actual.Sex, ShouldEqual, pbUser.Sex)
 	})
