@@ -6,6 +6,7 @@ import (
 	authsrv "goim-pro/internal/app/services/auth"
 	contactsrv "goim-pro/internal/app/services/contact"
 	waitersrv "goim-pro/internal/app/services/demowaiter"
+	groupsrv "goim-pro/internal/app/services/group"
 	usersrv "goim-pro/internal/app/services/user"
 )
 
@@ -14,15 +15,15 @@ type Service struct {
 	SMSServer     protos.SMSServiceServer
 	UserServer    protos.UserServiceServer
 	ContactServer protos.ContactServiceServer
-	GroupServer	  protos.GroupServiceServer
+	GroupServer   protos.GroupServiceServer
 }
 
 func NewService() *Service {
 	return &Service{
-		WaiterServer: waitersrv.New(),
-		SMSServer:    authsrv.New(),
-		UserServer:   usersrv.New(),
+		WaiterServer:  waitersrv.New(),
+		SMSServer:     authsrv.New(),
+		UserServer:    usersrv.New(),
 		ContactServer: contactsrv.New(),
-		GroupServer: groupsrv.New(),
+		GroupServer:   groupsrv.New(),
 	}
 }

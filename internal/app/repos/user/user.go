@@ -4,32 +4,13 @@ import (
 	"errors"
 	"github.com/jinzhu/gorm"
 	"goim-pro/config"
-	"goim-pro/internal/app/repos/base"
-	"goim-pro/internal/app/repos/contact"
+	"goim-pro/internal/app/models"
 	tbl "goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 )
 
-type User struct {
-	Password string `json:"password" gorm:"column:password; type:varchar(255); not null"`
-	Role     string `json:"role" gorm:"column:role; type:ENUM('1', '10', '99'); default:'1'"`
-	Status   string `json:"status" gorm:"column:status; type:ENUM('ACTIVE', 'INACTIVE'); default: 'ACTIVE'; not null"`
-	UserProfile
-	base.BaseModel
-}
-
-type UserProfile struct {
-	UserId      string `json:"userId" gorm:"column:userId; type:varchar(32); primary_key; not null"`
-	Telephone   string `json:"telephone" gorm:"column:telephone; type:varchar(11)"`
-	Email       string `json:"email" gorm:"column:email; type:varchar(100)"`
-	Nickname    string `json:"nickname" gorm:"column:nickname; type:varchar(16)"`
-	Avatar      string `json:"avatar" gorm:"column:avatar; type:varchar(255)"`
-	Description string `json:"description" gorm:"column:description; type:varchar(255)"`
-	Sex         string `json:"sex" gorm:"column:sex; type: ENUM('MALE', 'FEMALE'); default:'FEMALE'"`
-	Birthday    int64  `json:"birthday" gorm:"column:birthday; type: bigint"`
-	Location    string `json:"location" gorm:"column:location; type: varchar(255)"`
-}
+type User models.User
 
 type IUserRepo interface {
 	IsTelephoneOrEmailRegistered(telephone string, email string) (bool, error)
@@ -47,10 +28,6 @@ type IUserRepo interface {
 var logger = logs.GetLogger("ERROR")
 var crypto = utils.NewCrypto()
 var mysqlDB *gorm.DB
-
-func (User) TableName() string {
-	return tbl.TableUsers
-}
 
 func NewUserRepo(db *gorm.DB) IUserRepo {
 	mysqlDB = db
@@ -198,7 +175,7 @@ func (u *User) FindOneUser(us *User) (user *User, err error) {
 }
 
 func (u *User) FindOneAndUpdateProfile(us *User, profile map[string]interface{}) (err error) {
-	db := mysqlDB.Table(u.TableName()).Where(us).Update(profile)
+	db := mysqlDB.Table(tbl.TableUsers).Where(us).Update(profile)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to update user profile: %v", err)
 	}

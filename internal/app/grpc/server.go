@@ -11,8 +11,7 @@ import (
 	demo "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
-	"goim-pro/internal/app/repos/contact"
-	"goim-pro/internal/app/repos/user"
+	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/services"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
@@ -177,21 +176,21 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 	//	}
 	//}
 
-	if !db.HasTable(&user.User{}) {
+	if !db.HasTable(&models.User{}) {
 		err = db.Set(
 			"gorm:table_options",
 			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
-		).CreateTable(&user.User{}).Error
+		).CreateTable(&models.User{}).Error
 		if err != nil {
 			logger.Errorf("initial mysql tables [users] error: %s", err.Error())
 			return
 		}
 	}
-	if !db.HasTable(&contact.Contact{}) {
+	if !db.HasTable(&models.Contact{}) {
 		err = db.Set(
 			"gorm:table_options",
 			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
-		).CreateTable(&contact.Contact{}).Error
+		).CreateTable(&models.Contact{}).Error
 		if err != nil {
 			logger.Errorf("initial mysql tables [contacts] error: %s", err.Error())
 			return

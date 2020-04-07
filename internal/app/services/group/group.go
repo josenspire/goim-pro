@@ -1,4 +1,4 @@
-package group
+package groupsrv
 
 import (
 	"context"

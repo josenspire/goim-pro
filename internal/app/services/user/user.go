@@ -7,6 +7,7 @@ import (
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
 	. "goim-pro/internal/app/constants"
+	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
@@ -465,7 +466,7 @@ func (us *userService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (
 	return
 }
 
-func isProfileNothing2Update(originProfile UserProfile, newProfile UserProfile) bool {
+func isProfileNothing2Update(originProfile models.UserProfile, newProfile models.UserProfile) bool {
 	return utils.DeepEqual(originProfile, newProfile)
 }
 

@@ -15,6 +15,7 @@ var (
 func RequestContact(t protos.ContactServiceClient) {
 	reqContactReq := &protos.RequestContactReq{
 		UserId: "01E4QYGJT86K2PS8CDHVXS0G95", // 13631210001
+		// UserId: "01E4QYJBERVD8E5N9SXAEGXMB8", // 13631210002
 		Reason: "你好，交个朋友！",
 	}
 	anyData, _ := utils.MarshalMessageToAny(reqContactReq)
@@ -23,7 +24,7 @@ func RequestContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTkZGWlFsaEVNRUpXVVZsTldVSlVSVVJVVWtZNVFUUT0iLCJleHAiOjE1ODU5MDYxMjAsImlhdCI6MTU4NTY0NjkyMCwiaXNzIjoic2FsdHlfaW0ifQ.fEaGkPMpt4wALF2OhP83dLwu0vcbWReFn92yh-zF4GY",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTkZGWlNrSkZVbFpFT0VVMVRqbFRXRUZGUjFoTlFqZz0iLCJleHAiOjE1ODY1MDY2NTMsImlhdCI6MTU4NjI0NzQ1MywiaXNzIjoic2FsdHlfaW0ifQ.FKZdGo80F6SZkpaE7N26tj2xhFSy8zs5usk2g-ddctY",
 		Data:     anyData,
 	}
 
@@ -37,7 +38,7 @@ func RequestContact(t protos.ContactServiceClient) {
 
 func AcceptContact(t protos.ContactServiceClient) {
 	acpContactReq := &protos.AcceptContactReq{
-		UserId: UserId,
+		UserId: "01E4QYJBERVD8E5N9SXAEGXMB8",
 	}
 	anyData, _ := utils.MarshalMessageToAny(acpContactReq)
 	grpcReq := &protos.GrpcReq{
@@ -45,7 +46,7 @@ func AcceptContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTkZGWlIwcFVPRFpMTWxCVE9FTkVTRlpZVXpCSE9UVT0iLCJleHAiOjE1ODU5MDYzMjYsImlhdCI6MTU4NTY0NzEyNiwiaXNzIjoic2FsdHlfaW0ifQ.Ld7RNW5PhyGXtxYqe9eGs79Da9mNQYa79hy6R6K638M",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTkZGWlFsaEVNRUpXVVZsTldVSlVSVVJVVWtZNVFUUT0iLCJleHAiOjE1ODY1MDY2NjUsImlhdCI6MTU4NjI0NzQ2NSwiaXNzIjoic2FsdHlfaW0ifQ.mD8UmzpZNNAlfuPjxd06AMbTDoAzJpsaEfHqYwq5Kbs",
 		Data:     anyData,
 	}
 
@@ -59,8 +60,8 @@ func AcceptContact(t protos.ContactServiceClient) {
 
 func RefusedContact(t protos.ContactServiceClient) {
 	refusedContactReq := &protos.RefusedContactReq{
-		UserId:               UserId,
-		Reason:               "我喜欢小姐姐",
+		UserId: UserId,
+		Reason: "我喜欢小姐姐",
 	}
 	anyData, _ := utils.MarshalMessageToAny(refusedContactReq)
 	grpcReq := &protos.GrpcReq{

@@ -2,7 +2,7 @@ package converters
 
 import (
 	protos "goim-pro/api/protos/salty"
-	"goim-pro/internal/app/repos/user"
+	"goim-pro/internal/app/models"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -19,7 +19,7 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 		Birthday:    1578903121862,
 		Location:    "",
 	}
-	var expectation = &user.UserProfile{
+	var expectation = &models.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
 		Nickname:    "JAMES01",
@@ -40,7 +40,7 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 }
 
 func TestConvertLoginResp(t *testing.T) {
-	var userProfile = &user.UserProfile{
+	var userProfile = &models.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
 		Nickname:    "JAMES01",

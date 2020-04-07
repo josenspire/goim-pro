@@ -48,14 +48,16 @@ func main() {
 			case "s1":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
-				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_REGISTER)
+				for i := 1; i <= 3; i++ {
+					user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_REGISTER, i)
+				}
 			case "s2":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
-				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_LOGIN)
+				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_LOGIN, 0)
 			case "s3":
 				t := protos.NewSMSServiceClient(conn)
-				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD)
+				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD, 0)
 			case "rst1":
 				t := protos.NewUserServiceClient(conn)
 				user.ResetPasswordByTelephone(t, "OLD_PASSWORD")
@@ -67,10 +69,14 @@ func main() {
 				user.Register(t)
 			case "lt":
 				t := protos.NewUserServiceClient(conn)
-				user.Login(t, "TELEPHONE")
+				for i := 1; i <= 3; i++ {
+					user.Login(t, "TELEPHONE", i)
+				}
 			case "le":
 				t := protos.NewUserServiceClient(conn)
-				user.Login(t, "EMAIL")
+				for i := 1; i <= 3; i++ {
+					user.Login(t, "EMAIL", i)
+				}
 			case "lq":
 				t := protos.NewUserServiceClient(conn)
 				user.Logout(t)

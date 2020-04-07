@@ -3,12 +3,12 @@ package converters
 import (
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/constants"
-	"goim-pro/internal/app/repos/user"
+	"goim-pro/internal/app/models"
 )
 
 // convert user register entity
-func ConvertProto2EntityForUserProfile(profile *protos.UserProfile) user.UserProfile {
-	return user.UserProfile{
+func ConvertProto2EntityForUserProfile(profile *protos.UserProfile) models.UserProfile {
+	return models.UserProfile{
 		UserId:      profile.GetUserId(),
 		Telephone:   profile.GetTelephone(),
 		Email:       profile.GetEmail(),
@@ -21,7 +21,7 @@ func ConvertProto2EntityForUserProfile(profile *protos.UserProfile) user.UserPro
 	}
 }
 
-func ConvertEntity2ProtoForUserProfile(profile *user.UserProfile) *protos.UserProfile {
+func ConvertEntity2ProtoForUserProfile(profile *models.UserProfile) *protos.UserProfile {
 	return &protos.UserProfile{
 		UserId:      profile.UserId,
 		Telephone:   profile.Telephone,

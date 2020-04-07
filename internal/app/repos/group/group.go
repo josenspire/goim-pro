@@ -17,7 +17,7 @@ type Group struct {
 	Name        string   `json:"name" gorm:"column:name; type:varchar(100); not null; default: 'NewGroup'"` // TODO: should check out default group name
 	Avatar      string   `json:"avatar" gorm:"column:avatar; type:varchar(255); default: ''"`
 	Notice      string   `json:"notice" gorm:"column:notice; type:varchar(255); default: ''"`
-	Members     []*Member `gorm:"ForeignKey:UserID;"` // foreign key
+	Members     []*Member `gorm:"ForeignKey:UserId;"` // foreign key
 	base.BaseModel
 }
 

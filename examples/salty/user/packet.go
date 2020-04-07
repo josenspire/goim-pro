@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -13,10 +14,12 @@ var (
 	logger = logs.GetLogger("INFO")
 )
 
-func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_CodeType) {
+func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_CodeType, index int) {
+	tel := fmt.Sprintf("1363121000%d", index)
+	fmt.Println(tel)
 	smsReq := protos.ObtainSMSCodeReq{
 		CodeType:  codeType,
-		Telephone: "13631210002",
+		Telephone: tel,
 	}
 	anyData, _ := utils.MarshalMessageToAny(&smsReq)
 	gprcReq := &protos.GrpcReq{
@@ -98,11 +101,11 @@ func ResetPasswordByTelephone(t protos.UserServiceClient, channel string) {
 func Register(t protos.UserServiceClient) {
 	registerReq := &protos.RegisterReq{
 		Password:         "1234567890",
-		VerificationCode: "386392",
+		VerificationCode: "471133",
 		Profile: &protos.UserProfile{
-			Telephone:   "13631210002",
-			Email:       "12345672@qq.com",
-			Nickname:    "JAMES013",
+			Telephone:   "13631210003",
+			Email:       "12345673@qq.com",
+			Nickname:    "JAMES03",
 			Avatar:      "https://www.baidu.com/avatar/header1.png",
 			Description: "Never settle",
 			Sex:         protos.UserProfile_MALE,
@@ -128,13 +131,14 @@ func Register(t protos.UserServiceClient) {
 	}
 }
 
-func Login(t protos.UserServiceClient, typeStr string) {
+func Login(t protos.UserServiceClient, typeStr string, index int) {
 	var loginReq *protos.LoginReq
 
+	tel := fmt.Sprintf("1363121000%d", index)
 	if typeStr == "TELEPHONE" {
 		loginReq = &protos.LoginReq{
 			TargetAccount: &protos.LoginReq_Telephone{
-				Telephone: "13631210001",
+				Telephone: tel,
 			},
 			Password: "1234567890",
 		}

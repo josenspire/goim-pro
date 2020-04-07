@@ -2,6 +2,7 @@ package user
 
 import (
 	"goim-pro/config"
+	"goim-pro/internal/app/models"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	"goim-pro/pkg/utils"
 	"testing"
@@ -11,7 +12,7 @@ import (
 
 var user1 = &User{
 	Password: "1234567890",
-	UserProfile: UserProfile{
+	UserProfile: models.UserProfile{
 		UserId:      "2",
 		Telephone:   "13631210010",
 		Email:       "294001@qq.com",
@@ -23,7 +24,7 @@ var user1 = &User{
 
 var user2 = &User{
 	Password: "1234567890",
-	UserProfile: UserProfile{
+	UserProfile: models.UserProfile{
 		UserId:      "3",
 		Telephone:   "13631210022",
 		Email:       "294001@qq.com",
@@ -86,7 +87,7 @@ func TestUser_RemoveUserByUserId(t *testing.T) {
 		Convey("testing_RemoveUserByUserID_success", func() {
 			user := &User{
 				Status: "ACTIVE",
-				UserProfile: UserProfile{
+				UserProfile: models.UserProfile{
 					UserId: "2",
 				},
 			}
@@ -269,7 +270,7 @@ func TestUser_FindOneAndUpdateProfile(t *testing.T) {
 			userCriteria := &User{}
 			userCriteria.UserId = "2"
 
-			newProfile := UserProfile{
+			newProfile := models.UserProfile{
 				UserId:      "2",
 				Telephone:   "13631210111",
 				Email:       "29400123@qq.com",

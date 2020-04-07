@@ -139,38 +139,38 @@ func TestContact_FindAll(t *testing.T) {
 
 	ct := &Contact{}
 	//_ = ct.InsertContacts(newContact1, newContact2)
-
-	var user1 = &User{
-		Password: "1234567890",
-		UserProfile: UserProfile{
-			UserId:      "TEST001",
-			Telephone:   "13631210010",
-			Email:       "294001@qq.com",
-			Nickname:    "TEST02",
-			Description: "Never Settle",
-			Birthday:    1578903121862,
-		},
-	}
-
-	var user2 = &User{
-		Password: "1234567890",
-		UserProfile: UserProfile{
-			UserId:      "TEST002",
-			Telephone:   "13631210022",
-			Email:       "294001@qq.com",
-			Nickname:    "TEST02",
-			Description: "Never Settle",
-		},
-	}
-
-	u := &User{}
-	_ = u.Register(user1)
-	_ = u.Register(user2)
+	//
+	//var user1 = &User{
+	//	Password: "1234567890",
+	//	UserProfile: UserProfile{
+	//		UserId:      "TEST001",
+	//		Telephone:   "13631210010",
+	//		Email:       "294001@qq.com",
+	//		Nickname:    "TEST02",
+	//		Description: "Never Settle",
+	//		Birthday:    1578903121862,
+	//	},
+	//}
+	//
+	//var user2 = &User{
+	//	Password: "1234567890",
+	//	UserProfile: UserProfile{
+	//		UserId:      "TEST002",
+	//		Telephone:   "13631210022",
+	//		Email:       "294001@qq.com",
+	//		Nickname:    "TEST02",
+	//		Description: "Never Settle",
+	//	},
+	//}
+	//
+	//u := &User{}
+	//_ = u.Register(user1)
+	//_ = u.Register(user2)
 
 	Convey("Test_FindAll", t, func() {
 		Convey("should_find_all_contacts_with_profile", func() {
 			condition := &Contact{
-				UserId: "TEST001",
+				UserId: "01E4QYJBERVD8E5N9SXAEGXMB8",
 			}
 			contacts, err := ct.FindAll(condition)
 			ShouldBeNil(err)
@@ -178,6 +178,6 @@ func TestContact_FindAll(t *testing.T) {
 		})
 	})
 
-	_ = u.RemoveUserByUserId("TEST001", true)
-	_ = u.RemoveUserByUserId("TEST002", true)
+	//_ = u.RemoveUserByUserId("TEST001", true)
+	//_ = u.RemoveUserByUserId("TEST002", true)
 }
