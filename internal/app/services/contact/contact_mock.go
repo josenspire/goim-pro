@@ -33,3 +33,7 @@ func (m *MockContactRepo) FindOneAndUpdateRemark(ct *Contact, remarkInfo map[str
 
 	return nil
 }
+
+func (m *MockContactRepo) FindAll(condition map[string]interface{}) ([]Contact, error) {
+	return nil, nil
+}

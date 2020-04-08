@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/models"
-	. "goim-pro/internal/app/repos/user"
 	"goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
+	"goim-pro/pkg/utils"
+	"time"
 )
 
 type Contact models.Contact
@@ -15,7 +16,7 @@ type Contact models.Contact
 type IContactRepo interface {
 	IsExistContact(userId, contactId string) (isExist bool, err error)
 	FindOne(condition *Contact) (contact *Contact, err error)
-	FindAll(condition *Contact) (contacts []Contact, err error)
+	FindAll(condition map[string]interface{}) (contacts []Contact, err error)
 	InsertContacts(newContacts ...*Contact) (err error)
 	RemoveContactsByIds(userId string, contactIds ...string) (err error)
 	FindOneAndUpdateRemark(ct *Contact, remarkInfo map[string]interface{}) (err error)
@@ -52,29 +53,28 @@ func (cta *Contact) FindOne(condition *Contact) (contact *Contact, err error) {
 }
 
 // TODO: should verify
-func (cta *Contact) FindAll(condition *Contact) (contacts []Contact, err error) {
-	//err = mysqlDB.Where(condition).Joins("left join users on users.status = 'ACTIVE' and contacts.userId = users.userId ORDER BY contacts.createdAt DESC;").Scan(&contacts).Error
-	//logger.Error(contacts)
-	//return contacts, err
-	var user User
-	err = mysqlDB.Model(&user).Where(condition).Related(&contacts).Error
-	logger.Info()
+func (cta *Contact) FindAll(condition map[string]interface{}) (contacts []Contact, err error) {
+	// SELECT * FROM `contacts`  WHERE `contacts`.`deletedAt` IS NULL AND ((`contacts`.`UserId` = '01E07SG858N3CGV5M1APVQKZYR'))
+	// SELECT * FROM `users`  WHERE `users`.`deletedAt` IS NULL AND ((`userId` IN ('01E2JVWZTG60NG2SXFYNEPNMCB','01E2JXMC98SZXMGEGVTDECSD78')))
+	err = mysqlDB.Preload("User").Find(&contacts, condition).Error
 	return
 }
 
 func (cta *Contact) InsertContacts(newContacts ...*Contact) (err error) {
 	// BatchSave 批量插入数据
 	var buffer bytes.Buffer
-	sql := "INSERT INTO `contacts` (`userId`, `contactId`, `remarkName`, `telephone`, `description`, `tags`) values"
+	sql := "INSERT INTO `contacts` (`userId`, `contactId`, `remarkName`, `telephone`, `description`, `tags`, `createdAt`, `updatedAt`) values"
 	if _, err := buffer.WriteString(sql); err != nil {
 		return err
 	}
+
 	for i, e := range newContacts {
+		nowDateTime := utils.TimeFormat(time.Now(), utils.MysqlDateTimeFormat)
+
 		if i == len(newContacts)-1 {
-			// TODO: should add createdAt dateTime
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', '%s');", e.UserId, e.ContactId, e.RemarkName, e.Telephone, e.Description, e.Tags))
+			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');", e.UserId, e.ContactId, e.RemarkName, e.Telephone, e.Description, e.Tags, nowDateTime, nowDateTime))
 		} else {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', '%s'),", e.UserId, e.ContactId, e.RemarkName, e.Telephone, e.Description, e.Tags))
+			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s'),", e.UserId, e.ContactId, e.RemarkName, e.Telephone, e.Description, e.Tags, nowDateTime, nowDateTime))
 		}
 	}
 	if err = mysqlDB.Exec(buffer.String()).Error; err != nil {

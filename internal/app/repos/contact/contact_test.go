@@ -2,7 +2,6 @@ package contact
 
 import (
 	"fmt"
-	. "goim-pro/internal/app/repos/user"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	"testing"
 
@@ -15,12 +14,12 @@ func TestContact_InsertContacts(t *testing.T) {
 	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
 	newContact1 := &Contact{
-		UserId:    "TEST001",
-		ContactId: "TEST002",
+		UserId:    "01E07SG858N3CGV5M1APVQKZYR", // 13631210003
+		ContactId: "01E2JVWZTG60NG2SXFYNEPNMCB", // 13631210007
 	}
 	newContact2 := &Contact{
-		UserId:    "TEST003",
-		ContactId: "TEST004",
+		UserId:    "01E07SG858N3CGV5M1APVQKZYR",
+		ContactId: "01E2JXMC98SZXMGEGVTDECSD78", // 13631210008
 	}
 
 	ct := &Contact{}
@@ -32,8 +31,7 @@ func TestContact_InsertContacts(t *testing.T) {
 		})
 	})
 
-	_ = ct.RemoveContactsByIds("TEST001", "TEST002")
-	_ = ct.RemoveContactsByIds("TEST003", "TEST004")
+	_ = ct.RemoveContactsByIds("01E07SG858N3CGV5M1APVQKZYR", "01E2JVWZTG60NG2SXFYNEPNMCB", "01E2JXMC98SZXMGEGVTDECSD78")
 }
 
 func TestContact_RemoveContactsByIds(t *testing.T) {
@@ -124,60 +122,35 @@ func TestContact_FindOneAndUpdateRemark(t *testing.T) {
 func TestContact_FindAll(t *testing.T) {
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
-	//newContact1 := &Contact{
-	//	UserId:    "TEST001",
-	//	ContactId: "TEST002",
-	//}
-	//
-	//newContact2 := &Contact{
-	//	UserId:    "TEST001",
-	//	ContactId: "TEST003",
-	//}
+	newContact1 := &Contact{
+		UserId:    "01E07SG858N3CGV5M1APVQKZYR", // 13631210003
+		ContactId: "01E2JVWZTG60NG2SXFYNEPNMCB", // 13631210007
+	}
+	newContact2 := &Contact{
+		UserId:    "01E07SG858N3CGV5M1APVQKZYR",
+		ContactId: "01E2JXMC98SZXMGEGVTDECSD78", // 13631210008
+	}
 
 	ct := &Contact{}
-	//_ = ct.InsertContacts(newContact1, newContact2)
-	//
-	//var user1 = &User{
-	//	Password: "1234567890",
-	//	UserProfile: UserProfile{
-	//		UserId:      "TEST001",
-	//		Telephone:   "13631210010",
-	//		Email:       "294001@qq.com",
-	//		Nickname:    "TEST02",
-	//		Description: "Never Settle",
-	//		Birthday:    1578903121862,
-	//	},
-	//}
-	//
-	//var user2 = &User{
-	//	Password: "1234567890",
-	//	UserProfile: UserProfile{
-	//		UserId:      "TEST002",
-	//		Telephone:   "13631210022",
-	//		Email:       "294001@qq.com",
-	//		Nickname:    "TEST02",
-	//		Description: "Never Settle",
-	//	},
-	//}
-	//
-	//u := &User{}
-	//_ = u.Register(user1)
-	//_ = u.Register(user2)
+	err := ct.InsertContacts(newContact1, newContact2)
+	if err != nil {
+		t.FailNow()
+	}
 
 	Convey("Test_FindAll", t, func() {
 		Convey("should_find_all_contacts_with_profile", func() {
-			condition := &Contact{
-				UserId: "01E4QYJBERVD8E5N9SXAEGXMB8",
+			condition := map[string]interface{}{
+				"UserId": "01E07SG858N3CGV5M1APVQKZYR",
 			}
+
 			contacts, err := ct.FindAll(condition)
-			ShouldBeNil(err)
 			fmt.Print(contacts)
+			ShouldBeNil(err)
+			So(len(contacts), ShouldEqual, 2)
 		})
 	})
 
-	//_ = u.RemoveUserByUserId("TEST001", true)
-	//_ = u.RemoveUserByUserId("TEST002", true)
+	_ = ct.RemoveContactsByIds("01E07SG858N3CGV5M1APVQKZYR", "01E2JVWZTG60NG2SXFYNEPNMCB", "01E2JXMC98SZXMGEGVTDECSD78")
 }

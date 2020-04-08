@@ -11,8 +11,6 @@ type User struct {
 	Status   string `json:"status" gorm:"column:status; type:ENUM('ACTIVE', 'INACTIVE'); default: 'ACTIVE'; not null"`
 	UserProfile
 	base.BaseModel
-
-	Contacts []Contact `gorm:"ForeignKey:UserId;"`
 }
 
 type UserProfile struct {

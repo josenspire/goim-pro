@@ -376,11 +376,25 @@ func (cs *contactService) GetContacts(ctx context.Context, req *protos.GrpcReq) 
 	userId := req.GetToken()
 
 	// TODO: should consider the black list function
-	criteria := &Contact{
-		UserId: userId,
+	criteria := map[string]interface{}{
+		"UserId": userId,
 	}
-	// TODO:
-	_, _ = cs.contactRepo.FindAll(criteria)
+	contacts, err := cs.contactRepo.FindAll(criteria)
+	if err != nil {
+		logger.Errorf("query user contacts error: %s", err.Error())
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+
+	getContactsResp := &protos.GetContactsResp{
+		Contacts: converters.ConvertEntity2ProtoForContacts(contacts),
+	}
+
+	resp.Data, err = utils.MarshalMessageToAny(getContactsResp)
+	if err != nil {
+		logger.Errorf("[get contacts] response marshal message error: %s", err.Error())
+	}
 
 	return
 }

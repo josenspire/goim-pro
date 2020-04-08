@@ -12,6 +12,8 @@ type Contact struct {
 	Status    string `json:"status" gorm:"column:status; type:varchar(32);"`
 	RemarkProfile
 	base.BaseModel
+
+	User User `gorm:"ForeignKey:ContactId;AssociationForeignKey:UserId"`
 }
 
 type RemarkProfile struct {

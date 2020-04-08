@@ -7,16 +7,18 @@ import (
 	"goim-pro/internal/app/repos/base"
 	tbl "goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
+	"goim-pro/pkg/utils"
+	"time"
 )
 
 // user conversation group
 type Group struct {
-	GroupId     string   `json:"groupId" gorm:"column:groupId; type:varchar(32); primary_key; not null"`
-	CreatedBy   string   `json:"createdBy" gorm:"column:createdBy; type:varchar(32); not null"`
-	OwnerUserId string   `json:"ownerUserId" gorm:"column:ownerUserId; type:varchar(32); not null"`
-	Name        string   `json:"name" gorm:"column:name; type:varchar(100); not null; default: 'NewGroup'"` // TODO: should check out default group name
-	Avatar      string   `json:"avatar" gorm:"column:avatar; type:varchar(255); default: ''"`
-	Notice      string   `json:"notice" gorm:"column:notice; type:varchar(255); default: ''"`
+	GroupId     string    `json:"groupId" gorm:"column:groupId; type:varchar(32); primary_key; not null"`
+	CreatedBy   string    `json:"createdBy" gorm:"column:createdBy; type:varchar(32); not null"`
+	OwnerUserId string    `json:"ownerUserId" gorm:"column:ownerUserId; type:varchar(32); not null"`
+	Name        string    `json:"name" gorm:"column:name; type:varchar(100); not null; default: 'NewGroup'"` // TODO: should check out default group name
+	Avatar      string    `json:"avatar" gorm:"column:avatar; type:varchar(255); default: ''"`
+	Notice      string    `json:"notice" gorm:"column:notice; type:varchar(255); default: ''"`
 	Members     []*Member `gorm:"ForeignKey:UserId;"` // foreign key
 	base.BaseModel
 }
@@ -87,16 +89,16 @@ func (gp *Group) InsertOne(groupProfile *Group) (newGroup *Group, err error) {
 
 func (gp *Group) InsertMembers(members ...*Member) (newMembers *[]Member, err error) {
 	var buffer bytes.Buffer
-	sql := "INSERT INTO `members` (`userId`, `alias`, `role`, `status`) values"
+	sql := "INSERT INTO `members` (`userId`, `alias`, `role`, `status`, `createdAt`, `updatedAt`) values"
 	if _, err := buffer.WriteString(sql); err != nil {
 		return nil, err
 	}
 	for i, e := range members {
+		nowDateTime := utils.TimeFormat(time.Now(), utils.MysqlDateTimeFormat)
 		if i == len(members)-1 {
-			// TODO: should add createdAt dateTime
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s');", e.UserId, e.Alias, "1", "NORMAL"))
+			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', '%s');", e.UserId, e.Alias, "1", "NORMAL", nowDateTime, nowDateTime))
 		} else {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s'),", e.UserId, e.Alias, "1", "NORMAL"))
+			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s', '%s'),", e.UserId, e.Alias, "1", "NORMAL", nowDateTime, nowDateTime))
 		}
 	}
 	if err = mysqlDB.Exec(buffer.String()).Error; err != nil {

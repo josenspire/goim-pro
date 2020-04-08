@@ -195,6 +195,11 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 			logger.Errorf("initial mysql tables [contacts] error: %s", err.Error())
 			return
 		}
+
+		err = db.Model(&models.Contact{}).AddForeignKey("userId", "users(userId)", "CASCADE", "CASCADE").Error
+		if err != nil {
+			logger.Errorf("init table constraint relation error: %s", err.Error())
+		}
 	}
 	return
 }
