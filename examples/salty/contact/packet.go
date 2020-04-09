@@ -109,6 +109,24 @@ func UpdateRemarkInfo(t protos.ContactServiceClient) {
 	}
 }
 
+func GetContacts(t protos.ContactServiceClient) {
+	grpcReq := &protos.GrpcReq{
+		DeviceId: "",
+		Version:  "",
+		Language: 0,
+		Os:       0,
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTkZGWlIwcFVPRFpMTWxCVE9FTkVTRlpZVXpCSE9UVT0iLCJleHAiOjE1ODU5MDYzMjYsImlhdCI6MTU4NTY0NzEyNiwiaXNzIjoic2FsdHlfaW0ifQ.Ld7RNW5PhyGXtxYqe9eGs79Da9mNQYa79hy6R6K638M",
+		Data:     nil,
+	}
+
+	tr, err := t.GetContacts(context.Background(), grpcReq)
+	if err != nil {
+		logger.Errorf("get contacts info error: %s", err.Error())
+	} else {
+		printResp(tr)
+	}
+}
+
 func printResp(resp *protos.GrpcResp) {
 	logger.Infof("[code]: %d", resp.GetCode())
 	logger.Infof("[data]: %s", resp.GetData().GetValue())

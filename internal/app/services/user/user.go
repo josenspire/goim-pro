@@ -82,7 +82,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		resp.Message = "the telephone or email has been registered, please login"
 		return
 	}
-	if err = us.userRepo.Register(&User{
+	if err = us.userRepo.Register(&models.User{
 		Password:    registerReq.GetPassword(),
 		UserProfile: converters.ConvertProto2EntityForUserProfile(userProfile),
 	}); err != nil {
@@ -134,7 +134,7 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 		}
 	}
 
-	var user *User
+	var user *models.User
 	if telephone != "" {
 		user, err = loginByTelephone(us, telephone, enPassword, verificationCode)
 	} else {
@@ -256,8 +256,9 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 		return
 	}
 
-	criteria := &User{}
-	criteria.UserId = userId
+	criteria := map[string]interface{}{
+		"UserId": userId,
+	}
 
 	updateMap := utils.TransformStructToMap(userProfile)
 	utils.RemoveMapProperties(updateMap, "UserId", "Telephone", "Email", "Avatar")
@@ -438,11 +439,11 @@ func (us *userService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (
 		return
 	}
 
-	userCriteria := &User{}
+	userCriteria := make(map[string]interface{})
 	if utils.IsEmptyStrings(telephone) {
-		userCriteria.Email = email
+		userCriteria["Email"] = email
 	} else {
-		userCriteria.Telephone = telephone
+		userCriteria["Telephone"] = telephone
 	}
 	user, err := us.userRepo.FindOneUser(userCriteria)
 
@@ -530,7 +531,7 @@ func resetPwdParameterCalibration(verificationCode, oldPassword, newPassword str
 	return
 }
 
-func loginByTelephone(us *userService, telephone, enPassword, verificationCode string) (user *User, err error) {
+func loginByTelephone(us *userService, telephone, enPassword, verificationCode string) (user *models.User, err error) {
 	// 1. login by password
 	if enPassword != "" {
 		user, err = us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
@@ -548,8 +549,9 @@ func loginByTelephone(us *userService, telephone, enPassword, verificationCode s
 		codeKey := fmt.Sprintf("%d-%s", CodeTypeLogin, telephone)
 		code := myRedis.Get(codeKey)
 		if verificationCode == string(code) {
-			criteria := &User{}
-			criteria.Telephone = telephone
+			criteria := map[string]interface{}{
+				"Telephone": telephone,
+			}
 			if user, err = us.userRepo.FindOneUser(criteria); err != nil {
 				logger.Errorf("find user by telephone error: %s", err.Error())
 				return nil, err
@@ -561,7 +563,7 @@ func loginByTelephone(us *userService, telephone, enPassword, verificationCode s
 	return user, err
 }
 
-func loginByEmail(us *userService, email, enPassword, verificationCode string) (user *User, err error) {
+func loginByEmail(us *userService, email, enPassword, verificationCode string) (user *models.User, err error) {
 	// 1. login by password
 	if enPassword != "" {
 		user, err = us.userRepo.QueryByEmailAndPassword(email, enPassword)
@@ -580,8 +582,9 @@ func loginByEmail(us *userService, email, enPassword, verificationCode string) (
 		codeKey := fmt.Sprintf("%d-%s", CodeTypeLogin, email)
 		code := myRedis.Get(codeKey)
 		if verificationCode == string(code) {
-			criteria := &User{}
-			criteria.Email = email
+			criteria := map[string]interface{}{
+				"Email": email,
+			}
 			if user, err = us.userRepo.FindOneUser(criteria); err != nil {
 				logger.Errorf("find user by email error: %s", err.Error())
 				return nil, err

@@ -106,6 +106,9 @@ func main() {
 			case "ct-udt":
 				t := protos.NewContactServiceClient(conn)
 				contact.UpdateRemarkInfo(t)
+			case "ct-fa":
+				t := protos.NewContactServiceClient(conn)
+				contact.GetContacts(t)
 			case "q":
 				logger.Infoln("grpc client disconnected!")
 				exitChain <- str
@@ -145,6 +148,7 @@ func toolsIntroduce() {
 	logger.Info("** ['ct-acp']: accept add contact **")
 	logger.Info("** ['ct-rf']: refused contact request **")
 	logger.Info("** ['ct-udt']: update contact remark profile **")
+	logger.Info("** ['ct-fa']: get all contacts **")
 
 	logger.Info("** ['q']: exist [GRPC] client **")
 }

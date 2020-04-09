@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	. "goim-pro/internal/app/constants"
+	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/contact"
 	. "goim-pro/internal/app/repos/user"
@@ -40,7 +41,7 @@ func New() protos.ContactServiceServer {
 	}
 }
 
-// request add contact
+// RequestContact: request add contact
 func (cs *contactService) RequestContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
@@ -77,7 +78,7 @@ func (cs *contactService) RequestContact(ctx context.Context, req *protos.GrpcRe
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsExistContact(userId, contactId)
+	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -147,7 +148,7 @@ func (cs *contactService) RefusedContact(ctx context.Context, req *protos.GrpcRe
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsExistContact(userId, contactId)
+	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -221,7 +222,7 @@ func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsExistContact(userId, contactId)
+	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -281,7 +282,7 @@ func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsExistContact(userId, contactId)
+	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -337,7 +338,7 @@ func (cs *contactService) UpdateRemarkInfo(ctx context.Context, req *protos.Grpc
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsExistContact(userId, contactId)
+	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -432,11 +433,11 @@ func refusedContactParameterCalibration(userId string, req *protos.RefusedContac
 }
 
 func handleAcceptContact(cs *contactService, userId string, contactId string) (err error) {
-	newContact1 := &Contact{
+	newContact1 := &models.Contact{
 		UserId:    userId,
 		ContactId: contactId,
 	}
-	newContact2 := &Contact{
+	newContact2 := &models.Contact{
 		UserId:    contactId,
 		ContactId: userId,
 	}
@@ -461,9 +462,10 @@ func handleDeleteContact(cs *contactService, userId string, contactId string) (e
 }
 
 func handleUpdateContactRemark(cs *contactService, userId string, contactId string, pbProfile *protos.ContactRemark) (err error) {
-	criteria := &Contact{}
-	criteria.UserId = userId
-	criteria.ContactId = contactId
+	criteria := map[string]interface{}{
+		"UserId":    userId,
+		"ContactId": contactId,
+	}
 
 	remarkProfile := converters.ConvertProto2EntityForRemarkProfile(pbProfile)
 	updateMap := utils.TransformStructToMap(remarkProfile)

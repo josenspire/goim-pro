@@ -10,19 +10,19 @@ import (
 	"goim-pro/pkg/utils"
 )
 
-type User models.User
+type UserImpl models.User
 
 type IUserRepo interface {
 	IsTelephoneOrEmailRegistered(telephone string, email string) (bool, error)
-	Register(newUser *User) error
-	QueryByEmailAndPassword(email string, password string) (user *User, err error)
-	QueryByTelephoneAndPassword(telephone string, password string) (user *User, err error)
+	Register(newUser *models.User) error
+	QueryByEmailAndPassword(email string, password string) (user *models.User, err error)
+	QueryByTelephoneAndPassword(telephone string, password string) (user *models.User, err error)
 	RemoveUserByUserId(userId string, isForce bool) error
 	ResetPasswordByTelephone(telephone string, newPassword string) error
 	ResetPasswordByEmail(email string, newPassword string) error
-	FindByUserId(userId string) (*User, error)
-	FindOneUser(user *User) (*User, error)
-	FindOneAndUpdateProfile(user *User, profile map[string]interface{}) error
+	FindByUserId(userId string) (*models.User, error)
+	FindOneUser(condition map[string]interface{}) (*models.User, error)
+	FindOneAndUpdateProfile(condition map[string]interface{}, profile map[string]interface{}) error
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -31,11 +31,11 @@ var mysqlDB *gorm.DB
 
 func NewUserRepo(db *gorm.DB) IUserRepo {
 	mysqlDB = db
-	return &User{}
+	return &UserImpl{}
 }
 
 // callbacks hock -- before create, encrypt password
-func (u *User) BeforeCreate(scope *gorm.Scope) (err error) {
+func (u *UserImpl) BeforeCreate(scope *gorm.Scope) (err error) {
 	if u.Password == "" {
 		return errors.New("[aes] invalid password parameter")
 	}
@@ -51,7 +51,7 @@ func (u *User) BeforeCreate(scope *gorm.Scope) (err error) {
 	return
 }
 
-func (u *User) Register(newUser *User) (err error) {
+func (u *UserImpl) Register(newUser *models.User) (err error) {
 	_db := mysqlDB.Create(&newUser)
 	if _db.Error != nil {
 		err = _db.Error
@@ -60,11 +60,11 @@ func (u *User) Register(newUser *User) (err error) {
 	return
 }
 
-func (u *User) IsTelephoneOrEmailRegistered(telephone string, email string) (bool, error) {
+func (u *UserImpl) IsTelephoneOrEmailRegistered(telephone string, email string) (bool, error) {
 	var isTelExist bool = true
 	var err error
 	if telephone != "" {
-		err = mysqlDB.First(&User{}, "telephone = ?", telephone).Error
+		err = mysqlDB.First(&UserImpl{}, "telephone = ?", telephone).Error
 		if err == gorm.ErrRecordNotFound {
 			isTelExist = false
 			err = nil
@@ -82,7 +82,7 @@ func (u *User) IsTelephoneOrEmailRegistered(telephone string, email string) (boo
 
 	var isEmailExist bool = true
 	if email != "" {
-		err = mysqlDB.First(&User{}, "email = ?", email).Error
+		err = mysqlDB.First(&UserImpl{}, "email = ?", email).Error
 		if err == gorm.ErrRecordNotFound {
 			isEmailExist = false
 			err = nil
@@ -97,8 +97,8 @@ func (u *User) IsTelephoneOrEmailRegistered(telephone string, email string) (boo
 	return isTelExist || isEmailExist, nil
 }
 
-func (u *User) QueryByEmailAndPassword(email string, enPassword string) (*User, error) {
-	var user = &User{}
+func (u *UserImpl) QueryByEmailAndPassword(email string, enPassword string) (*models.User, error) {
+	var user = &models.User{}
 	var err error
 	db := mysqlDB.First(&user, "email = ? and password = ?", email, enPassword)
 	if db.RecordNotFound() {
@@ -109,8 +109,8 @@ func (u *User) QueryByEmailAndPassword(email string, enPassword string) (*User, 
 	return user, err
 }
 
-func (u *User) QueryByTelephoneAndPassword(telephone string, enPassword string) (*User, error) {
-	var user = &User{}
+func (u *UserImpl) QueryByTelephoneAndPassword(telephone string, enPassword string) (*models.User, error) {
+	var user = &models.User{}
 	var err error
 	db := mysqlDB.First(user, "telephone = ? and password = ?", telephone, enPassword)
 	if db.RecordNotFound() {
@@ -121,12 +121,12 @@ func (u *User) QueryByTelephoneAndPassword(telephone string, enPassword string) 
 	return user, err
 }
 
-func (u *User) RemoveUserByUserId(userId string, isForce bool) (err error) {
+func (u *UserImpl) RemoveUserByUserId(userId string, isForce bool) (err error) {
 	_db := mysqlDB
 	if isForce {
 		_db = mysqlDB.Unscoped()
 	}
-	_db = _db.Delete(&User{}, "userId = ?", userId)
+	_db = _db.Delete(&UserImpl{}, "userId = ?", userId)
 	if _db.RecordNotFound() {
 		logger.Warningln("remove user fail, userId not found")
 	} else if _db.Error != nil {
@@ -136,24 +136,24 @@ func (u *User) RemoveUserByUserId(userId string, isForce bool) (err error) {
 	return
 }
 
-func (u *User) ResetPasswordByTelephone(telephone string, newPassword string) (err error) {
-	db := mysqlDB.Model(&User{}).Where("telephone = ?", telephone).Update("password", newPassword)
+func (u *UserImpl) ResetPasswordByTelephone(telephone string, newPassword string) (err error) {
+	db := mysqlDB.Model(&UserImpl{}).Where("telephone = ?", telephone).Update("password", newPassword)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to reset password by telephone: %v", err)
 	}
 	return
 }
 
-func (u *User) ResetPasswordByEmail(email string, newPassword string) (err error) {
-	db := mysqlDB.Model(&User{}).Where("email = ?", email).Update("password", newPassword)
+func (u *UserImpl) ResetPasswordByEmail(email string, newPassword string) (err error) {
+	db := mysqlDB.Model(&UserImpl{}).Where("email = ?", email).Update("password", newPassword)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to reset password by email: %v", err)
 	}
 	return
 }
 
-func (u *User) FindByUserId(userId string) (user *User, err error) {
-	user = &User{}
+func (u *UserImpl) FindByUserId(userId string) (user *models.User, err error) {
+	user = &models.User{}
 	db := mysqlDB.First(user, "userId = ?", userId)
 	if db.RecordNotFound() {
 		err = utils.ErrInvalidUserId
@@ -163,9 +163,9 @@ func (u *User) FindByUserId(userId string) (user *User, err error) {
 	return
 }
 
-func (u *User) FindOneUser(us *User) (user *User, err error) {
-	user = &User{}
-	db := mysqlDB.Where(us).First(&user)
+func (u *UserImpl) FindOneUser(condition map[string]interface{}) (user *models.User, err error) {
+	user = &models.User{}
+	db := mysqlDB.Where(condition).First(&user)
 	if db.RecordNotFound() {
 		err = utils.ErrUserNotExists
 	} else if err = db.Error; err != nil {
@@ -174,8 +174,8 @@ func (u *User) FindOneUser(us *User) (user *User, err error) {
 	return
 }
 
-func (u *User) FindOneAndUpdateProfile(us *User, profile map[string]interface{}) (err error) {
-	db := mysqlDB.Table(tbl.TableUsers).Where(us).Update(profile)
+func (u *UserImpl) FindOneAndUpdateProfile(condition map[string]interface{}, profile map[string]interface{}) (err error) {
+	db := mysqlDB.Table(tbl.TableUsers).Where(condition).Update(profile)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to update user profile: %v", err)
 	}

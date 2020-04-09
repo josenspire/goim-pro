@@ -4,6 +4,7 @@ import (
 	"context"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
+	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/repos/user"
 	"goim-pro/pkg/utils"
 	"testing"
@@ -35,7 +36,7 @@ var pbUserProfile2 = &protos.UserProfile{
 	Location:    "CHINA-ZHA",
 }
 
-var modelUserProfile1 = &user.UserProfile{
+var modelUserProfile1 = &models.UserProfile{
 	UserId:      "13631210001",
 	Telephone:   "13631210001",
 	Email:       "123@qq.com",
@@ -46,7 +47,7 @@ var modelUserProfile1 = &user.UserProfile{
 	Birthday:    utils.MakeTimestamp(),
 	Location:    "CHINA-ZHA",
 }
-var modelUserProfile2 = &user.UserProfile{
+var modelUserProfile2 = &models.UserProfile{
 	UserId:      "13631210002",
 	Telephone:   "13631210002",
 	Email:       "12345@qq.com",
@@ -58,10 +59,10 @@ var modelUserProfile2 = &user.UserProfile{
 	Location:    "CHINA-ZHA",
 }
 
-var modelUser1 = &user.User{
+var modelUser1 = &user.UserImpl{
 	UserProfile: *modelUserProfile1,
 }
-var modelUser2 = &user.User{
+var modelUser2 = &user.UserImpl{
 	UserProfile: *modelUserProfile2,
 }
 
@@ -69,11 +70,11 @@ func Test_Register(t *testing.T) {
 	m := &MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "123@qq.com").Return(true, nil)
 	m.On("IsTelephoneOrEmailRegistered", "13631210002", "12345@qq.com").Return(false, nil)
-	m.On("Register", &user.User{
+	m.On("Register", &user.UserImpl{
 		Password:    "1234567890",
 		UserProfile: *modelUserProfile1,
 	}).Return(nil)
-	m.On("Register", &user.User{
+	m.On("Register", &user.UserImpl{
 		Password:    "1234567890",
 		UserProfile: *modelUserProfile2,
 	}).Return(nil)
@@ -133,7 +134,7 @@ func Test_userService_ResetPassword(t *testing.T) {
 	m := &MockUserRepo{}
 	m.On("QueryByTelephoneAndPassword", "13631210001", enPassword).Return(modelUser1, nil)
 	m.On("QueryByEmailAndPassword", "123@qq.com", enPassword).Return(modelUser1, nil)
-	m.On("QueryByTelephoneAndPassword", "13631210001", errEnPassword).Return(&user.User{}, utils.ErrAccountOrPwdInvalid)
+	m.On("QueryByTelephoneAndPassword", "13631210001", errEnPassword).Return(&user.UserImpl{}, utils.ErrAccountOrPwdInvalid)
 
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(true, nil)
 	m.On("IsTelephoneOrEmailRegistered", "", "123@qq.com").Return(true, nil)
@@ -269,19 +270,19 @@ func Test_userService_GetUserInfo(t *testing.T) {
 }
 
 func Test_userService_QueryUserInfo(t *testing.T) {
-	userCriteria1 := &user.User{}
+	userCriteria1 := &user.UserImpl{}
 	userCriteria1.Telephone = "13631210001"
 
-	userCriteria2 := &user.User{}
+	userCriteria2 := &user.UserImpl{}
 	userCriteria2.Email = "123@qq.com"
 
-	userCriteria3 := &user.User{}
+	userCriteria3 := &user.UserImpl{}
 	userCriteria3.Telephone = "13631210012"
 
 	m := &MockUserRepo{}
 	m.On("FindOneUser", userCriteria1).Return(modelUser1, nil)
 	m.On("FindOneUser", userCriteria2).Return(modelUser1, nil)
-	m.On("FindOneUser", userCriteria3).Return(&user.User{}, utils.ErrUserNotExists)
+	m.On("FindOneUser", userCriteria3).Return(&user.UserImpl{}, utils.ErrUserNotExists)
 
 	Convey("testing_grpc_query_user_info", t, func() {
 		var ctx context.Context
@@ -346,10 +347,10 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 }
 
 func Test_userService_UpdateUserInfo(t *testing.T) {
-	criteria1 := &user.User{}
+	criteria1 := &user.UserImpl{}
 	criteria1.UserId = "13631210001"
 
-	criteria2 := &user.User{}
+	criteria2 := &user.UserImpl{}
 	criteria2.UserId = "13631210002"
 
 	newProfile1 := user.UserProfile{
@@ -377,7 +378,7 @@ func Test_userService_UpdateUserInfo(t *testing.T) {
 
 	m := &MockUserRepo{}
 	m.On("FindByUserId", "13631210001").Return(modelUser1, nil)
-	m.On("FindByUserId", "13631210002").Return(&user.User{}, nil)
+	m.On("FindByUserId", "13631210002").Return(&user.UserImpl{}, nil)
 	m.On("FindOneAndUpdateProfile", criteria1, utils.TransformStructToMap(newProfile1)).Return(nil)
 	m.On("FindOneAndUpdateProfile", criteria2, utils.TransformStructToMap(newProfile2)).Return(nil)
 

@@ -11,15 +11,15 @@ import (
 	"time"
 )
 
-type Contact models.Contact
+type ContactImpl models.Contact
 
 type IContactRepo interface {
-	IsExistContact(userId, contactId string) (isExist bool, err error)
-	FindOne(condition *Contact) (contact *Contact, err error)
-	FindAll(condition map[string]interface{}) (contacts []Contact, err error)
-	InsertContacts(newContacts ...*Contact) (err error)
+	IsContactExists(userId, contactId string) (isExist bool, err error)
+	FindOne(condition map[string]interface{}) (contact *models.Contact, err error)
+	FindAll(condition map[string]interface{}) (contacts []models.Contact, err error)
+	InsertContacts(newContacts ...*models.Contact) (err error)
 	RemoveContactsByIds(userId string, contactIds ...string) (err error)
-	FindOneAndUpdateRemark(ct *Contact, remarkInfo map[string]interface{}) (err error)
+	FindOneAndUpdateRemark(ct map[string]interface{}, remarkInfo map[string]interface{}) (err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -27,11 +27,11 @@ var mysqlDB *gorm.DB
 
 func NewContactRepo(db *gorm.DB) IContactRepo {
 	mysqlDB = db
-	return &Contact{}
+	return &ContactImpl{}
 }
 
-func (cta *Contact) IsExistContact(userId, contactId string) (isExists bool, err error) {
-	db := mysqlDB.First(&Contact{}, "userId = ? and contactId = ?", userId, contactId)
+func (cta *ContactImpl) IsContactExists(userId, contactId string) (isExists bool, err error) {
+	db := mysqlDB.First(&models.Contact{}, "userId = ? and contactId = ?", userId, contactId)
 	if db.RecordNotFound() {
 		return false, nil
 	} else if err = db.Error; err != nil {
@@ -40,9 +40,9 @@ func (cta *Contact) IsExistContact(userId, contactId string) (isExists bool, err
 	return true, err
 }
 
-func (cta *Contact) FindOne(condition *Contact) (contact *Contact, err error) {
-	contact = &Contact{}
-	db := mysqlDB.Where(condition).First(&contact)
+func (cta *ContactImpl) FindOne(condition map[string]interface{}) (contact *models.Contact, err error) {
+	contact = &models.Contact{}
+	db := mysqlDB.Where(condition).First(contact)
 	if db.RecordNotFound() {
 		return nil, nil
 	}
@@ -52,15 +52,14 @@ func (cta *Contact) FindOne(condition *Contact) (contact *Contact, err error) {
 	return
 }
 
-// TODO: should verify
-func (cta *Contact) FindAll(condition map[string]interface{}) (contacts []Contact, err error) {
+func (cta *ContactImpl) FindAll(condition map[string]interface{}) (contacts []models.Contact, err error) {
 	// SELECT * FROM `contacts`  WHERE `contacts`.`deletedAt` IS NULL AND ((`contacts`.`UserId` = '01E07SG858N3CGV5M1APVQKZYR'))
 	// SELECT * FROM `users`  WHERE `users`.`deletedAt` IS NULL AND ((`userId` IN ('01E2JVWZTG60NG2SXFYNEPNMCB','01E2JXMC98SZXMGEGVTDECSD78')))
 	err = mysqlDB.Preload("User").Find(&contacts, condition).Error
 	return
 }
 
-func (cta *Contact) InsertContacts(newContacts ...*Contact) (err error) {
+func (cta *ContactImpl) InsertContacts(newContacts ...*models.Contact) (err error) {
 	// BatchSave 批量插入数据
 	var buffer bytes.Buffer
 	sql := "INSERT INTO `contacts` (`userId`, `contactId`, `remarkName`, `telephone`, `description`, `tags`, `createdAt`, `updatedAt`) values"
@@ -84,8 +83,8 @@ func (cta *Contact) InsertContacts(newContacts ...*Contact) (err error) {
 }
 
 // remove user's contacts by contact ids, by force
-func (cta *Contact) RemoveContactsByIds(userId string, contactIds ...string) (err error) {
-	_db := mysqlDB.Unscoped().Delete(&Contact{}, "userId = ? and contactId IN (?)", userId, contactIds)
+func (cta *ContactImpl) RemoveContactsByIds(userId string, contactIds ...string) (err error) {
+	_db := mysqlDB.Unscoped().Delete(&models.Contact{}, "userId = ? and contactId IN (?)", userId, contactIds)
 	if _db.Error != nil {
 		logger.Errorf("error happened to remove user: %v", _db.Error)
 		err = _db.Error
@@ -93,8 +92,8 @@ func (cta *Contact) RemoveContactsByIds(userId string, contactIds ...string) (er
 	return
 }
 
-func (cta *Contact) FindOneAndUpdateRemark(ct *Contact, remarkProfile map[string]interface{}) (err error) {
-	db := mysqlDB.Table(tbl.TableContacts).Where(ct).Update(remarkProfile)
+func (cta *ContactImpl) FindOneAndUpdateRemark(condition map[string]interface{}, remarkProfile map[string]interface{}) (err error) {
+	db := mysqlDB.Table(tbl.TableContacts).Where(condition).Update(remarkProfile)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to update user profile: %v", err)
 	}

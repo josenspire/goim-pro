@@ -10,7 +10,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var user1 = &User{
+var user1 = &UserImpl{
 	Password: "1234567890",
 	UserProfile: models.UserProfile{
 		UserId:      "2",
@@ -22,7 +22,7 @@ var user1 = &User{
 	},
 }
 
-var user2 = &User{
+var user2 = &UserImpl{
 	Password: "1234567890",
 	UserProfile: models.UserProfile{
 		UserId:      "3",
@@ -37,7 +37,7 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
-	u := &User{}
+	u := &UserImpl{}
 	_ = u.Register(user2) // create a user
 	Convey("Test_IsTelephoneRegistered", t, func() {
 		Convey("Test_return_FALSE_with_exist_telephone", func() {
@@ -63,7 +63,7 @@ func TestUser_Register(t *testing.T) {
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
-	u := &User{}
+	u := &UserImpl{}
 	Convey("Test_Register", t, func() {
 		Convey("Registration_successful", func() {
 			err := u.Register(user1)
@@ -85,7 +85,7 @@ func TestUser_RemoveUserByUserId(t *testing.T) {
 
 	Convey("TestUserRepo_RemoveUserByUserID", t, func() {
 		Convey("testing_RemoveUserByUserID_success", func() {
-			user := &User{
+			user := &UserImpl{
 				Status: "ACTIVE",
 				UserProfile: models.UserProfile{
 					UserId: "2",
@@ -102,7 +102,7 @@ func TestUser_Login(t *testing.T) {
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
-	u := &User{}
+	u := &UserImpl{}
 	_ = u.Register(user2) // create a user
 
 	Convey("TestUserRepo_LoginByTelephone", t, func() {
@@ -127,7 +127,7 @@ func TestUser_LoginByEmail(t *testing.T) {
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
-	u := &User{}
+	u := &UserImpl{}
 	_ = u.Register(user2) // create a user
 	Convey("TestUserRepo_LoginByEmail", t, func() {
 		Convey("login_fail_with_incorrect_email_and_password", func() {
@@ -151,7 +151,7 @@ func TestUser_ResetPasswordByTelephone(t *testing.T) {
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
-	u := &User{}
+	u := &UserImpl{}
 	_ = u.Register(user1) // create a user
 	Convey("TestUserRepo_ResetPasswordByTelephone", t, func() {
 		Convey("update_successful_by_telephone", func() {
@@ -175,7 +175,7 @@ func TestUser_ResetPasswordByEmail(t *testing.T) {
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
-	u := &User{}
+	u := &UserImpl{}
 	_ = u.Register(user1) // create a user
 	Convey("TestUserRepo_ResetPasswordByEmail", t, func() {
 		Convey("update_successful_by_email", func() {
@@ -199,7 +199,7 @@ func TestUser_GetUserByUserId(t *testing.T) {
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
-	u := &User{}
+	u := &UserImpl{}
 	_ = u.Register(user1) // create a user
 	Convey("TestUserRepo_GetUserByUserId", t, func() {
 		Convey("get_user_info_success_then_return", func() {
@@ -225,11 +225,11 @@ func TestUser_FindOneUser(t *testing.T) {
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
-	u := &User{}
+	u := &UserImpl{}
 	_ = u.Register(user1) // create a user
 	Convey("TestUserRepo_FindOneUser", t, func() {
 		Convey("get_user_info_success_by_telephone_then_return", func() {
-			userCriteria := &User{}
+			userCriteria := &UserImpl{}
 			userCriteria.Telephone = "13631210010"
 
 			user, err := u.FindOneUser(userCriteria)
@@ -237,7 +237,7 @@ func TestUser_FindOneUser(t *testing.T) {
 			So(user.Email, ShouldEqual, "294001@qq.com")
 		})
 		Convey("get_user_info_success_by_telephone_and_email_then_return", func() {
-			userCriteria := &User{}
+			userCriteria := &UserImpl{}
 			userCriteria.Email = "294001@qq.com"
 			userCriteria.Telephone = "13631210010"
 
@@ -246,7 +246,7 @@ func TestUser_FindOneUser(t *testing.T) {
 			So(user.Email, ShouldEqual, "294001@qq.com")
 		})
 		Convey("get_user_info_failed_by_invalid_email_then_return_error", func() {
-			userCriteria := &User{}
+			userCriteria := &UserImpl{}
 			userCriteria.Email = "294001@qq.com"
 			userCriteria.Telephone = "13631210015"
 
@@ -263,11 +263,11 @@ func TestUser_FindOneAndUpdateProfile(t *testing.T) {
 	_ = mysqlDB.Connect()
 	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
-	u := &User{}
+	u := &UserImpl{}
 	_ = u.Register(user1) // create a user
 	Convey("TestUserRepo_FindOneAndUpdateProfile", t, func() {
 		Convey("find_user_by_userId_and_update_profile_success", func() {
-			userCriteria := &User{}
+			userCriteria := &UserImpl{}
 			userCriteria.UserId = "2"
 
 			newProfile := models.UserProfile{

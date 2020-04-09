@@ -4,7 +4,6 @@ import (
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
-	. "goim-pro/internal/app/repos/contact"
 	"strings"
 )
 
@@ -18,7 +17,7 @@ func ConvertProto2EntityForRemarkProfile(profile *protos.ContactRemark) models.R
 	}
 }
 
-func ConvertEntity2ProtoForContacts(contacts []Contact) (protoContacts []*protos.ContactProfile) {
+func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []*protos.ContactProfile) {
 	protoContacts = make([]*protos.ContactProfile, len(contacts))
 	for i, contact := range contacts {
 		userProfile := contact.User
