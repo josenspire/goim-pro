@@ -9,6 +9,7 @@ import (
 type IBaseCmdable interface {
 	Ping() (result string, err error)
 	HSet(key string, valueMap map[string]interface{}) (err error)
+	HGet(key string, fields ...string) (valueMap map[string]interface{}, err error)
 	Get(key string) (strVal string)
 	Set(key string, value string, expiresTime time.Duration) (err error)
 	Del(key string) (resultInt64 int64)

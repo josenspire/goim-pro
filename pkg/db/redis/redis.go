@@ -10,8 +10,7 @@ import (
 	"sync"
 )
 
-type RedisConnectionPool struct {
-}
+type RedisConnectionPool struct{}
 
 var logger = logs.GetLogger("INFO")
 var redisOnce sync.Once

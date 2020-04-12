@@ -472,6 +472,8 @@ func isProfileNothing2Update(originProfile models.UserProfile, newProfile models
 }
 
 func isVerificationCodeValid(verificationCode, telephone string) (isValid bool, err error) {
+	fmt.Println("--------", myRedis)
+	fmt.Println("========", fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
 	code := myRedis.Get(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
 	if verificationCode != string(code) {
 		return false, nil

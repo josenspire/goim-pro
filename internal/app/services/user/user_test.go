@@ -6,6 +6,7 @@ import (
 	"goim-pro/config"
 	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/repos/user"
+	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/utils"
 	"testing"
 
@@ -59,10 +60,10 @@ var modelUserProfile2 = &models.UserProfile{
 	Location:    "CHINA-ZHA",
 }
 
-var modelUser1 = &user.UserImpl{
+var modelUser1 = &models.User{
 	UserProfile: *modelUserProfile1,
 }
-var modelUser2 = &user.UserImpl{
+var modelUser2 = &models.User{
 	UserProfile: *modelUserProfile2,
 }
 
@@ -70,14 +71,24 @@ func Test_Register(t *testing.T) {
 	m := &MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "123@qq.com").Return(true, nil)
 	m.On("IsTelephoneOrEmailRegistered", "13631210002", "12345@qq.com").Return(false, nil)
-	m.On("Register", &user.UserImpl{
+	m.On("Register", &models.User{
 		Password:    "1234567890",
 		UserProfile: *modelUserProfile1,
 	}).Return(nil)
-	m.On("Register", &user.UserImpl{
+	m.On("Register", &models.User{
 		Password:    "1234567890",
 		UserProfile: *modelUserProfile2,
 	}).Return(nil)
+
+	redisDB := redsrv.NewRedisConnection()
+	_ = redisDB.Connect()
+
+	mr := &redsrv.MockCmdable{}
+	mr.On("Get", "0-13631210001").Return(123456)
+	mr.On("Gel", "0-13631210002").Return(123456)
+
+	mr.On("Del", "0-13631210001").Return(1)
+	mr.On("Del", "0-13631210002").Return(1)
 
 	Convey("testing_grpc_user_register", t, func() {
 		var ctx context.Context
@@ -347,13 +358,13 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 }
 
 func Test_userService_UpdateUserInfo(t *testing.T) {
-	criteria1 := &user.UserImpl{}
+	criteria1 := &models.User{}
 	criteria1.UserId = "13631210001"
 
-	criteria2 := &user.UserImpl{}
+	criteria2 := &models.User{}
 	criteria2.UserId = "13631210002"
 
-	newProfile1 := user.UserProfile{
+	newProfile1 := models.UserProfile{
 		UserId:      "13631210001",
 		Telephone:   "13631214444",
 		Email:       "123456@qq.com",
@@ -364,7 +375,7 @@ func Test_userService_UpdateUserInfo(t *testing.T) {
 		Birthday:    0,
 		Location:    "ZHA",
 	}
-	newProfile2 := user.UserProfile{
+	newProfile2 := models.UserProfile{
 		UserId:      "13631210002",
 		Telephone:   "13631214444",
 		Email:       "123456@qq.com",
