@@ -5,7 +5,6 @@ import (
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	. "goim-pro/internal/app/constants"
-	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/group"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
@@ -32,10 +31,10 @@ func New() protos.GroupServiceServer {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
 	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
-	repoServer := repos.New(mysqlDB)
+	//repoServer := repos.New(mysqlDB)
 	return &groupService{
-		userRepo:  repoServer.UserRepo,
-		groupRepo: repoServer.GroupRepo,
+		userRepo:  NewUserRepo(mysqlDB),
+		groupRepo: NewGroupRepo(mysqlDB),
 	}
 }
 

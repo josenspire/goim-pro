@@ -8,7 +8,6 @@ import (
 	"goim-pro/config"
 	. "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
-	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
 	mysqlsrv "goim-pro/pkg/db/mysql"
@@ -35,9 +34,9 @@ func New() protos.UserServiceServer {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
 	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
-	repoServer := repos.New(mysqlDB)
+	//repoServer := repos.New(mysqlDB)
 	return &userService{
-		userRepo: repoServer.UserRepo,
+		userRepo: NewUserRepo(mysqlDB),
 	}
 }
 

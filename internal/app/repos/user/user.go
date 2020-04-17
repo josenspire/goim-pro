@@ -158,7 +158,7 @@ func (u *UserImpl) FindByUserId(userId string) (user *models.User, err error) {
 	if db.RecordNotFound() {
 		err = utils.ErrInvalidUserId
 	} else if err = db.Error; err != nil {
-		logger.Errorf("error happend to get user by userId: %v", err)
+		logger.Errorf("error happened to get user by userId: %v", err)
 	}
 	return
 }
@@ -169,7 +169,7 @@ func (u *UserImpl) FindOneUser(condition map[string]interface{}) (user *models.U
 	if db.RecordNotFound() {
 		err = utils.ErrUserNotExists
 	} else if err = db.Error; err != nil {
-		logger.Errorf("error happend to query user information: %v", err)
+		logger.Errorf("error happened to query user information: %v", err)
 	}
 	return
 }

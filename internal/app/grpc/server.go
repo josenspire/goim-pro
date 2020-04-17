@@ -97,13 +97,13 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 		token := gRPCReq.GetToken()
 
 		// handle method on white list
-		logger.Infof("[request method]: %s", info.FullMethod)
 		if isOnWhiteList(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
 		// TODO: for local demo
 		if token == "1234567890" {
+			gRPCReq.Token = "01E07SG858N3CGV5M1APVQKZYR"
 			return handler(ctx, req)
 		}
 		if utils.IsEmptyStrings(token) {

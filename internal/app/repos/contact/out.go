@@ -1,7 +1,6 @@
 package contact
 
-
-type ClassifyVO struct {
+type ContactProfileVO struct {
 	UserId    string `json:"userId" gorm:"column:userId; type:varchar(32); primary_key; not null"`
 	ContactId string `json:"contactId" gorm:"column:contactId; type:varchar(32); primary_key; not null"`
 

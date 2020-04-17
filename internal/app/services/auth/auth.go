@@ -6,7 +6,6 @@ import (
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	. "goim-pro/internal/app/constants"
-	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/user"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
@@ -31,9 +30,8 @@ func New() protos.SMSServiceServer {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
 	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
-	repoServer := repos.New(mysqlDB)
 	return &smsServer{
-		userRepo: repoServer.UserRepo,
+		userRepo: NewUserRepo(mysqlDB),
 	}
 }
 

@@ -7,7 +7,6 @@ import (
 	protos "goim-pro/api/protos/salty"
 	. "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
-	"goim-pro/internal/app/repos"
 	. "goim-pro/internal/app/repos/contact"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
@@ -34,10 +33,10 @@ func New() protos.ContactServiceServer {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
 	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
-	repoServer := repos.New(mysqlDB)
+	//repoServer := repos.New(mysqlDB)
 	return &contactService{
-		userRepo:    repoServer.UserRepo,
-		contactRepo: repoServer.ContactRepo,
+		userRepo:    NewUserRepo(mysqlDB),
+		contactRepo: NewContactRepo(mysqlDB),
 	}
 }
 
