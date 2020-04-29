@@ -22,7 +22,7 @@ func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_C
 		Telephone: tel,
 	}
 	anyData, _ := utils.MarshalMessageToAny(&smsReq)
-	gprcReq := &protos.GrpcReq{
+	grpcReq := &protos.GrpcReq{
 		DeviceId: "One Plus 7 Pro",
 		Version:  "1",
 		Language: 0,
@@ -31,8 +31,8 @@ func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_C
 		Data:     anyData,
 	}
 	// 调用 gRPC 接口
-	tr, err := t.ObtainSMSCode(context.Background(), gprcReq)
-	//tr, err := t.Register(context.Background(), gprcReq)
+	tr, err := t.ObtainSMSCode(context.Background(), grpcReq)
+	//tr, err := t.Register(context.Background(), grpcReq)
 	if err != nil {
 		log.Fatalf("could not greet: %v", err.Error())
 	}
@@ -45,7 +45,7 @@ func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_C
 	//
 	//// 调用 gRPC 接口
 	//tr, err := t.ObtainSMSCode(context.Background(), &smsReq)
-	////tr, err := t.Register(context.Background(), gprcReq)
+	////tr, err := t.Register(context.Background(), grpcReq)
 	//if err != nil {
 	//	log.Fatalf("could not greet: %v", err.Error())
 	//}

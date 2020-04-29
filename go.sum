@@ -36,7 +36,6 @@ github.com/edwingeng/slog v0.0.0-20191011125256-3ac46ac3623d h1:/1paWA9ZxTiyOM10
 github.com/edwingeng/slog v0.0.0-20191011125256-3ac46ac3623d/go.mod h1:g3bFHx27qq2CKFvaeya0LS+cKa3dOiYrSdqHeAxWYT0=
 github.com/edwingeng/wuid v0.0.0-20191129013112-1bf3d98c028d h1:Ko4lLKhTNBBNdDhg35E9FJhEokXMO2rF00DfDlICKd8=
 github.com/edwingeng/wuid v0.0.0-20191129013112-1bf3d98c028d/go.mod h1:T4K+qCBTbj4AmO3mC25CkagcWfcRues49sJ9FCE+xds=
-github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 h1:Yzb9+7DPaBjB8zlTR87/ElzFsnQfuHnVUVqpZZIcV5Y=
@@ -89,8 +88,6 @@ github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoA
 github.com/grpc-ecosystem/go-grpc-middleware v1.0.0/go.mod h1:FiyG127CGDf3tlThmgyCl78X/SZQqEOJBCDaAfeWzPs=
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0/go.mod h1:8NvIoxWQoOIhqOTXgfV/d3M/q6VIi02HzZEHgUlZvzk=
 github.com/grpc-ecosystem/grpc-gateway v1.9.0/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
-github.com/grpc/grpc-go v1.25.1 h1:GU8I0TC7j3bo6rFkuUlH9AAFzZDaZa2+pqbWsjsiqUc=
-github.com/grpc/grpc-go v1.25.1/go.mod h1:c3i+UQWmh7LiEpx4sFZnkU36qjEYZ0imhYfXVyQciAY=
 github.com/grpc/grpc-go v1.28.1 h1:L3bSl2pSMfZbQcFd4Zy2+lD20lms8QNa5RkGHlXzIVQ=
 github.com/grpc/grpc-go v1.28.1/go.mod h1:rpkK4SK4GF4Ach/+MFLZUBavHOvF2JJB5uozKKal+60=
 github.com/hashicorp/golang-lru v0.5.0 h1:CL2msUPvZTLb5O648aiLNJw3hnBxN2+1Jq8rCOH9wdo=

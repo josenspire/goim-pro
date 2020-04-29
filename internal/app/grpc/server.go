@@ -61,7 +61,7 @@ func (gs *GRPCServer) InitServer() {
 }
 
 // create gprc server connection
-func (gs *GRPCServer) ConnectGRPCServer() {
+func (gs *GRPCServer) StartGRPCServer() {
 	tcpAddress := fmt.Sprintf("%s:%s", config.GetAppHost(), config.GetAppPort())
 	lis, err := net.Listen("tcp", tcpAddress)
 	if err != nil {
@@ -156,6 +156,7 @@ func (gs *GRPCServer) ConnectGRPCServer() {
 
 // stop grpc server by graceful
 func (gs *GRPCServer) GracefulStopGRPCServer() {
+	logger.Info("graceful shutdown, waiting for all processes done...")
 	gs.grpcServer.GracefulStop()
 }
 
