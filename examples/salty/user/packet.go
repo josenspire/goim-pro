@@ -153,7 +153,45 @@ func Login(t protos.UserServiceClient, typeStr string, index int) {
 
 	anyData, _ := utils.MarshalMessageToAny(loginReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "XiaoMi 10",
+		Version:  "",
+		Language: 0,
+		Os:       0,
+		Token:    "",
+		Data:     anyData,
+	}
+
+	tr, err := t.Login(context.Background(), grpcReq)
+	if err != nil {
+		logger.Errorf("login error: %s", err.Error())
+	} else {
+		printResp(tr)
+	}
+}
+
+func LoginWithCode(t protos.UserServiceClient, typeStr string) {
+	var loginReq *protos.LoginReq
+
+	if typeStr == "TELEPHONE" {
+		loginReq = &protos.LoginReq{
+			TargetAccount: &protos.LoginReq_Telephone{
+				Telephone: "13631210003",
+			},
+			VerificationCode:     "037585",
+			Password: "",
+		}
+	} else {
+		loginReq = &protos.LoginReq{
+			TargetAccount: &protos.LoginReq_Email{
+				Email: "12345@qq.com",
+			},
+			Password: "1234567890",
+		}
+	}
+
+	anyData, _ := utils.MarshalMessageToAny(loginReq)
+	grpcReq := &protos.GrpcReq{
+		DeviceId: "XiaoMi 10",
 		Version:  "",
 		Language: 0,
 		Os:       0,

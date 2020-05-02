@@ -22,7 +22,7 @@ func Test_smsServer_ObtainSMSCode(t *testing.T) {
 		var ctx context.Context
 		var req *protos.GrpcReq
 
-		smsServer := &smsServer{
+		smsServer := &smsService{
 			userRepo: m,
 		}
 		Convey("should_return_correct_sms_code_for_register", func() {

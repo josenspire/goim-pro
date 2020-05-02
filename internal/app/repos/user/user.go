@@ -64,7 +64,7 @@ func (u *UserImpl) IsTelephoneOrEmailRegistered(telephone string, email string) 
 	var isTelExist bool = true
 	var err error
 	if telephone != "" {
-		err = mysqlDB.First(&UserImpl{}, "telephone = ?", telephone).Error
+		err = mysqlDB.First(&models.User{}, "telephone = ?", telephone).Error
 		if err == gorm.ErrRecordNotFound {
 			isTelExist = false
 			err = nil
@@ -82,7 +82,7 @@ func (u *UserImpl) IsTelephoneOrEmailRegistered(telephone string, email string) 
 
 	var isEmailExist bool = true
 	if email != "" {
-		err = mysqlDB.First(&UserImpl{}, "email = ?", email).Error
+		err = mysqlDB.First(&models.User{}, "email = ?", email).Error
 		if err == gorm.ErrRecordNotFound {
 			isEmailExist = false
 			err = nil
@@ -126,7 +126,7 @@ func (u *UserImpl) RemoveUserByUserId(userId string, isForce bool) (err error) {
 	if isForce {
 		_db = mysqlDB.Unscoped()
 	}
-	_db = _db.Delete(&UserImpl{}, "userId = ?", userId)
+	_db = _db.Delete(&models.User{}, "userId = ?", userId)
 	if _db.RecordNotFound() {
 		logger.Warningln("remove user fail, userId not found")
 	} else if _db.Error != nil {
@@ -137,7 +137,7 @@ func (u *UserImpl) RemoveUserByUserId(userId string, isForce bool) (err error) {
 }
 
 func (u *UserImpl) ResetPasswordByTelephone(telephone string, newPassword string) (err error) {
-	db := mysqlDB.Model(&UserImpl{}).Where("telephone = ?", telephone).Update("password", newPassword)
+	db := mysqlDB.Model(&models.User{}).Where("telephone = ?", telephone).Update("password", newPassword)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to reset password by telephone: %v", err)
 	}
@@ -145,7 +145,7 @@ func (u *UserImpl) ResetPasswordByTelephone(telephone string, newPassword string
 }
 
 func (u *UserImpl) ResetPasswordByEmail(email string, newPassword string) (err error) {
-	db := mysqlDB.Model(&UserImpl{}).Where("email = ?", email).Update("password", newPassword)
+	db := mysqlDB.Model(&models.User{}).Where("email = ?", email).Update("password", newPassword)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to reset password by email: %v", err)
 	}

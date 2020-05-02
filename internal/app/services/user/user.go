@@ -12,6 +12,7 @@ import (
 	"goim-pro/internal/app/services/converters"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
+	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"net/http"
@@ -34,7 +35,6 @@ func New() protos.UserServiceServer {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
 	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
-	//repoServer := repos.New(mysqlDB)
 	return &userService{
 		userRepo: NewUserRepo(mysqlDB),
 	}
@@ -134,15 +134,17 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 	}
 
 	var user *models.User
-	if telephone != "" {
-		user, err = loginByTelephone(us, telephone, enPassword, verificationCode)
-	} else {
-		user, err = loginByEmail(us, email, enPassword, verificationCode)
-	}
+	var isNeedVerify bool = false
+	isNeedVerify, user, err = us.accountLogin(telephone, email, enPassword, verificationCode, req.DeviceId, req.Os)
 	if err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Message = err.Error()
 		logger.Errorf("user login error: %v", err.Error())
+		return
+	}
+	if isNeedVerify {
+		resp.Code = codes.StatusAuthorizedRequired
+		resp.Message = `your account needs security verification`
 		return
 	}
 
@@ -509,12 +511,8 @@ func loginParameterCalibration(req *protos.LoginReq) (err error) {
 	req.VerificationCode = strings.Trim(req.GetVerificationCode(), "")
 	req.Password = strings.Trim(req.GetPassword(), "")
 
-	if utils.IsContainEmptyString(req.GetPassword()) {
+	if utils.IsEmptyStrings(req.GetTelephone(), req.GetEmail()) || utils.IsEmptyStrings(req.GetPassword(), req.GetVerificationCode()) {
 		err = csErr
-	} else {
-		if utils.IsEmptyStrings(req.GetTelephone(), req.GetEmail()) {
-			err = csErr
-		}
 	}
 	return
 }
@@ -596,4 +594,90 @@ func loginByEmail(us *userService, email, enPassword, verificationCode string) (
 	}
 	return user, nil
 
+}
+
+func (us *userService) accountLogin(telephone, email, enPassword, verificationCode, deviceId string, osVersion protos.GrpcReq_OS) (isNeedVerify bool, user *models.User, err error) {
+	var isLoginByTelephone bool = false
+	if telephone != "" {
+		isLoginByTelephone = true
+	}
+	// 1. login by verification code
+	if verificationCode != "" {
+		user, err = us.loginWithVerificationCode(isLoginByTelephone, telephone, email, verificationCode)
+		if err != nil {
+			return false, nil, err
+		}
+		if isNeedToSMSVerify(deviceId, osVersion, user) && user != nil {
+			var condition = map[string]interface{}{
+				"UserId": user.UserId,
+			}
+			var profile = map[string]interface{}{
+				"DeviceId":  deviceId,
+				"OsVersion": osVersion,
+			}
+			if err = us.userRepo.FindOneAndUpdateProfile(condition, profile); err != nil {
+				return false, nil, err
+			}
+			return false, user, err
+		}
+	}
+	// 2. login by password
+	if enPassword != "" {
+		user, err = us.loginWithPassword(isLoginByTelephone, telephone, email, enPassword)
+		if err != nil {
+			return false, nil, err
+		}
+		return isNeedToSMSVerify(deviceId, osVersion, user), user, err
+	}
+	return
+}
+
+func (us *userService) loginWithPassword(isTelephone bool, telephone, email, enPassword string) (user *models.User, err error) {
+	if isTelephone {
+		return us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
+	} else {
+		return us.userRepo.QueryByEmailAndPassword(email, enPassword)
+	}
+}
+
+func (us *userService) loginWithVerificationCode(isTelephone bool, telephone, email, verificationCode string) (user *models.User, err error) {
+	var codeKey string = ""
+	var criteria = make(map[string]interface{})
+	if isTelephone {
+		codeKey = fmt.Sprintf("%d-%s", CodeTypeLogin, telephone)
+		criteria = map[string]interface{}{
+			"Telephone": telephone,
+		}
+	} else {
+		codeKey = fmt.Sprintf("%d-%s", CodeTypeLogin, email)
+		criteria = map[string]interface{}{
+			"Email": email,
+		}
+	}
+	code := myRedis.Get(codeKey)
+	if verificationCode == string(code) {
+		if user, err = us.userRepo.FindOneUser(criteria); err != nil {
+			logger.Errorf("find user by account error: %s", err.Error())
+			return nil, err
+		}
+		myRedis.Del(codeKey)
+		return user, nil
+	}
+	return nil, utils.ErrInvalidVerificationCode
+}
+
+func isNeedToSMSVerify(deviceId string, osVersion protos.GrpcReq_OS, orgUser *models.User) bool {
+	// TODO: should divide strategy by platform
+	if deviceId == "" || deviceId != orgUser.DeviceId {
+		return true
+	}
+
+	return false
+
+	//switch osVersion {
+	//case protos.GrpcReq_ANDROID:
+	//case protos.GrpcReq_IOS:
+	//case protos.GrpcReq_WINDOWS:
+	//case protos.GrpcReq_UNKNOWN:
+	//}
 }

@@ -54,10 +54,10 @@ func main() {
 			case "s2":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
-				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_LOGIN, 0)
+				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_LOGIN, 3)
 			case "s3":
 				t := protos.NewSMSServiceClient(conn)
-				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD, 0)
+				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD, 3)
 			case "rst1":
 				t := protos.NewUserServiceClient(conn)
 				user.ResetPasswordByTelephone(t, "OLD_PASSWORD")
@@ -72,6 +72,12 @@ func main() {
 				for i := 1; i <= 3; i++ {
 					user.Login(t, "TELEPHONE", i)
 				}
+			case "lt2":
+				t := protos.NewUserServiceClient(conn)
+				user.Login(t, "TELEPHONE", 3)
+			case "lt3":
+				t := protos.NewUserServiceClient(conn)
+				user.LoginWithCode(t, "TELEPHONE")
 			case "le":
 				t := protos.NewUserServiceClient(conn)
 				for i := 1; i <= 3; i++ {
@@ -136,6 +142,8 @@ func toolsIntroduce() {
 	logger.Info("** ['rst2']: resetPassword by telephone with verification**")
 	logger.Info("** ['r']: register **")
 	logger.Info("** ['lt']: login by telephone **")
+	logger.Info("** ['lt2']: login by telephone with diff deviceId **")
+	logger.Info("** [lt3]: login by telephone with sms code **")
 	logger.Info("** ['le']: login by email **")
 	logger.Info("** ['lq']: user logout **")
 	logger.Info("** ['gu']: get user info by userId **")

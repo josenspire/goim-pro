@@ -10,7 +10,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var user1 = &UserImpl{
+var user1 = &models.User{
 	Password: "1234567890",
 	UserProfile: models.UserProfile{
 		UserId:      "2",
@@ -22,7 +22,7 @@ var user1 = &UserImpl{
 	},
 }
 
-var user2 = &UserImpl{
+var user2 = &models.User{
 	Password: "1234567890",
 	UserProfile: models.UserProfile{
 		UserId:      "3",
@@ -107,16 +107,14 @@ func TestUser_Login(t *testing.T) {
 
 	Convey("TestUserRepo_LoginByTelephone", t, func() {
 		Convey("login_fail_with_incorrect_telephone_and_password", func() {
-			_, err := u.QueryByTelephoneAndPassword("13631210022", "1234567890")
+			_, err := u.QueryByTelephoneAndPassword("13631210022", "12345678901")
 			So(err, ShouldNotBeNil)
 			So(err, ShouldEqual, utils.ErrAccountOrPwdInvalid)
 		})
 		Convey("login_success_then_return_userProfile", func() {
-			enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
-			currUser, err := u.QueryByTelephoneAndPassword("13631210022", enPassword)
+			currUser, err := u.QueryByTelephoneAndPassword("13631210022", "1234567890")
 			So(err, ShouldBeNil)
 			So(currUser.UserId, ShouldEqual, "3")
-			So(currUser.Telephone, ShouldEqual, "13631210022")
 		})
 	})
 	_ = u.RemoveUserByUserId(user2.UserId, true) // remove demo user
@@ -131,13 +129,12 @@ func TestUser_LoginByEmail(t *testing.T) {
 	_ = u.Register(user2) // create a user
 	Convey("TestUserRepo_LoginByEmail", t, func() {
 		Convey("login_fail_with_incorrect_email_and_password", func() {
-			_, err := u.QueryByEmailAndPassword("294001@qq.com", "1234567890")
+			_, err := u.QueryByEmailAndPassword("294001@qq.com", "12345678901")
 			So(err, ShouldNotBeNil)
 			So(err, ShouldEqual, utils.ErrAccountOrPwdInvalid)
 		})
 		Convey("login_success_then_return_userProfile", func() {
-			enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
-			currUser, err := u.QueryByEmailAndPassword("294001@qq.com", enPassword)
+			currUser, err := u.QueryByEmailAndPassword("294001@qq.com", "1234567890")
 			So(err, ShouldBeNil)
 			So(currUser.UserId, ShouldEqual, "3")
 			So(currUser.Email, ShouldEqual, "294001@qq.com")
@@ -229,26 +226,29 @@ func TestUser_FindOneUser(t *testing.T) {
 	_ = u.Register(user1) // create a user
 	Convey("TestUserRepo_FindOneUser", t, func() {
 		Convey("get_user_info_success_by_telephone_then_return", func() {
-			userCriteria := &UserImpl{}
-			userCriteria.Telephone = "13631210010"
+			var userCriteria = map[string]interface{}{
+				"Telephone": "13631210010",
+			}
 
 			user, err := u.FindOneUser(userCriteria)
 			So(err, ShouldBeNil)
 			So(user.Email, ShouldEqual, "294001@qq.com")
 		})
 		Convey("get_user_info_success_by_telephone_and_email_then_return", func() {
-			userCriteria := &UserImpl{}
-			userCriteria.Email = "294001@qq.com"
-			userCriteria.Telephone = "13631210010"
+			var userCriteria = map[string]interface{}{
+				"Email":     "294001@qq.com",
+				"Telephone": "13631210010",
+			}
 
 			user, err := u.FindOneUser(userCriteria)
 			So(err, ShouldBeNil)
 			So(user.Email, ShouldEqual, "294001@qq.com")
 		})
 		Convey("get_user_info_failed_by_invalid_email_then_return_error", func() {
-			userCriteria := &UserImpl{}
-			userCriteria.Email = "294001@qq.com"
-			userCriteria.Telephone = "13631210015"
+			var userCriteria = map[string]interface{}{
+				"Email":     "294001@qq.com",
+				"Telephone": "13631210015",
+			}
 
 			_, err := u.FindOneUser(userCriteria)
 			So(err, ShouldNotBeNil)
@@ -267,9 +267,9 @@ func TestUser_FindOneAndUpdateProfile(t *testing.T) {
 	_ = u.Register(user1) // create a user
 	Convey("TestUserRepo_FindOneAndUpdateProfile", t, func() {
 		Convey("find_user_by_userId_and_update_profile_success", func() {
-			userCriteria := &UserImpl{}
-			userCriteria.UserId = "2"
-
+			var userCriteria = map[string]interface{}{
+				"UserId": "2",
+			}
 			newProfile := models.UserProfile{
 				UserId:      "2",
 				Telephone:   "13631210111",

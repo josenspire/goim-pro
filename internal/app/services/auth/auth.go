@@ -15,10 +15,6 @@ import (
 	"strings"
 )
 
-type smsServer struct {
-	userRepo IUserRepo
-}
-
 var (
 	codeSize = 6
 	logger   = logs.GetLogger("INFO")
@@ -26,16 +22,20 @@ var (
 	mysqlDB  *gorm.DB
 )
 
+type smsService struct {
+	userRepo IUserRepo
+}
+
 func New() protos.SMSServiceServer {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
 	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
-	return &smsServer{
+	return &smsService{
 		userRepo: NewUserRepo(mysqlDB),
 	}
 }
 
-func (s *smsServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, grpcErr error) {
+func (s *smsService) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, grpcErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var smsReq protos.ObtainSMSCodeReq
