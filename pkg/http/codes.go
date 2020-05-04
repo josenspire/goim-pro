@@ -2,6 +2,7 @@ package codes
 
 const (
 	// new
+	StatusAccountExists      = 200226
 	StatusAuthorizedRequired = 200402
 
 	//	// org

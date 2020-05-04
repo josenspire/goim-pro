@@ -77,7 +77,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		return
 	}
 	if isRegistered {
-		resp.Code = http.StatusBadRequest
+		resp.Code = codes.StatusAccountExists
 		resp.Message = "the telephone or email has been registered, please login"
 		return
 	}
