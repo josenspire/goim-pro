@@ -77,6 +77,7 @@ func (s *smsService) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (re
 			return
 		}
 
+		verificationCode = "123401"
 		redisKey = fmt.Sprintf("%d-%s", CodeTypeRegister, telephone)
 		resp.Message = fmt.Sprintf("sending sms code success: %s", verificationCode)
 	case protos.ObtainSMSCodeReq_CodeType(CodeTypeLogin):
@@ -86,6 +87,7 @@ func (s *smsService) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (re
 			return
 		}
 
+		verificationCode = "123402"
 		redisKey = fmt.Sprintf("%d-%s", CodeTypeLogin, telephone)
 		resp.Message = fmt.Sprintf("sending sms code success: %s", verificationCode)
 	case protos.ObtainSMSCodeReq_CodeType(CodeTypeResetPassword):
@@ -95,6 +97,7 @@ func (s *smsService) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (re
 			return
 		}
 
+		verificationCode = "123403"
 		redisKey = fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone)
 		resp.Message = fmt.Sprintf("sending sms code success: %s", verificationCode)
 	default:
