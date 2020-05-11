@@ -15,7 +15,6 @@ import (
 	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
-	"net/http"
 	"strings"
 )
 
@@ -77,7 +76,7 @@ func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp 
 		return
 	}
 	if isRegistered {
-		resp.Code = codes.StatusAccountExists
+		resp.Code = http.StatusAccountExists
 		resp.Message = "the telephone or email has been registered, please login"
 		return
 	}
@@ -143,7 +142,7 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 		return
 	}
 	if isNeedVerify {
-		resp.Code = codes.StatusAuthorizedRequired
+		resp.Code = http.StatusAuthorizedRequired
 		resp.Message = `your account needs security verification`
 		return
 	}

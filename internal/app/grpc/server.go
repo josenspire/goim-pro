@@ -15,6 +15,7 @@ import (
 	"goim-pro/internal/app/services"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
+	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"google.golang.org/grpc"
@@ -22,7 +23,6 @@ import (
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
-	"net/http"
 	"time"
 )
 

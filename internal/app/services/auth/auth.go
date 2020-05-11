@@ -9,9 +9,9 @@ import (
 	. "goim-pro/internal/app/repos/user"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
+	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
-	"net/http"
 	"strings"
 )
 
@@ -72,7 +72,7 @@ func (s *smsService) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (re
 	switch codeType {
 	case protos.ObtainSMSCodeReq_CodeType(CodeTypeRegister):
 		if isTelephoneRegistered {
-			resp.Code = http.StatusBadRequest
+			resp.Code = http.StatusAccountExists
 			resp.Message = "this telephone has been registered"
 			return
 		}

@@ -1,9 +1,23 @@
-package codes
+package http
 
 const (
-	// new
-	StatusAccountExists      = 200226
-	StatusAuthorizedRequired = 200402
+	// process error
+	StatusOK                 = 200
+	StatusAuthorizedRequired = 211
+	StatusAccountExists      = 226
+
+	// params/process error
+	StatusBadRequest           = 400
+	StatusUnauthorized         = 401
+	StatusNonAuthoritativeInfo = 403
+	StatusNotFound             = 404
+	StatusRequestTimeout       = 408
+
+	// server/internal error
+	StatusInternalServerError = 500
+	StatusBadGateway          = 502
+	StatusServiceUnavailable  = 503
+	StatusGatewayTimeout      = 504
 
 	//	// org
 	//	StatusContinue           = 100 // RFC 7231, 6.2.1

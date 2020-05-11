@@ -8,6 +8,8 @@ import (
 	"goim-pro/pkg/logs"
 	"os"
 	"os/signal"
+	"runtime"
+	"runtime/pprof"
 	"syscall"
 )
 
@@ -15,10 +17,6 @@ var logger = logs.GetLogger("INFO")
 var server *grpc.GRPCServer
 
 func main() {
-	server = grpc.NewServer()
-	server.InitServer()
-	server.StartGRPCServer()
-
 	defer func() {
 		if r := recover(); r != nil {
 			err := errors.New(fmt.Sprint(r))
@@ -26,12 +24,40 @@ func main() {
 		}
 	}()
 
+	cpuProfile := os.Getenv("cpu_profile")
+	if cpuProfile != "" {
+		f, err := os.Create(cpuProfile)
+		if err != nil {
+			logger.Fatalf("Failed to create CPU profiling file due to error - %s", err.Error())
+		}
+		_ = pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
+	server = grpc.NewServer()
+	server.InitServer()
+	server.StartGRPCServer()
+
 	exitChan := make(chan int)
 	go signalHandler(exitChan)
 	go commandHandler(exitChan)
 
 	code := <-exitChan
 	server.GracefulStopGRPCServer()
+
+	memProfile := os.Getenv("mem_profile")
+	if memProfile != "" {
+		f, err := os.Create(memProfile)
+		if err != nil {
+			logger.Fatalf("Failed to create memory profiling file due to error - %s", err.Error())
+		}
+		runtime.GC()
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			logger.Fatalf("Failed to write memory profiling data to file due to error - %s", err.Error())
+		}
+		_ = f.Close()
+	}
+
 	os.Exit(code)
 }
 
