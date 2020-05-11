@@ -40,7 +40,7 @@ func New() protos.GroupServiceServer {
 }
 
 // CreateGroup - create new group
-func (gs *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -62,7 +62,7 @@ func (gs *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (r
 		return
 	}
 
-	totalGroup, err := isGroupCountOverflow(gs, userId)
+	totalGroup, err := isGroupCountOverflow(s, userId)
 	if err != nil {
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
@@ -76,7 +76,7 @@ func (gs *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (r
 
 	groupProfile := models.NewGroup(userId, groupName, buildMembersObject(memberIds))
 	ts := mysqlDB.Begin()
-	groupProfile, err = gs.groupRepo.CreateGroup(groupProfile)
+	groupProfile, err = s.groupRepo.CreateGroup(groupProfile)
 	if err != nil {
 		ts.Callback()
 		resp.Code = http.StatusInternalServerError
@@ -96,32 +96,108 @@ func (gs *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (r
 	return
 }
 
-func (gs *groupService) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *groupService) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var joinGroupReq protos.JoinGroupReq
+	if err = utils.UnmarshalGRPCReq(req, &joinGroupReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	userId := req.GetToken()
+	groupId := joinGroupReq.GroupId
+	// TODO:
+	//requestReason := joinGroupReq.Reason
+
+	if groupId == "" {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrIllegalOperation.Error()
+		return
+	}
+
+	isMember, err := s.isGroupMember(groupId, userId)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	if isMember {
+		resp.Code = http.StatusRepeatOperation
+		resp.Message = "user has joined the group"
+		return
+	}
+
+	newMember := &models.Member{
+		UserId:  userId,
+		GroupId: groupId,
+	}
+	if err := s.groupRepo.InsertMembers(newMember); err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+
+	var condition = map[string]interface{}{
+		"groupId": groupId,
+	}
+	groupProfile, err := s.groupRepo.FindOneGroup(condition)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+
+	joinGroupResp := &protos.JoinGroupResp{
+		Profile: converters.ConvertEntity2ProtoForGroupProfile(groupProfile),
+	}
+	resp.Data, err = utils.MarshalMessageToAny(joinGroupResp)
+	if err != nil {
+		logger.Errorf("join group response marshal message error: %s", err.Error())
+	}
+	resp.Message = "join group succeed"
+	return
+}
+
+func (s *groupService) QuitGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	panic("implement me")
 }
 
-func (gs *groupService) QuitGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *groupService) AddGroupMember(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	panic("implement me")
 }
 
-func (gs *groupService) AddGroupMember(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *groupService) KickGroupMember(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	panic("implement me")
 }
 
-func (gs *groupService) KickGroupMember(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *groupService) UpdateGroupName(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	panic("implement me")
 }
 
-func (gs *groupService) UpdateGroupName(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *groupService) UpdateGroupNotice(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	panic("implement me")
 }
 
-func (gs *groupService) UpdateGroupNotice(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *groupService) UpdateMemberNickname(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	panic("implement me")
 }
 
-func (gs *groupService) UpdateMemberNickname(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+func (s *groupService) isGroupMember(groupId, userId string) (bool, error) {
+	var condition = map[string]interface{}{
+		"groupId": groupId,
+		"userId":  userId,
+	}
+	_, err := s.groupRepo.FindOneGroupMember(condition)
+	if err == utils.ErrGroupNotExists {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func isGroupCountOverflow(gs *groupService, userId string) (totalNum int, err error) {

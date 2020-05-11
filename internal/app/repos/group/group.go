@@ -11,13 +11,16 @@ import (
 )
 
 type GroupImpl Group
+
 type MemberImpl Member
 
 type IGroupRepo interface {
 	CreateGroup(groupProfile *Group) (newGroup *Group, err error)
-	InsertMembers(members ...Member) (err error)
-
 	RemoveGroupByGroupId(groupId string, isForce bool) (err error)
+
+	FindOneGroupMember(condition map[string]interface{}) (memberProfile *Member, err error)
+	InsertMembers(members ...*Member) (err error)
+	FindOneGroup(condition map[string]interface{}) (groupProfile *Group, err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -29,7 +32,7 @@ func NewGroupRepo(db *gorm.DB) IGroupRepo {
 }
 
 // CreateGroup - create group with group profile and members
-func (gp *GroupImpl) CreateGroup(groupProfile *Group) (newGroup *Group, err error) {
+func (i *GroupImpl) CreateGroup(groupProfile *Group) (newGroup *Group, err error) {
 	_db := mysqlDB.Create(groupProfile)
 	if _db.Error != nil {
 		err = _db.Error
@@ -40,7 +43,12 @@ func (gp *GroupImpl) CreateGroup(groupProfile *Group) (newGroup *Group, err erro
 	return _db.Value.(*Group), nil
 }
 
-func (gp *GroupImpl) InsertMembers(members ...Member) (err error) {
+func (i *GroupImpl) FindOneGroup(condition map[string]interface{}) (groupProfile *Group, err error) {
+	err = mysqlDB.Preload("Member").Find(&groupProfile, condition).Error
+	return
+}
+
+func (i *GroupImpl) InsertMembers(members ...*Member) (err error) {
 	var buffer bytes.Buffer
 	sql := "INSERT INTO `members` (`userId`, `alias`, `role`, `status`, `createdAt`, `updatedAt`) values"
 	if _, err := buffer.WriteString(sql); err != nil {
@@ -61,7 +69,18 @@ func (gp *GroupImpl) InsertMembers(members ...Member) (err error) {
 	return nil
 }
 
-func (gp *GroupImpl) RemoveGroupByGroupId(groupId string, isForce bool) (err error) {
+func (i *GroupImpl) FindOneGroupMember(condition map[string]interface{}) (memberProfile *Member, err error) {
+	memberProfile = &Member{}
+	db := mysqlDB.Where(condition).First(&memberProfile)
+	if db.RecordNotFound() {
+		err = utils.ErrUserNotExists
+	} else if err = db.Error; err != nil {
+		logger.Errorf("error happened to query group information: %s", err.Error())
+	}
+	return
+}
+
+func (i *GroupImpl) RemoveGroupByGroupId(groupId string, isForce bool) (err error) {
 	_db := mysqlDB
 	if isForce {
 		_db = mysqlDB.Unscoped()
