@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	. "goim-pro/internal/app/constants"
+	"goim-pro/internal/app/models"
 	. "goim-pro/internal/app/repos/group"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
@@ -38,7 +39,7 @@ func New() protos.GroupServiceServer {
 	}
 }
 
-// create a group
+// CreateGroup - create new group
 func (gs *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
@@ -73,37 +74,25 @@ func (gs *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (r
 		return
 	}
 
-	groupProfile := NewGroup(userId, groupName)
-
+	groupProfile := models.NewGroup(userId, groupName, buildMembersObject(memberIds))
 	ts := mysqlDB.Begin()
-	groupProfile, err = gs.groupRepo.InsertOne(groupProfile)
+	groupProfile, err = gs.groupRepo.CreateGroup(groupProfile)
 	if err != nil {
 		ts.Callback()
-
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
 		return
 	}
-	newMembers := buildMembersObject(memberIds)
-	members, err := gs.groupRepo.InsertMembers(newMembers...)
-	// TODO:
-	logger.Info(members)
-	if err != nil {
-		ts.Callback()
+	ts.Commit()
 
-		resp.Code = http.StatusInternalServerError
-		resp.Message = err.Error()
-		return
-	}
-
-	registerResp := &protos.CreateGroupResp{
+	groupResp := &protos.CreateGroupResp{
 		Profile: converters.ConvertEntity2ProtoForGroupProfile(groupProfile),
 	}
-	resp.Data, err = utils.MarshalMessageToAny(registerResp)
+	resp.Data, err = utils.MarshalMessageToAny(groupResp)
 	if err != nil {
-		logger.Errorf("register response marshal message error: %s", err.Error())
+		logger.Errorf("create group response marshal message error: %s", err.Error())
 	}
-	resp.Message = "user registration successful"
+	resp.Message = "group create succeed"
 	return
 }
 
@@ -139,10 +128,10 @@ func isGroupCountOverflow(gs *groupService, userId string) (totalNum int, err er
 	return
 }
 
-func buildMembersObject(memberIds []string) (members []*Member) {
-	members = make([]*Member, len(memberIds)-1)
+func buildMembersObject(memberIds []string) (members []models.Member) {
+	members = make([]models.Member, len(memberIds)-1)
 	for i, userId := range memberIds {
-		members[i] = NewMember(userId, "")
+		members[i] = models.NewMember(userId, "")
 	}
 	return
 }

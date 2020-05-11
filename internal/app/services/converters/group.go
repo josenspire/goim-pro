@@ -3,7 +3,7 @@ package converters
 import (
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/constants"
-	. "goim-pro/internal/app/repos/group"
+	"goim-pro/internal/app/models"
 	"goim-pro/pkg/utils"
 )
 
@@ -11,7 +11,7 @@ func ConvertProto2EntityForGroupProfile() {
 
 }
 
-func ConvertEntity2ProtoForGroupProfile(groupProfile *Group) *protos.GroupProfile {
+func ConvertEntity2ProtoForGroupProfile(groupProfile *models.Group) *protos.GroupProfile {
 	return &protos.GroupProfile{
 		GroupId:     groupProfile.GroupId,
 		Name:        groupProfile.Name,
@@ -24,7 +24,7 @@ func ConvertEntity2ProtoForGroupProfile(groupProfile *Group) *protos.GroupProfil
 }
 
 // TODO: should fill with member profile
-func ConvertEntity2ProtoForMemberProfiles(members []*Member) (protoMembers []*protos.GroupMemberProfile) {
+func ConvertEntity2ProtoForMemberProfiles(members []models.Member) (protoMembers []*protos.GroupMemberProfile) {
 	protoMembers = make([]*protos.GroupMemberProfile, len(members))
 	for i, member := range members {
 		protoMembers[i] = &protos.GroupMemberProfile{

@@ -177,6 +177,7 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 	//	}
 	//}
 
+	// users
 	if !db.HasTable(&models.User{}) {
 		err = db.Set(
 			"gorm:table_options",
@@ -187,6 +188,7 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 			return
 		}
 	}
+	// contacts
 	if !db.HasTable(&models.Contact{}) {
 		err = db.Set(
 			"gorm:table_options",
@@ -201,6 +203,34 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 		if err != nil {
 			logger.Errorf("init table constraint relation error: %s", err.Error())
 		}
+	}
+	// groups
+	if !db.HasTable(&models.Group{}) {
+		err = db.Set(
+			"gorm:table_options",
+			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
+		).CreateTable(&models.Group{}).Error
+		if err != nil {
+			logger.Errorf("initial mysql tables [groups] error: %s", err.Error())
+			return
+		}
+		err = db.Model(&models.Member{}).AddForeignKey("groupId", "groups(groupId)", "CASCADE", "CASCADE").Error
+	}
+	// members
+	if !db.HasTable(&models.Member{}) {
+		err = db.Set(
+			"gorm:table_options",
+			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
+		).CreateTable(&models.Member{}).Error
+		if err != nil {
+			logger.Errorf("initial mysql tables [groups] error: %s", err.Error())
+			return
+		}
+		// TODO: key word conflict
+		//err = db.Model(&models.Member{}).AddForeignKey("groupId", "groups(groupId)", "CASCADE", "CASCADE").Error
+		//if err != nil {
+		//	logger.Errorf("init table constraint relation error: %s", err.Error())
+		//}
 	}
 	return
 }
