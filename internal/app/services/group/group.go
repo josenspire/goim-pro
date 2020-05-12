@@ -131,11 +131,10 @@ func (s *groupService) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp
 		return
 	}
 
-	newMember := &models.Member{
-		UserId:  userId,
-		GroupId: groupId,
-	}
-	if err := s.groupRepo.InsertMembers(newMember); err != nil {
+	newMember := models.NewMember(userId, "")
+	newMember.GroupId = groupId
+
+	if err := s.groupRepo.InsertMembers(&newMember); err != nil {
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
 		return

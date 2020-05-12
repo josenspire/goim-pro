@@ -52,9 +52,9 @@ func NewGroup(userId, groupName string, members []Member) *Group {
 
 func NewMember(memberId, alias string) Member {
 	return Member{
-		UserId: memberId,
-		Alias:  alias,
-		Role:   "1",
-		Status: "NORMAL",
+		UserId:  memberId,
+		Alias:   alias,
+		Role:    "1",
+		Status:  "NORMAL",
 	}
 }

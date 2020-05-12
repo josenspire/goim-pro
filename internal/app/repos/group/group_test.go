@@ -7,18 +7,17 @@ import (
 	"testing"
 )
 
-func TestGroupImpl_InsertGroup(t *testing.T) {
+func TestGroupImpl_CreateGroup(t *testing.T) {
 	mysqlDB := mysqlsrv.NewMysqlConnection()
 	_ = mysqlDB.Connect()
 	s := NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
-
-	groupProfile := models.NewGroup("TEST005", "TEST_GROUP_001")
-	groupProfile.Members = []models.Member{
+	members := []models.Member{
 		newMember1, newMember2,
 	}
+	groupProfile := models.NewGroup("TEST005", "TEST_GROUP_001", members)
 
 	var profile = &models.Group{}
 	var err error
@@ -34,30 +33,56 @@ func TestGroupImpl_InsertGroup(t *testing.T) {
 }
 
 func TestGroupImpl_InsertMembers(t *testing.T) {
-	//mysqlDB := mysqlsrv.NewMysqlConnection()
-	//_ = mysqlDB.Connect()
-	//NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
-	//
-	//groupProfile := models.NewGroup("TEST001", "")
-	//newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
-	//
-	//var group *models.Group
-	//var err error
-	//s := &GroupImpl{}
-	//if group, err = s.CreateGroup(groupProfile); err != nil {
-	//	t.FailNow()
-	//}
-	//err = s.InsertMembers(newMember1)
-	//if err != nil {
-	//	t.FailNow()
-	//}
-	//
-	//Convey("Test_InsertMembers", t, func() {
-	//	Convey("should_return_true_result", func() {
-	//		ShouldBeNil(err)
-	//		ShouldBeTrue(isExist)
-	//	})
-	//})
-	//
-	//_ = ct.RemoveContactsByIds("TEST001", "TEST002")
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+
+	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
+	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
+	members := []models.Member{
+		newMember1,
+		newMember2,
+	}
+	groupProfile := models.NewGroup("TEST005", "TEST_GROUP_001", members)
+
+	var group *models.Group
+	var err error
+	s := &GroupImpl{}
+	group, err = s.CreateGroup(groupProfile)
+	if err != nil {
+		t.FailNow()
+	}
+
+	Convey("Test_InsertMembers", t, func() {
+		Convey("should_insert_success_and_return_nil_of_error", func() {
+			newMember3 := models.NewMember("TEST003", "JAMES_TEST_003")
+			newMember3.GroupId = group.GroupId
+
+			err = s.InsertMembers(&newMember3)
+			if err != nil {
+				t.FailNow()
+			}
+
+			ShouldBeNil(err)
+			ShouldBeTrue(isExist)
+		})
+	})
+
+	_ = ct.RemoveContactsByIds("TEST001", "TEST002")
+}
+
+func TestGroupImpl_FindOneGroup(t *testing.T) {
+
+}
+
+func TestGroupImpl_FindOneGroupMember(t *testing.T) {
+
+}
+
+func TestGroupImpl_InsertMembers1(t *testing.T) {
+
+}
+
+func TestGroupImpl_RemoveGroupByGroupId(t *testing.T) {
+
 }
