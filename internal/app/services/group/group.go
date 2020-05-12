@@ -62,19 +62,18 @@ func (s *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (re
 		return
 	}
 
-	totalGroup, err := isGroupCountOverflow(s, userId)
+	isOverflow, err := s.isGroupCountOverflow(userId)
 	if err != nil {
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
 		return
 	}
-	if totalGroup > MaxGroupCount {
+	if isOverflow {
 		resp.Code = http.StatusBadRequest
 		resp.Message = utils.ErrGroupReachedLimit.Error()
 		return
 	}
-
-	groupProfile := models.NewGroup(userId, groupName, buildMembersObject(memberIds))
+	groupProfile := models.NewGroup(utils.NewULID(), userId, groupName, buildMembersObject(memberIds))
 	ts := mysqlDB.Begin()
 	groupProfile, err = s.groupRepo.CreateGroup(groupProfile)
 	if err != nil {
@@ -162,11 +161,94 @@ func (s *groupService) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp
 }
 
 func (s *groupService) QuitGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var quitGroupReq protos.QuitGroupReq
+	if err = utils.UnmarshalGRPCReq(req, &quitGroupReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	userId := req.GetToken()
+	groupId := quitGroupReq.GroupId
+
+	if groupId == "" {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrIllegalOperation.Error()
+		return
+	}
+	isMember, err := s.isGroupMember(groupId, userId)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	if !isMember {
+		resp.Code = http.StatusRepeatOperation
+		resp.Message = "user did not joined the group"
+		return
+	}
+
+	memberIds := []string{userId}
+	count, err := s.groupRepo.RemoveGroupMembers(groupId, memberIds, true)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	if count == 0 {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = "server error, quit group fail"
+		return
+	}
+	resp.Message = "quit group succeed"
+	return
 }
 
 func (s *groupService) AddGroupMember(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var addGroupMemberReq protos.AddGroupMemberReq
+	if err = utils.UnmarshalGRPCReq(req, &addGroupMemberReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	//userId := req.GetToken()
+	groupId := addGroupMemberReq.GroupId
+	memberIds := addGroupMemberReq.MemberUserIdArr
+
+	if groupId == "" || len(memberIds) == 0 {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrIllegalOperation.Error()
+		return
+	}
+
+	condition := map[string]interface{}{
+		"groupId": groupId,
+	}
+	groupProfile, err := s.groupRepo.FindOneGroup(condition)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	members := groupProfile.Members
+	if isOutOfMemberLimit(len(members), len(memberIds)) {
+		resp.Code = http.StatusBadRequest
+		resp.Message = "group's number of member out of limit"
+		return
+	}
+	//newMembers := buildMembersObject(memberIds)
+	//s.groupRepo.InsertMembers(newMembers)
+
+	return
 }
 
 func (s *groupService) KickGroupMember(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
@@ -199,8 +281,18 @@ func (s *groupService) isGroupMember(groupId, userId string) (bool, error) {
 	return true, nil
 }
 
-func isGroupCountOverflow(gs *groupService, userId string) (totalNum int, err error) {
-	return
+func (s *groupService) isGroupCountOverflow(userId string) (isOverflow bool, err error) {
+	condition := map[string]interface{}{
+		"userId": userId,
+	}
+	totalNum, err := s.groupRepo.CountGroup(condition)
+	if err != nil {
+		return false, err
+	}
+	if totalNum >= MaximumNumberOfGroups {
+		return true, nil
+	}
+	return false, nil
 }
 
 func buildMembersObject(memberIds []string) (members []models.Member) {
@@ -209,4 +301,12 @@ func buildMembersObject(memberIds []string) (members []models.Member) {
 		members[i] = models.NewMember(userId, "")
 	}
 	return
+}
+
+func isOutOfGroupLimit(orgSize int, newSize int) bool {
+	return MaximumNumberOfGroups < orgSize+newSize
+}
+
+func isOutOfMemberLimit(orgSize int, newSize int) bool {
+	return MaximumNumberOfGroupMembers < orgSize+newSize
 }

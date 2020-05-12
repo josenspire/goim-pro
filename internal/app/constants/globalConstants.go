@@ -10,5 +10,6 @@ const (
 	CodeTypeLogin         CodeType = 1
 	CodeTypeResetPassword CodeType = 2
 
-	MaxGroupCount int = 10
+	MaximumNumberOfGroups       int = 10
+	MaximumNumberOfGroupMembers int = 500
 )

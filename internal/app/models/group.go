@@ -19,11 +19,11 @@ type Group struct {
 
 // conversation group members
 type Member struct {
+	GroupId string `json:"groupId" gorm:"column:groupId; type:varchar(32); primary_key; not null"`
 	UserId  string `json:"userId" gorm:"column:userId; type:varchar(32); primary_key; not null"`
 	Alias   string `json:"alias" gorm:"column:alias; type:varchar(16)"`
 	Role    string `json:"role" gorm:"column:role; type:ENUM('1', '10', '50', '99'); default: '1'; not null"`
 	Status  string `json:"status" gorm:"column:status; type:ENUM('NORMAL', 'MUTE'); default: 'NORMAL'; not null"`
-	GroupId string `json:"groupId" gorm:"column:groupId; type:varchar(32); not null"`
 	base.BaseModel
 }
 
@@ -35,12 +35,12 @@ func (Member) TableName() string {
 	return tbl.TableMembers
 }
 
-func NewGroup(userId, groupName string, members []Member) *Group {
+func NewGroup(groupId, userId, groupName string, members []Member) *Group {
 	if groupName == "" {
 		groupName = "新建群组"
 	}
 	return &Group{
-		GroupId:     userId,
+		GroupId:     groupId,
 		CreatedBy:   userId,
 		OwnerUserId: userId,
 		Name:        groupName,
@@ -52,9 +52,9 @@ func NewGroup(userId, groupName string, members []Member) *Group {
 
 func NewMember(memberId, alias string) Member {
 	return Member{
-		UserId:  memberId,
-		Alias:   alias,
-		Role:    "1",
-		Status:  "NORMAL",
+		UserId: memberId,
+		Alias:  alias,
+		Role:   "1",
+		Status: "NORMAL",
 	}
 }
