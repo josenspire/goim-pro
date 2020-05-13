@@ -214,7 +214,6 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 			logger.Errorf("initial mysql tables [groups] error: %s", err.Error())
 			return
 		}
-		err = db.Model(&models.Member{}).AddForeignKey("groupId", "groups(groupId)", "CASCADE", "CASCADE").Error
 	}
 	// members
 	if !db.HasTable(&models.Member{}) {
@@ -226,11 +225,10 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 			logger.Errorf("initial mysql tables [groups] error: %s", err.Error())
 			return
 		}
-		// TODO: key word conflict
-		//err = db.Model(&models.Member{}).AddForeignKey("groupId", "groups(groupId)", "CASCADE", "CASCADE").Error
-		//if err != nil {
-		//	logger.Errorf("init table constraint relation error: %s", err.Error())
-		//}
+		err = db.Model(&models.Member{}).AddForeignKey("groupId", "`groups`(`groupId`)", "CASCADE", "CASCADE").Error
+		if err != nil {
+			logger.Errorf("init table constraint relation error: %s", err.Error())
+		}
 	}
 	return
 }

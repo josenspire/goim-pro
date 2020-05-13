@@ -11,9 +11,10 @@ const (
 	StatusUnauthorized         = 401
 	StatusNonAuthoritativeInfo = 403
 	StatusNotFound             = 404
+	StatusRequestForbidden     = 406
 	StatusRequestTimeout       = 408
 
-	StatusRepeatOperation      = 426 // repeat operation, repeat join group, repeat delete etc.
+	StatusRepeatOperation = 426 // repeat operation, repeat join group, repeat delete etc.
 
 	// server/internal error
 	StatusInternalServerError = 500

@@ -15,14 +15,16 @@ type GroupImpl Group
 type MemberImpl Member
 
 type IGroupRepo interface {
+	// group
 	CreateGroup(groupProfile *Group) (newGroup *Group, err error)
 	RemoveGroupByGroupId(groupId string, isForce bool) (err error)
 	FindOneGroup(condition map[string]interface{}) (groupProfile *Group, err error)
+	CountGroup(condition map[string]interface{}) (count int, err error)
 
+	// member
 	FindOneGroupMember(condition map[string]interface{}) (memberProfile *Member, err error)
 	InsertMembers(members ...*Member) (err error)
 	RemoveGroupMembers(groupId string, memberIds []string, isForce bool) (deleteCount int64, err error)
-	CountGroup(condition map[string]interface{}) (count int, err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -35,6 +37,7 @@ func NewGroupRepo(db *gorm.DB) IGroupRepo {
 
 // CreateGroup - create group with group profile and members
 func (i *GroupImpl) CreateGroup(groupProfile *Group) (newGroup *Group, err error) {
+	// Don't update associations having primary key, but will save reference
 	_db := mysqlDB.Create(groupProfile)
 	if _db.Error != nil {
 		err = _db.Error
@@ -45,9 +48,15 @@ func (i *GroupImpl) CreateGroup(groupProfile *Group) (newGroup *Group, err error
 	return _db.Value.(*Group), nil
 }
 
-func (i *GroupImpl) FindOneGroup(condition map[string]interface{}) (groupProfile *Group, err error) {
-	err = mysqlDB.Preload("Member").Find(&groupProfile, condition).Error
-	return
+func (i *GroupImpl) FindOneGroup(condition map[string]interface{}) (*Group, error) {
+	var groupProfile = Group{}
+	if err := mysqlDB.First(&groupProfile, condition).Related(&groupProfile.Members, "Members").Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &groupProfile, nil
 }
 
 func (i *GroupImpl) InsertMembers(members ...*Member) (err error) {
@@ -75,15 +84,17 @@ func (i *GroupImpl) FindOneGroupMember(condition map[string]interface{}) (member
 	memberProfile = &Member{}
 	db := mysqlDB.Where(condition).First(&memberProfile)
 	if db.RecordNotFound() {
-		err = utils.ErrUserNotExists
-	} else if err = db.Error; err != nil {
-		logger.Errorf("error happened to query group information: %s", err.Error())
+		return nil, nil
 	}
-	return
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to query group information: %s", err.Error())
+		return nil, err
+	}
+	return memberProfile, nil
 }
 
 func (i *GroupImpl) CountGroup(condition map[string]interface{}) (count int, err error) {
-	db := mysqlDB.Where(condition).Count(&count)
+	db := mysqlDB.Model(&Group{}).Where(condition).Count(&count)
 	if db.RecordNotFound() {
 		return 0, nil
 	}

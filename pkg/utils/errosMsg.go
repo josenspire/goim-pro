@@ -4,9 +4,9 @@ import "errors"
 
 var (
 	// error
-	ErrIllegalOperation = errors.New("illegal operation")
-
-	ErrInvalidParameters = errors.New("bad request, invalid parameters")
+	ErrIllegalOperation   = errors.New("illegal operation")
+	ErrInvalidParameters  = errors.New("bad request, invalid parameters")
+	ErrOperationForbidden = errors.New("illegal operation, user do not have permission")
 
 	ErrAccountOrPwdInvalid     = errors.New("account or password is incorrect")
 	ErrPwdInvalid              = errors.New("account's password is incorrect")
@@ -21,6 +21,7 @@ var (
 	ErrInvalidContact         = errors.New("invalid contacts")
 
 	// group
-	ErrGroupReachedLimit = errors.New("groups has reached the limit")
-	ErrGroupNotExists    = errors.New("group not exists")
+	ErrGroupReachedLimit       = errors.New("groups has reached the limit")
+	ErrGroupMemberReachedLimit = errors.New("group's number of member out of limit")
+	ErrGroupNotExists          = errors.New("group not exists")
 )

@@ -60,10 +60,6 @@ func TestGroupImpl_InsertMembers(t *testing.T) {
 			newMember3.GroupId = group.GroupId
 
 			err = s.InsertMembers(&newMember3)
-			if err != nil {
-				t.FailNow()
-			}
-
 			ShouldBeNil(err)
 
 			condition := map[string]interface{}{
@@ -81,11 +77,91 @@ func TestGroupImpl_InsertMembers(t *testing.T) {
 }
 
 func TestGroupImpl_FindOneGroup(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
+	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
+	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
+	members := []models.Member{
+		newMember1,
+		newMember2,
+	}
+	groupProfile := models.NewGroup("TEST_GROUP_001", "TEST005", "TEST_GROUP_001", members)
+
+	s := &GroupImpl{}
+	_, err := s.CreateGroup(groupProfile)
+	if err != nil {
+		t.FailNow()
+	}
+	Convey("Test_FindOneGroup", t, func() {
+		Convey("should_find_one_group_with_nil_err", func() {
+			condition := map[string]interface{}{
+				"groupId":     "TEST_GROUP_001",
+				"ownerUserId": "TEST005",
+			}
+			profile, err := s.FindOneGroup(condition)
+			ShouldBeNil(err)
+			So(profile.OwnerUserId, ShouldEqual, "TEST005")
+			So(len(profile.Members), ShouldEqual, 2)
+		})
+		Convey("should_not_find_the_group_when_given_error_groupId_or_ownerUserId_then_return_nil", func() {
+			condition := map[string]interface{}{
+				"groupId":     "TEST_GROUP_000001",
+				"ownerUserId": "TEST0005",
+			}
+			profile, err := s.FindOneGroup(condition)
+			ShouldBeNil(err)
+			ShouldBeNil(profile)
+		})
+	})
+
+	_ = s.RemoveGroupByGroupId("TEST_GROUP_001", true)
 }
 
 func TestGroupImpl_FindOneGroupMember(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
+	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
+	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
+	members := []models.Member{
+		newMember1,
+		newMember2,
+	}
+	groupProfile := models.NewGroup("TEST_GROUP_001", "TEST005", "TEST_GROUP_001", members)
+
+	s := &GroupImpl{}
+	_, err := s.CreateGroup(groupProfile)
+	if err != nil {
+		t.FailNow()
+	}
+
+	Convey("Test_FindOneGroupMember", t, func() {
+		Convey("should_return_one_member_profile_with_nil_error", func() {
+			condition := map[string]interface{}{
+				"groupId": "TEST_GROUP_001",
+				"userId":  "TEST002",
+			}
+			memberProfile, err := s.FindOneGroupMember(condition)
+			ShouldBeNil(err)
+			So(memberProfile.GroupId, ShouldEqual, "TEST_GROUP_001")
+			So(memberProfile.Alias, ShouldEqual, "JAMES_TEST_002")
+		})
+
+		Convey("should_return_nil_result_with_nil_error_when_given_not_exists_groupId_or_userId", func() {
+			condition := map[string]interface{}{
+				"groupId": "TEST_GROUP_002",
+				"userId":  "TEST002",
+			}
+			memberProfile, err := s.FindOneGroupMember(condition)
+			ShouldBeNil(err)
+			ShouldBeNil(memberProfile)
+		})
+	})
+
+	_ = s.RemoveGroupByGroupId("TEST_GROUP_001", true)
 }
 
 func TestGroupImpl_InsertMembers1(t *testing.T) {
@@ -124,9 +200,15 @@ func TestGroupImpl_RemoveGroupMembers(t *testing.T) {
 				newMember2.UserId,
 			}
 			count, err := s.RemoveGroupMembers(group.GroupId, memberIds, true)
-
 			ShouldBeNil(err)
 			So(count, ShouldEqual, 2)
+
+			condition := map[string]interface{}{
+				"groupId": "TEST_GROUP_001",
+			}
+			_group, err := s.FindOneGroup(condition)
+			ShouldBeNil(err)
+			So(_group.OwnerUserId, ShouldEqual, "TEST005")
 		})
 	})
 
@@ -167,7 +249,7 @@ func TestGroupImpl_CountGroup(t *testing.T) {
 	Convey("Test_CountGroup", t, func() {
 		Convey("should_return_2_with_nil_error", func() {
 			condition := map[string]interface{}{
-				"userId": "TEST005",
+				"ownerUserId": "TEST005",
 			}
 			count, err := s.CountGroup(condition)
 
@@ -175,7 +257,6 @@ func TestGroupImpl_CountGroup(t *testing.T) {
 			So(count, ShouldEqual, 2)
 		})
 	})
-
-	_ = s.RemoveGroupByGroupId("TEST_GROUP_001", true)
-	_ = s.RemoveGroupByGroupId("TEST_GROUP_002", true)
+	_ = s.RemoveGroupByGroupId("TEST_GROUP_01", true)
+	_ = s.RemoveGroupByGroupId("TEST_GROUP_02", true)
 }
