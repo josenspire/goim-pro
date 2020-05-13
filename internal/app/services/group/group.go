@@ -355,7 +355,75 @@ func (s *groupService) KickGroupMember(ctx context.Context, req *protos.GrpcReq)
 }
 
 func (s *groupService) UpdateGroupName(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var updateGroupNameReq protos.UpdateGroupNameReq
+	if err = utils.UnmarshalGRPCReq(req, &updateGroupNameReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	userId := req.GetToken()
+	groupId := updateGroupNameReq.GroupId
+	newGroupName := updateGroupNameReq.GroupName
+
+	if groupId == "" {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrIllegalOperation.Error()
+		return
+	}
+	// handle empty group name to default
+	if newGroupName == "" {
+		newGroupName = models.DefaultGroupName
+	}
+
+	condition := map[string]interface{}{
+		"groupId": groupId,
+	}
+	groupProfile, err := s.groupRepo.FindOneGroup(condition)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	if groupProfile == nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = utils.ErrGroupNotExists.Error()
+		return
+	}
+
+	// check out user permission
+	if !isGroupManager(userId, groupProfile.OwnerUserId) {
+		resp.Code = http.StatusRequestForbidden
+		resp.Message = utils.ErrOperationForbidden.Error()
+		return
+	}
+
+	criteria := map[string]interface{}{
+		"groupId":     groupId,
+		"ownerUserId": userId,
+	}
+	updated := map[string]interface{}{
+
+	}
+	newGroupProfile, err := s.groupRepo.FindOneGroupAndUpdate(criteria, updated)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	var updateGroupNameResp = &protos.UpdateGroupNameResp{
+		Profile: converters.ConvertEntity2ProtoForGroupProfile(newGroupProfile),
+	}
+	resp.Data, err = utils.MarshalMessageToAny(updateGroupNameResp)
+	if err != nil {
+		logger.Errorf("[updateGroupNameResp] response marshal message error: %s", err.Error())
+	}
+
+	return
 }
 
 func (s *groupService) UpdateGroupNotice(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {

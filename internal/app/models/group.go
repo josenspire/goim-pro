@@ -1,8 +1,16 @@
 package models
 
 import (
+	"fmt"
+	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/repos/base"
 	tbl "goim-pro/pkg/db"
+)
+
+const (
+	DefaultGroupName = "新建群组"
+
+	DefaultGroupMemberStatus = "NORMAL"
 )
 
 // user conversation group
@@ -37,7 +45,7 @@ func (Member) TableName() string {
 
 func NewGroup(groupId, userId, groupName string, members []Member) *Group {
 	if groupName == "" {
-		groupName = "新建群组"
+		groupName = DefaultGroupName
 	}
 	return &Group{
 		GroupId:     groupId,
@@ -55,6 +63,14 @@ func NewMember(memberId, alias string) Member {
 		UserId: memberId,
 		Alias:  alias,
 		Role:   "1",
-		Status: "NORMAL",
+		Status: DefaultGroupMemberStatus,
 	}
+}
+
+func (g *Group) AfterUpdate(scope *gorm.Scope) (err error) {
+	//if pw, err := bcrypt.GenerateFromPassword(user.Password, 0); err == nil {
+	//	scope.SetColumn("EncryptedPassword", pw)
+	//}
+	fmt.Println(scope)
+	return
 }

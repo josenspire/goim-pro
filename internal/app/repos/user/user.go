@@ -1,9 +1,7 @@
 package user
 
 import (
-	"errors"
 	"github.com/jinzhu/gorm"
-	"goim-pro/config"
 	"goim-pro/internal/app/models"
 	tbl "goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
@@ -26,7 +24,6 @@ type IUserRepo interface {
 }
 
 var logger = logs.GetLogger("ERROR")
-var crypto = utils.NewCrypto()
 var mysqlDB *gorm.DB
 
 func NewUserRepo(db *gorm.DB) IUserRepo {
@@ -35,21 +32,21 @@ func NewUserRepo(db *gorm.DB) IUserRepo {
 }
 
 // callbacks hock -- before create, encrypt password
-func (u *UserImpl) BeforeCreate(scope *gorm.Scope) (err error) {
-	if u.Password == "" {
-		return errors.New("[aes] invalid password parameter")
-	}
-	encryptPassword, err := crypto.AESEncrypt(u.Password, config.GetApiSecretKey())
-	if err != nil {
-		logger.Errorf("[aes] encrypt password error: %s", err.Error())
-		return
-	}
-	err = scope.SetColumn("password", encryptPassword)
-	if err != nil {
-		logger.Errorf("[aes] encrypt password error: %s", err.Error())
-	}
-	return
-}
+//func (u *UserImpl) BeforeCreate(scope *gorm.Scope) (err error) {
+//	if u.Password == "" {
+//		return errors.New("[aes] invalid password parameter")
+//	}
+//	encryptPassword, err := crypto.AESEncrypt(u.Password, config.GetApiSecretKey())
+//	if err != nil {
+//		logger.Errorf("[aes] encrypt password error: %s", err.Error())
+//		return
+//	}
+//	err = scope.SetColumn("password", encryptPassword)
+//	if err != nil {
+//		logger.Errorf("[aes] encrypt password error: %s", err.Error())
+//	}
+//	return
+//}
 
 func (u *UserImpl) Register(newUser *models.User) (err error) {
 	_db := mysqlDB.Create(&newUser)

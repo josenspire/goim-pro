@@ -260,3 +260,42 @@ func TestGroupImpl_CountGroup(t *testing.T) {
 	_ = s.RemoveGroupByGroupId("TEST_GROUP_01", true)
 	_ = s.RemoveGroupByGroupId("TEST_GROUP_02", true)
 }
+
+func TestGroupImpl_FindOneGroupAndUpdate(t *testing.T) {
+	mysqlDB := mysqlsrv.NewMysqlConnection()
+	_ = mysqlDB.Connect()
+	db := mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+	NewGroupRepo(db)
+
+	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
+	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
+	members := []models.Member{
+		newMember1,
+		newMember2,
+	}
+
+	groupProfile := models.NewGroup("TEST_GROUP_01", "TEST005", "TEST_GROUP_001", members)
+	groupProfile.Notice = "Never Settle!"
+	s := &GroupImpl{}
+	if _, err := s.CreateGroup(groupProfile); err != nil {
+		t.FailNow()
+	}
+	Convey("Test_FindOneGroupAndUpdate", t, func() {
+		Convey("should_find_and_update_group_name_success_then_return_new_group_profile_with_nil_error", func() {
+			condition := map[string]interface{}{
+				"groupId":     "TEST_GROUP_01",
+				"ownerUserId": "TEST005",
+			}
+			updated := map[string]interface{}{
+				"name": "NEW_GROUP_NAME_01",
+			}
+			newProfile, err := s.FindOneGroupAndUpdate(condition, updated)
+
+			ShouldBeNil(err)
+			So(newProfile.Name, ShouldEqual, "NEW_GROUP_NAME_01")
+			So(newProfile.Notice, ShouldEqual, "Never Settle!")
+		})
+	})
+	_ = s.RemoveGroupByGroupId("TEST_GROUP_01", true)
+
+}

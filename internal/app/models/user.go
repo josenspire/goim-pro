@@ -1,9 +1,15 @@
 package models
 
 import (
+	"errors"
+	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/repos/base"
 	tbl "goim-pro/pkg/db"
+	"goim-pro/pkg/logs"
+	"goim-pro/pkg/utils"
 )
+
+var logger = logs.GetLogger("ERROR")
 
 type User struct {
 	Password string `json:"password" gorm:"column:password; type:varchar(255); not null"`
@@ -29,4 +35,17 @@ type UserProfile struct {
 
 func (User) TableName() string {
 	return tbl.TableUsers
+}
+
+// callbacks hock -- before create, encrypt password
+func (u *User) BeforeCreate(scope *gorm.Scope) (err error) {
+	if u.Password == "" {
+		return errors.New("[aes] invalid password parameter")
+	}
+	var enPassword = utils.NewSHA256(u.Password, u.UserId)
+	err = scope.SetColumn("password", enPassword)
+	if err != nil {
+		logger.Errorf("[aes] encrypt password error: %s", err.Error())
+	}
+	return
 }

@@ -25,6 +25,7 @@ type IGroupRepo interface {
 	FindOneGroupMember(condition map[string]interface{}) (memberProfile *Member, err error)
 	InsertMembers(members ...*Member) (err error)
 	RemoveGroupMembers(groupId string, memberIds []string, isForce bool) (deleteCount int64, err error)
+	FindOneGroupAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Group, err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -102,6 +103,19 @@ func (i *GroupImpl) CountGroup(condition map[string]interface{}) (count int, err
 		return 0, err
 	}
 	return count, nil
+}
+
+// TODO: not completed
+func (i *GroupImpl) FindOneGroupAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Group, err error) {
+	db := mysqlDB.Model(&Group{}).Where(condition).Update(updated)
+	if db.RecordNotFound() {
+		return nil, nil
+	}
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to update group profile: %s", err.Error())
+		return nil, err
+	}
+	return db.Value.(*Group), nil
 }
 
 func (i *GroupImpl) RemoveGroupByGroupId(groupId string, isForce bool) (err error) {
