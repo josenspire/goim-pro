@@ -9,6 +9,7 @@ import (
 	. "goim-pro/internal/app/repos/user"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
+	"goim-pro/pkg/errors"
 	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -114,7 +115,7 @@ func (s *smsService) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (re
 }
 
 func parameterCalibration(req *protos.ObtainSMSCodeReq) (err error) {
-	csErr := utils.ErrInvalidParameters
+	csErr := errmsg.ErrInvalidParameters
 	req.Telephone = strings.Trim(req.GetTelephone(), "")
 
 	if utils.IsEmptyStrings(req.GetTelephone()) {

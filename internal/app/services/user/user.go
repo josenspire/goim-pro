@@ -12,6 +12,7 @@ import (
 	"goim-pro/internal/app/services/converters"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
+	"goim-pro/pkg/errors"
 	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -232,7 +233,7 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 	pbProfile := updateUserInfoReq.GetProfile()
 	if pbProfile == nil {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrInvalidParameters.Error()
+		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
 
@@ -240,14 +241,14 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 	userProfile.UserId = userId
 
 	originUserProfile, err := us.userRepo.FindByUserId(userId)
-	if err == utils.ErrInvalidUserId {
+	if err == errmsg.ErrInvalidUserId {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrInvalidUserId.Error()
+		resp.Message = errmsg.ErrInvalidUserId.Error()
 		return
 	}
 	if err != nil {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrInvalidParameters.Error()
+		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
 	// nothing change, don't need to update
@@ -306,7 +307,7 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 	}
 	if !isRegistered {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrUserNotExists.Error()
+		resp.Message = errmsg.ErrUserNotExists.Error()
 		logger.Warn("reset password failed: account not exist")
 		return
 	}
@@ -393,14 +394,14 @@ func (us *userService) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (re
 	}
 	if utils.IsEmptyStrings(getUserReq.GetUserId()) {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrInvalidParameters.Error()
+		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
 
 	user, err := us.userRepo.FindByUserId(getUserReq.GetUserId())
 
 	if err != nil {
-		if err == utils.ErrInvalidUserId {
+		if err == errmsg.ErrInvalidUserId {
 			resp.Code = http.StatusBadRequest
 		} else {
 			resp.Code = http.StatusInternalServerError
@@ -435,7 +436,7 @@ func (us *userService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (
 	email := queryUserInfoReq.GetEmail()
 	if utils.IsEmptyStrings(telephone, email) {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrInvalidParameters.Error()
+		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
 
@@ -448,7 +449,7 @@ func (us *userService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (
 	user, err := us.userRepo.FindOneUser(userCriteria)
 
 	if err != nil {
-		if err == utils.ErrUserNotExists {
+		if err == errmsg.ErrUserNotExists {
 			resp.Code = http.StatusBadRequest
 		} else {
 			resp.Code = http.StatusInternalServerError
@@ -482,7 +483,7 @@ func isVerificationCodeValid(verificationCode, telephone string) (isValid bool, 
 }
 
 func registerParameterCalibration(req protos.RegisterReq) (err error) {
-	csErr := utils.ErrInvalidParameters
+	csErr := errmsg.ErrInvalidParameters
 	if utils.IsContainEmptyString(req.GetPassword(), req.GetVerificationCode()) || req.GetProfile() == nil {
 		err = csErr
 		return
@@ -506,7 +507,7 @@ func registerParameterCalibration(req protos.RegisterReq) (err error) {
 }
 
 func loginParameterCalibration(req *protos.LoginReq) (err error) {
-	csErr := utils.ErrInvalidParameters
+	csErr := errmsg.ErrInvalidParameters
 	req.VerificationCode = strings.Trim(req.GetVerificationCode(), "")
 	req.Password = strings.Trim(req.GetPassword(), "")
 
@@ -517,7 +518,7 @@ func loginParameterCalibration(req *protos.LoginReq) (err error) {
 }
 
 func resetPwdParameterCalibration(verificationCode, oldPassword, newPassword string, telephone, email string) (err error) {
-	csErr := utils.ErrInvalidParameters
+	csErr := errmsg.ErrInvalidParameters
 
 	if utils.IsEmptyStrings(verificationCode, newPassword) || utils.IsEmptyStrings(oldPassword, newPassword) {
 		err = csErr
@@ -534,7 +535,7 @@ func loginByTelephone(us *userService, telephone, enPassword, verificationCode s
 	if enPassword != "" {
 		user, err = us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
 		if err != nil {
-			if err != utils.ErrAccountOrPwdInvalid {
+			if err != errmsg.ErrAccountOrPwdInvalid {
 				logger.Errorf("login by telephone and passwor error: %s", err)
 				return nil, err
 			}
@@ -566,7 +567,7 @@ func loginByEmail(us *userService, email, enPassword, verificationCode string) (
 	if enPassword != "" {
 		user, err = us.userRepo.QueryByEmailAndPassword(email, enPassword)
 		if err != nil {
-			if err != utils.ErrAccountOrPwdInvalid {
+			if err != errmsg.ErrAccountOrPwdInvalid {
 				logger.Errorf("login by email and passwor error: %s", err)
 				return nil, err
 			}
@@ -662,7 +663,7 @@ func (us *userService) loginWithVerificationCode(isTelephone bool, telephone, em
 		myRedis.Del(codeKey)
 		return user, nil
 	}
-	return nil, utils.ErrInvalidVerificationCode
+	return nil, errmsg.ErrInvalidVerificationCode
 }
 
 func isNeedToSMSVerify(deviceId string, osVersion protos.GrpcReq_OS, orgUser *models.User) bool {

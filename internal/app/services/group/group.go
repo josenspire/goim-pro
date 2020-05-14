@@ -10,7 +10,7 @@ import (
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
 	mysqlsrv "goim-pro/pkg/db/mysql"
-	redsrv "goim-pro/pkg/db/redis"
+	"goim-pro/pkg/errors"
 	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -19,7 +19,6 @@ import (
 
 var (
 	logger  = logs.GetLogger("INFO")
-	myRedis *redsrv.BaseClient
 	mysqlDB *gorm.DB
 )
 
@@ -29,7 +28,6 @@ type groupService struct {
 }
 
 func New() protos.GroupServiceServer {
-	myRedis = redsrv.NewRedisConnection().GetRedisClient()
 	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
 	//repoServer := repos.New(mysqlDB)
@@ -58,7 +56,7 @@ func (s *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (re
 
 	if len(memberIds) <= 0 || (len(memberIds) == 1 && memberIds[0] == userId) {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrIllegalOperation.Error()
+		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
 
@@ -70,7 +68,7 @@ func (s *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (re
 	}
 	if isOverflow {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrGroupReachedLimit.Error()
+		resp.Message = errmsg.ErrGroupReachedLimit.Error()
 		return
 	}
 	groupProfile := buildGroupProfile(userId, groupName, memberIds)
@@ -95,6 +93,7 @@ func (s *groupService) CreateGroup(ctx context.Context, req *protos.GrpcReq) (re
 	return
 }
 
+// JoinGroup - user join the group
 func (s *groupService) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
@@ -114,7 +113,7 @@ func (s *groupService) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp
 
 	if groupId == "" {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrIllegalOperation.Error()
+		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
 
@@ -126,7 +125,7 @@ func (s *groupService) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp
 	}
 	if isMember {
 		resp.Code = http.StatusRepeatOperation
-		resp.Message = "user has joined the group"
+		resp.Message = errmsg.ErrRepeatedlyJoinGroup.Error()
 		return
 	}
 
@@ -160,6 +159,7 @@ func (s *groupService) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp
 	return
 }
 
+// QuitGroup - user quit the group
 func (s *groupService) QuitGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
@@ -177,7 +177,7 @@ func (s *groupService) QuitGroup(ctx context.Context, req *protos.GrpcReq) (resp
 
 	if groupId == "" {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrIllegalOperation.Error()
+		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
 	isMember, err := s.isGroupMember(groupId, userId)
@@ -188,12 +188,12 @@ func (s *groupService) QuitGroup(ctx context.Context, req *protos.GrpcReq) (resp
 	}
 	if !isMember {
 		resp.Code = http.StatusRepeatOperation
-		resp.Message = "user did not joined the group"
+		resp.Message = errmsg.ErrNotGroupMembers.Error()
 		return
 	}
 
 	memberIds := []string{userId}
-	count, err := s.groupRepo.RemoveGroupMembers(groupId, memberIds, true)
+	count, err := s.groupRepo.RemoveMembers(groupId, memberIds, true)
 	if err != nil {
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
@@ -227,7 +227,7 @@ func (s *groupService) AddGroupMember(ctx context.Context, req *protos.GrpcReq) 
 
 	if groupId == "" || len(memberIds) == 0 {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrIllegalOperation.Error()
+		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
 
@@ -242,13 +242,13 @@ func (s *groupService) AddGroupMember(ctx context.Context, req *protos.GrpcReq) 
 	}
 	if groupProfile == nil {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrGroupNotExists.Error()
+		resp.Message = errmsg.ErrGroupNotExists.Error()
 		return
 	}
 	members := groupProfile.Members
 	if isOutOfMemberLimit(len(members), len(memberIds)) {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrGroupMemberReachedLimit.Error()
+		resp.Message = errmsg.ErrGroupMemberReachedLimit.Error()
 		return
 	}
 
@@ -293,7 +293,7 @@ func (s *groupService) KickGroupMember(ctx context.Context, req *protos.GrpcReq)
 
 	if utils.IsContainEmptyString(groupId, memberUserId) {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrIllegalOperation.Error()
+		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
 
@@ -308,7 +308,7 @@ func (s *groupService) KickGroupMember(ctx context.Context, req *protos.GrpcReq)
 	}
 	if groupProfile == nil {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrGroupNotExists.Error()
+		resp.Message = errmsg.ErrGroupNotExists.Error()
 		return
 	}
 
@@ -320,18 +320,18 @@ func (s *groupService) KickGroupMember(ctx context.Context, req *protos.GrpcReq)
 	}
 	if !isMember {
 		resp.Code = http.StatusRepeatOperation
-		resp.Message = "user did not joined the group"
+		resp.Message = errmsg.ErrNotGroupMembers.Error()
 		return
 	}
 
 	// check out currently user permission
 	if isGroupManager(userId, groupProfile.OwnerUserId) {
 		resp.Code = http.StatusRequestForbidden
-		resp.Message = utils.ErrOperationForbidden.Error()
+		resp.Message = errmsg.ErrOperationForbidden.Error()
 		return
 	}
 
-	_, err = s.groupRepo.RemoveGroupMembers(groupId, []string{memberUserId}, true)
+	_, err = s.groupRepo.RemoveMembers(groupId, []string{memberUserId}, true)
 	if err != nil {
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
@@ -354,6 +354,7 @@ func (s *groupService) KickGroupMember(ctx context.Context, req *protos.GrpcReq)
 	return
 }
 
+// UpdateGroupName - update group name by group manager
 func (s *groupService) UpdateGroupName(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
@@ -372,7 +373,7 @@ func (s *groupService) UpdateGroupName(ctx context.Context, req *protos.GrpcReq)
 
 	if groupId == "" {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrIllegalOperation.Error()
+		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
 	// handle empty group name to default
@@ -391,25 +392,21 @@ func (s *groupService) UpdateGroupName(ctx context.Context, req *protos.GrpcReq)
 	}
 	if groupProfile == nil {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrGroupNotExists.Error()
+		resp.Message = errmsg.ErrGroupNotExists.Error()
 		return
 	}
 
 	// check out user permission
 	if !isGroupManager(userId, groupProfile.OwnerUserId) {
 		resp.Code = http.StatusRequestForbidden
-		resp.Message = utils.ErrOperationForbidden.Error()
+		resp.Message = errmsg.ErrOperationForbidden.Error()
 		return
 	}
 
-	criteria := map[string]interface{}{
-		"groupId":     groupId,
-		"ownerUserId": userId,
-	}
 	updated := map[string]interface{}{
-
+		"name": newGroupName,
 	}
-	newGroupProfile, err := s.groupRepo.FindOneGroupAndUpdate(criteria, updated)
+	newGroupProfile, err := s.groupRepo.FindOneGroupAndUpdate(condition, updated)
 	if err != nil {
 		resp.Code = http.StatusInternalServerError
 		resp.Message = err.Error()
@@ -426,26 +423,150 @@ func (s *groupService) UpdateGroupName(ctx context.Context, req *protos.GrpcReq)
 	return
 }
 
+// UpdateGroupNotice - update group notice by group manager
 func (s *groupService) UpdateGroupNotice(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var updateGroupNoticeReq protos.UpdateGroupNoticeReq
+	if err = utils.UnmarshalGRPCReq(req, &updateGroupNoticeReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	userId := req.GetToken()
+	groupId := updateGroupNoticeReq.GroupId
+	newNotice := updateGroupNoticeReq.Notice
+
+	if groupId == "" {
+		resp.Code = http.StatusBadRequest
+		resp.Message = errmsg.ErrIllegalOperation.Error()
+		return
+	}
+
+	condition := map[string]interface{}{
+		"groupId": groupId,
+	}
+	groupProfile, err := s.groupRepo.FindOneGroup(condition)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	if groupProfile == nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = errmsg.ErrGroupNotExists.Error()
+		return
+	}
+
+	// check out user permission
+	if !isGroupManager(userId, groupProfile.OwnerUserId) {
+		resp.Code = http.StatusRequestForbidden
+		resp.Message = errmsg.ErrOperationForbidden.Error()
+		return
+	}
+
+	updated := map[string]interface{}{
+		"notice": newNotice,
+	}
+	newGroupProfile, err := s.groupRepo.FindOneGroupAndUpdate(condition, updated)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	var updateGroupNoticeResp = &protos.UpdateGroupNoticeResp{
+		Profile: converters.ConvertEntity2ProtoForGroupProfile(newGroupProfile),
+	}
+	resp.Data, err = utils.MarshalMessageToAny(updateGroupNoticeResp)
+	if err != nil {
+		logger.Errorf("[updateGroupNoticeResp] response marshal message error: %s", err.Error())
+	}
+	return
 }
 
+// UpdateMemberNickname - update current user's alias in group
 func (s *groupService) UpdateMemberNickname(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var updateMemberNicknameReq protos.UpdateMemberNicknameReq
+	if err = utils.UnmarshalGRPCReq(req, &updateMemberNicknameReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	userId := req.GetToken()
+	groupId := updateMemberNicknameReq.GroupId
+	newAlias := updateMemberNicknameReq.MemberNickname
+
+	if groupId == "" {
+		resp.Code = http.StatusBadRequest
+		resp.Message = errmsg.ErrIllegalOperation.Error()
+		return
+	}
+
+	condition := map[string]interface{}{
+		"groupId": groupId,
+		"userId":  userId,
+	}
+	updated := map[string]interface{}{
+		"alias": newAlias,
+	}
+	memberProfile, err := s.groupRepo.FindOneMemberAndUpdate(condition, updated)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	if memberProfile == nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = errmsg.ErrNotGroupMembers.Error()
+		return
+	}
+
+	searchGroup := map[string]interface{}{
+		"groupId": groupId,
+	}
+	groupProfile, err := s.groupRepo.FindOneGroup(searchGroup)
+	if err != nil {
+		resp.Code = http.StatusInternalServerError
+		resp.Message = err.Error()
+		return
+	}
+	if groupProfile == nil { // current stage profile would not be nil
+		resp.Code = http.StatusInternalServerError
+		resp.Message = errmsg.ErrSystemUncheckException.Error()
+		return
+	}
+	var updateMemberNicknameResp = &protos.UpdateMemberNicknameResp{
+		Profile: converters.ConvertEntity2ProtoForGroupProfile(groupProfile),
+	}
+	resp.Data, err = utils.MarshalMessageToAny(updateMemberNicknameResp)
+	if err != nil {
+		logger.Errorf("[updateGroupNoticeResp] response marshal message error: %s", err.Error())
+	}
+	return
 }
 
+// isGroupMember - check target user whether is a member of the group
 func (s *groupService) isGroupMember(groupId, userId string) (bool, error) {
 	var condition = map[string]interface{}{
 		"groupId": groupId,
 		"userId":  userId,
 	}
-	memberProfile, err := s.groupRepo.FindOneGroupMember(condition)
+	memberProfile, err := s.groupRepo.FindOneMember(condition)
 	if err != nil {
 		return false, err
 	}
 	return memberProfile == nil, nil
 }
 
+// isGroupCountOverflow - check target user's group whether is reach limit count
 func (s *groupService) isGroupCountOverflow(userId string) (isOverflow bool, err error) {
 	condition := map[string]interface{}{
 		"userId": userId,
@@ -477,10 +598,6 @@ func buildMembersObject(groupId string, memberIds []string) (members []*models.M
 		}
 	}
 	return
-}
-
-func isOutOfGroupLimit(orgSize int, newSize int) bool {
-	return MaximumNumberOfGroups < orgSize+newSize
 }
 
 func isOutOfMemberLimit(orgSize int, newSize int) bool {

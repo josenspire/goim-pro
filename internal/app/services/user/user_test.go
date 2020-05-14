@@ -7,6 +7,7 @@ import (
 	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/repos/user"
 	redsrv "goim-pro/pkg/db/redis"
+	"goim-pro/pkg/errors"
 	"goim-pro/pkg/utils"
 	"testing"
 
@@ -145,11 +146,11 @@ func Test_userService_ResetPassword(t *testing.T) {
 	m := &MockUserRepo{}
 	m.On("QueryByTelephoneAndPassword", "13631210001", enPassword).Return(modelUser1, nil)
 	m.On("QueryByEmailAndPassword", "123@qq.com", enPassword).Return(modelUser1, nil)
-	m.On("QueryByTelephoneAndPassword", "13631210001", errEnPassword).Return(&user.UserImpl{}, utils.ErrAccountOrPwdInvalid)
+	m.On("QueryByTelephoneAndPassword", "13631210001", errEnPassword).Return(&user.UserImpl{}, errmsg.ErrAccountOrPwdInvalid)
 
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(true, nil)
 	m.On("IsTelephoneOrEmailRegistered", "", "123@qq.com").Return(true, nil)
-	m.On("IsTelephoneOrEmailRegistered", "", "123456@qq.com").Return(false, utils.ErrUserNotExists)
+	m.On("IsTelephoneOrEmailRegistered", "", "123456@qq.com").Return(false, errmsg.ErrUserNotExists)
 
 	m.On("ResetPasswordByTelephone", "13631210001", newEnPassword).Return(nil)
 	m.On("ResetPasswordByEmail", "123@qq.com", newEnPassword).Return(nil)
@@ -229,7 +230,7 @@ func Test_userService_ResetPassword(t *testing.T) {
 				Data: any,
 			}
 			actualResp, _ := us.ResetPassword(ctx, req)
-			So(actualResp.GetMessage(), ShouldEqual, utils.ErrUserNotExists.Error())
+			So(actualResp.GetMessage(), ShouldEqual, errmsg.ErrUserNotExists.Error())
 		})
 		Convey("failed_by_invalid_oldPassword", func() {
 			resetPwdReq := &protos.ResetPasswordReq{
@@ -246,7 +247,7 @@ func Test_userService_ResetPassword(t *testing.T) {
 				Data: any,
 			}
 			actualResp, _ := us.ResetPassword(ctx, req)
-			So(actualResp.GetMessage(), ShouldEqual, utils.ErrAccountOrPwdInvalid.Error())
+			So(actualResp.GetMessage(), ShouldEqual, errmsg.ErrAccountOrPwdInvalid.Error())
 		})
 	})
 }
@@ -293,7 +294,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 	m := &MockUserRepo{}
 	m.On("FindOneUser", userCriteria1).Return(modelUser1, nil)
 	m.On("FindOneUser", userCriteria2).Return(modelUser1, nil)
-	m.On("FindOneUser", userCriteria3).Return(&user.UserImpl{}, utils.ErrUserNotExists)
+	m.On("FindOneUser", userCriteria3).Return(&user.UserImpl{}, errmsg.ErrUserNotExists)
 
 	Convey("testing_grpc_query_user_info", t, func() {
 		var ctx context.Context
@@ -352,7 +353,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 			queryUserInfoResp := &protos.QueryUserInfoResp{}
 			_ = utils.UnMarshalAnyToMessage(actualResp.GetData(), queryUserInfoResp)
 
-			So(actualResp.GetMessage(), ShouldEqual, utils.ErrUserNotExists.Error())
+			So(actualResp.GetMessage(), ShouldEqual, errmsg.ErrUserNotExists.Error())
 		})
 	})
 }
@@ -446,7 +447,7 @@ func Test_userService_UpdateUserInfo(t *testing.T) {
 			actualResp, _ := us.UpdateUserInfo(ctx, req)
 
 			So(actualResp.Code, ShouldEqual, 400)
-			So(actualResp.Message, ShouldEqual, utils.ErrInvalidUserId)
+			So(actualResp.Message, ShouldEqual, errmsg.ErrInvalidUserId)
 		})
 	})
 }

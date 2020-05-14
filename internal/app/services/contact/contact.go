@@ -12,6 +12,7 @@ import (
 	"goim-pro/internal/app/services/converters"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
+	"goim-pro/pkg/errors"
 	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -66,9 +67,9 @@ func (cs *contactService) RequestContact(ctx context.Context, req *protos.GrpcRe
 
 	_, err = cs.userRepo.FindByUserId(contactId)
 	if err != nil {
-		if err == utils.ErrInvalidUserId {
+		if err == errmsg.ErrInvalidUserId {
 			resp.Code = http.StatusBadRequest
-			resp.Message = utils.ErrInvalidContact.Error()
+			resp.Message = errmsg.ErrInvalidContact.Error()
 			return
 		}
 		logger.Errorf("find contact by userId error: %s", err.Error())
@@ -86,7 +87,7 @@ func (cs *contactService) RequestContact(ctx context.Context, req *protos.GrpcRe
 	}
 	if isExists {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrContactAlreadyExists.Error()
+		resp.Message = errmsg.ErrContactAlreadyExists.Error()
 		return
 	}
 	// TODO: cache in redis, should replace to Push notification server
@@ -136,9 +137,9 @@ func (cs *contactService) RefusedContact(ctx context.Context, req *protos.GrpcRe
 
 	_, err = cs.userRepo.FindByUserId(contactId)
 	if err != nil {
-		if err == utils.ErrInvalidUserId {
+		if err == errmsg.ErrInvalidUserId {
 			resp.Code = http.StatusBadRequest
-			resp.Message = utils.ErrInvalidContact.Error()
+			resp.Message = errmsg.ErrInvalidContact.Error()
 			return
 		}
 		logger.Errorf("find contact by userId error: %s", err.Error())
@@ -156,7 +157,7 @@ func (cs *contactService) RefusedContact(ctx context.Context, req *protos.GrpcRe
 	}
 	if isExists {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrContactAlreadyExists.Error()
+		resp.Message = errmsg.ErrContactAlreadyExists.Error()
 		return
 	}
 
@@ -199,20 +200,20 @@ func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq
 
 	if contactId == "" {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrInvalidParameters.Error()
+		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
 	if strings.EqualFold(userId, contactId) {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrIllegalOperation.Error()
+		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
 
 	_, err = cs.userRepo.FindByUserId(contactId)
 	if err != nil {
-		if err == utils.ErrInvalidUserId {
+		if err == errmsg.ErrInvalidUserId {
 			resp.Code = http.StatusBadRequest
-			resp.Message = utils.ErrInvalidContact.Error()
+			resp.Message = errmsg.ErrInvalidContact.Error()
 			return
 		}
 		logger.Errorf("find contact by userId error: %s", err.Error())
@@ -230,7 +231,7 @@ func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq
 	}
 	if isExists {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrContactAlreadyExists.Error()
+		resp.Message = errmsg.ErrContactAlreadyExists.Error()
 		return
 	}
 
@@ -272,12 +273,12 @@ func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq
 
 	if contactId == "" {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrInvalidParameters.Error()
+		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
 	if strings.EqualFold(userId, contactId) {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrIllegalOperation.Error()
+		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
 
@@ -290,7 +291,7 @@ func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq
 	}
 	if !isExists {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrContactNotExists.Error()
+		resp.Message = errmsg.ErrContactNotExists.Error()
 		return
 	}
 
@@ -333,7 +334,7 @@ func (cs *contactService) UpdateRemarkInfo(ctx context.Context, req *protos.Grpc
 
 	if contactId == "" {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrInvalidParameters.Error()
+		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
 
@@ -346,7 +347,7 @@ func (cs *contactService) UpdateRemarkInfo(ctx context.Context, req *protos.Grpc
 	}
 	if !isExists {
 		resp.Code = http.StatusBadRequest
-		resp.Message = utils.ErrContactNotExists.Error()
+		resp.Message = errmsg.ErrContactNotExists.Error()
 		return
 	}
 
@@ -400,14 +401,14 @@ func (cs *contactService) GetContacts(ctx context.Context, req *protos.GrpcReq) 
 }
 
 func requestContactParameterCalibration(userId string, req *protos.RequestContactReq) (err error) {
-	csErr := utils.ErrInvalidParameters
+	csErr := errmsg.ErrInvalidParameters
 
 	contactId := strings.Trim(req.UserId, "")
 	requestReason := strings.Trim(req.Reason, "")
 	if utils.IsEmptyStrings(contactId) {
 		err = csErr
 	} else if strings.EqualFold(userId, contactId) {
-		err = utils.ErrIllegalOperation
+		err = errmsg.ErrIllegalOperation
 	} else {
 		req.UserId = contactId
 		req.Reason = requestReason
@@ -416,14 +417,14 @@ func requestContactParameterCalibration(userId string, req *protos.RequestContac
 }
 
 func refusedContactParameterCalibration(userId string, req *protos.RefusedContactReq) (err error) {
-	csErr := utils.ErrInvalidParameters
+	csErr := errmsg.ErrInvalidParameters
 
 	contactId := strings.Trim(req.UserId, "")
 	requestReason := strings.Trim(req.Reason, "")
 	if utils.IsEmptyStrings(contactId) {
 		err = csErr
 	} else if strings.EqualFold(userId, contactId) {
-		err = utils.ErrIllegalOperation
+		err = errmsg.ErrIllegalOperation
 	} else {
 		req.UserId = contactId
 		req.Reason = requestReason

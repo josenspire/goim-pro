@@ -20,12 +20,13 @@ type IGroupRepo interface {
 	RemoveGroupByGroupId(groupId string, isForce bool) (err error)
 	FindOneGroup(condition map[string]interface{}) (groupProfile *Group, err error)
 	CountGroup(condition map[string]interface{}) (count int, err error)
+	FindOneGroupAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Group, err error)
 
 	// member
-	FindOneGroupMember(condition map[string]interface{}) (memberProfile *Member, err error)
+	FindOneMember(condition map[string]interface{}) (memberProfile *Member, err error)
 	InsertMembers(members ...*Member) (err error)
-	RemoveGroupMembers(groupId string, memberIds []string, isForce bool) (deleteCount int64, err error)
-	FindOneGroupAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Group, err error)
+	RemoveMembers(groupId string, memberIds []string, isForce bool) (deleteCount int64, err error)
+	FindOneMemberAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Member, err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -60,6 +61,45 @@ func (i *GroupImpl) FindOneGroup(condition map[string]interface{}) (*Group, erro
 	return &groupProfile, nil
 }
 
+func (i *GroupImpl) CountGroup(condition map[string]interface{}) (count int, err error) {
+	db := mysqlDB.Model(&Group{}).Where(condition).Count(&count)
+	if db.RecordNotFound() {
+		return 0, nil
+	}
+	if err = db.Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (i *GroupImpl) FindOneGroupAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Group, err error) {
+	newProfile = &Group{}
+	db := mysqlDB.Model(&Group{}).Where(condition).Update(updated).First(newProfile)
+	if db.RecordNotFound() {
+		return nil, nil
+	}
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to update group profile: %s", err.Error())
+		return nil, err
+	}
+	return newProfile, nil
+}
+
+func (i *GroupImpl) RemoveGroupByGroupId(groupId string, isForce bool) (err error) {
+	_db := mysqlDB
+	if isForce {
+		_db = mysqlDB.Unscoped()
+	}
+	_db = _db.Delete(&Group{}, "groupId = ?", groupId)
+	if _db.RecordNotFound() {
+		logger.Warningln("remove group fail, groupId not found")
+	} else if _db.Error != nil {
+		logger.Errorf("error happened to remove group: %s", _db.Error)
+		err = _db.Error
+	}
+	return
+}
+
 func (i *GroupImpl) InsertMembers(members ...*Member) (err error) {
 	var buffer bytes.Buffer
 	sql := "INSERT INTO `members` (`groupId`, `userId`, `alias`, `role`, `status`, `createdAt`, `updatedAt`) values"
@@ -81,7 +121,7 @@ func (i *GroupImpl) InsertMembers(members ...*Member) (err error) {
 	return nil
 }
 
-func (i *GroupImpl) FindOneGroupMember(condition map[string]interface{}) (memberProfile *Member, err error) {
+func (i *GroupImpl) FindOneMember(condition map[string]interface{}) (memberProfile *Member, err error) {
 	memberProfile = &Member{}
 	db := mysqlDB.Where(condition).First(&memberProfile)
 	if db.RecordNotFound() {
@@ -94,46 +134,7 @@ func (i *GroupImpl) FindOneGroupMember(condition map[string]interface{}) (member
 	return memberProfile, nil
 }
 
-func (i *GroupImpl) CountGroup(condition map[string]interface{}) (count int, err error) {
-	db := mysqlDB.Model(&Group{}).Where(condition).Count(&count)
-	if db.RecordNotFound() {
-		return 0, nil
-	}
-	if err = db.Error; err != nil {
-		return 0, err
-	}
-	return count, nil
-}
-
-// TODO: not completed
-func (i *GroupImpl) FindOneGroupAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Group, err error) {
-	db := mysqlDB.Model(&Group{}).Where(condition).Update(updated)
-	if db.RecordNotFound() {
-		return nil, nil
-	}
-	if err = db.Error; err != nil {
-		logger.Errorf("error happened to update group profile: %s", err.Error())
-		return nil, err
-	}
-	return db.Value.(*Group), nil
-}
-
-func (i *GroupImpl) RemoveGroupByGroupId(groupId string, isForce bool) (err error) {
-	_db := mysqlDB
-	if isForce {
-		_db = mysqlDB.Unscoped()
-	}
-	_db = _db.Delete(&Group{}, "groupId = ?", groupId)
-	if _db.RecordNotFound() {
-		logger.Warningln("remove group fail, groupId not found")
-	} else if _db.Error != nil {
-		logger.Errorf("error happened to remove group: %s", _db.Error)
-		err = _db.Error
-	}
-	return
-}
-
-func (i *GroupImpl) RemoveGroupMembers(groupId string, memberIds []string, isForce bool) (deleteCount int64, err error) {
+func (i *GroupImpl) RemoveMembers(groupId string, memberIds []string, isForce bool) (deleteCount int64, err error) {
 	_db := mysqlDB
 	if isForce {
 		_db = mysqlDB.Unscoped()
@@ -146,4 +147,17 @@ func (i *GroupImpl) RemoveGroupMembers(groupId string, memberIds []string, isFor
 		err = _db.Error
 	}
 	return _db.RowsAffected, nil
+}
+
+func (i *GroupImpl) FindOneMemberAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Member, err error) {
+	newProfile = &Member{}
+	db := mysqlDB.Model(&Member{}).Where(condition).Update(updated).First(newProfile)
+	if db.RecordNotFound() {
+		return nil, nil
+	}
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to update group profile: %s", err.Error())
+		return nil, err
+	}
+	return newProfile, nil
 }

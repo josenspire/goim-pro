@@ -3,6 +3,7 @@ package user
 import (
 	"goim-pro/internal/app/models"
 	mysqlsrv "goim-pro/pkg/db/mysql"
+	"goim-pro/pkg/errors"
 	"goim-pro/pkg/utils"
 	"testing"
 
@@ -108,7 +109,7 @@ func TestUser_Login(t *testing.T) {
 		Convey("login_fail_with_incorrect_telephone_and_password", func() {
 			_, err := u.QueryByTelephoneAndPassword("13631210022", "12345678901")
 			So(err, ShouldNotBeNil)
-			So(err, ShouldEqual, utils.ErrAccountOrPwdInvalid)
+			So(err, ShouldEqual, errmsg.ErrAccountOrPwdInvalid)
 		})
 		Convey("login_success_then_return_userProfile", func() {
 			currUser, err := u.QueryByTelephoneAndPassword("13631210022", "1234567890")
@@ -130,7 +131,7 @@ func TestUser_LoginByEmail(t *testing.T) {
 		Convey("login_fail_with_incorrect_email_and_password", func() {
 			_, err := u.QueryByEmailAndPassword("294001@qq.com", "12345678901")
 			So(err, ShouldNotBeNil)
-			So(err, ShouldEqual, utils.ErrAccountOrPwdInvalid)
+			So(err, ShouldEqual, errmsg.ErrAccountOrPwdInvalid)
 		})
 		Convey("login_success_then_return_userProfile", func() {
 			currUser, err := u.QueryByEmailAndPassword("294001@qq.com", "1234567890")
@@ -210,7 +211,7 @@ func TestUser_GetUserByUserId(t *testing.T) {
 
 			_, err := u.FindByUserId(userId)
 			So(err, ShouldNotBeNil)
-			So(err, ShouldEqual, utils.ErrInvalidUserId)
+			So(err, ShouldEqual, errmsg.ErrInvalidUserId)
 		})
 	})
 	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user
@@ -251,7 +252,7 @@ func TestUser_FindOneUser(t *testing.T) {
 
 			_, err := u.FindOneUser(userCriteria)
 			So(err, ShouldNotBeNil)
-			So(err, ShouldEqual, utils.ErrUserNotExists)
+			So(err, ShouldEqual, errmsg.ErrUserNotExists)
 		})
 	})
 	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user

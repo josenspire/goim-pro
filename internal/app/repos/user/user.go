@@ -4,8 +4,8 @@ import (
 	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/models"
 	tbl "goim-pro/pkg/db"
+	"goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
-	"goim-pro/pkg/utils"
 )
 
 type UserImpl models.User
@@ -99,7 +99,7 @@ func (u *UserImpl) QueryByEmailAndPassword(email string, enPassword string) (*mo
 	var err error
 	db := mysqlDB.First(&user, "email = ? and password = ?", email, enPassword)
 	if db.RecordNotFound() {
-		err = utils.ErrAccountOrPwdInvalid
+		err = errmsg.ErrAccountOrPwdInvalid
 	} else {
 		err = db.Error
 	}
@@ -111,7 +111,7 @@ func (u *UserImpl) QueryByTelephoneAndPassword(telephone string, enPassword stri
 	var err error
 	db := mysqlDB.First(user, "telephone = ? and password = ?", telephone, enPassword)
 	if db.RecordNotFound() {
-		err = utils.ErrAccountOrPwdInvalid
+		err = errmsg.ErrAccountOrPwdInvalid
 	} else {
 		err = db.Error
 	}
@@ -153,7 +153,7 @@ func (u *UserImpl) FindByUserId(userId string) (user *models.User, err error) {
 	user = &models.User{}
 	db := mysqlDB.First(user, "userId = ?", userId)
 	if db.RecordNotFound() {
-		err = utils.ErrInvalidUserId
+		err = errmsg.ErrInvalidUserId
 	} else if err = db.Error; err != nil {
 		logger.Errorf("error happened to get user by userId: %v", err)
 	}
@@ -164,7 +164,7 @@ func (u *UserImpl) FindOneUser(condition map[string]interface{}) (user *models.U
 	user = &models.User{}
 	db := mysqlDB.Where(condition).First(&user)
 	if db.RecordNotFound() {
-		err = utils.ErrUserNotExists
+		err = errmsg.ErrUserNotExists
 	} else if err = db.Error; err != nil {
 		logger.Errorf("error happened to query user information: %v", err)
 	}
