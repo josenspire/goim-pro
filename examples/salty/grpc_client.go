@@ -4,6 +4,7 @@ import (
 	"fmt"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/examples/salty/contact"
+	"goim-pro/examples/salty/group"
 	"goim-pro/examples/salty/user"
 	"goim-pro/pkg/logs"
 	"google.golang.org/grpc"
@@ -115,6 +116,11 @@ func main() {
 			case "ct-fa":
 				t := protos.NewContactServiceClient(conn)
 				contact.GetContacts(t)
+
+			// groups
+			case "gp-ct":
+				t := protos.NewGroupServiceClient(conn)
+				group.CreateGroup(t)
 			case "q":
 				logger.Infoln("grpc client disconnected!")
 				exitChain <- str

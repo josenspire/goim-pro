@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"github.com/jinzhu/gorm"
+	"goim-pro/config"
 	"goim-pro/internal/app/repos/base"
 	tbl "goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
@@ -42,7 +43,7 @@ func (u *User) BeforeCreate(scope *gorm.Scope) (err error) {
 	if u.Password == "" {
 		return errors.New("[aes] invalid password parameter")
 	}
-	var enPassword = utils.NewSHA256(u.Password, u.UserId)
+	var enPassword = utils.NewSHA256(u.Password, config.GetApiSecretKey())
 	err = scope.SetColumn("password", enPassword)
 	if err != nil {
 		logger.Errorf("[aes] encrypt password error: %s", err.Error())

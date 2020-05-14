@@ -1,6 +1,7 @@
 package user
 
 import (
+	"goim-pro/config"
 	"goim-pro/internal/app/models"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	"goim-pro/pkg/errors"
@@ -154,7 +155,7 @@ func TestUser_ResetPasswordByTelephone(t *testing.T) {
 		Convey("update_successful_by_telephone", func() {
 			var telephone string = "13631210010"
 			var password string = "111111111"
-			newPassword := utils.NewSHA256(password, user1.UserId)
+			newPassword := utils.NewSHA256(password, config.GetApiSecretKey())
 
 			err := u.ResetPasswordByTelephone(telephone, newPassword)
 			So(err, ShouldBeNil)
@@ -178,7 +179,7 @@ func TestUser_ResetPasswordByEmail(t *testing.T) {
 		Convey("update_successful_by_email", func() {
 			var email string = "294001@qq.com"
 			var password string = "2222222222"
-			newPassword := utils.NewSHA256(password, user1.UserId)
+			newPassword := utils.NewSHA256(password, config.GetApiSecretKey())
 
 			err := u.ResetPasswordByEmail(email, newPassword)
 			So(err, ShouldBeNil)

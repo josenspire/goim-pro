@@ -139,9 +139,9 @@ func Test_userService_Login(t *testing.T) {
 
 func Test_userService_ResetPassword(t *testing.T) {
 	//telephone, email := "13631210001", "123@qq.com"
-	enPassword, _ := crypto.AESEncrypt("1234567890", config.GetApiSecretKey())
-	errEnPassword, _ := crypto.AESEncrypt("1234567891", config.GetApiSecretKey())
-	newEnPassword, _ := crypto.AESEncrypt("1122334455", config.GetApiSecretKey())
+	enPassword := utils.NewSHA256("1234567890", config.GetApiSecretKey())
+	errEnPassword := utils.NewSHA256("1234567891", config.GetApiSecretKey())
+	newEnPassword := utils.NewSHA256("1122334455", config.GetApiSecretKey())
 
 	m := &MockUserRepo{}
 	m.On("QueryByTelephoneAndPassword", "13631210001", enPassword).Return(modelUser1, nil)

@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/repos/base"
 	tbl "goim-pro/pkg/db"
 )
@@ -65,12 +63,4 @@ func NewMember(memberId, alias string) Member {
 		Role:   "1",
 		Status: DefaultGroupMemberStatus,
 	}
-}
-
-func (g *Group) AfterUpdate(scope *gorm.Scope) (err error) {
-	//if pw, err := bcrypt.GenerateFromPassword(user.Password, 0); err == nil {
-	//	scope.SetColumn("EncryptedPassword", pw)
-	//}
-	fmt.Println(scope)
-	return
 }

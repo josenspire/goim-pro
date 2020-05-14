@@ -21,7 +21,6 @@ import (
 
 var (
 	logger = logs.GetLogger("INFO")
-	crypto = utils.NewCrypto()
 
 	myRedis *redsrv.BaseClient
 	mysqlDB *gorm.DB
@@ -125,12 +124,7 @@ func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *pr
 
 	var enPassword string = ""
 	if password != "" {
-		enPassword, err = crypto.AESEncrypt(password, config.GetApiSecretKey())
-		if err != nil {
-			resp.Code = http.StatusInternalServerError
-			resp.Message = err.Error()
-			return
-		}
+		enPassword = utils.NewSHA256(password, config.GetApiSecretKey())
 	}
 
 	var user *models.User
@@ -327,12 +321,7 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 			resp.Message = "the new password cannot be the same as the old one"
 			return
 		}
-		enPassword, err := crypto.AESEncrypt(oldPassword, config.GetApiSecretKey())
-		if err != nil {
-			resp.Code = http.StatusInternalServerError
-			resp.Message = err.Error()
-			return
-		}
+		enPassword := utils.NewSHA256(oldPassword, config.GetApiSecretKey())
 		if telephone != "" {
 			_, err = us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
 		} else {
@@ -346,13 +335,7 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 		}
 	}
 
-	enNewPassword, err := crypto.AESEncrypt(newPassword, config.GetApiSecretKey())
-	if err != nil {
-		resp.Code = http.StatusBadRequest
-		resp.Message = err.Error()
-		logger.Errorf("reset password error: %s", err.Error())
-		return
-	}
+	enNewPassword := utils.NewSHA256(newPassword, config.GetApiSecretKey())
 	if telephone != "" {
 		if err = us.userRepo.ResetPasswordByTelephone(telephone, enNewPassword); err != nil {
 			resp.Code = http.StatusInternalServerError

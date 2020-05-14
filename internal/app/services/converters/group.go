@@ -23,7 +23,6 @@ func ConvertEntity2ProtoForGroupProfile(groupProfile *models.Group) *protos.Grou
 	}
 }
 
-// TODO: should fill with member profile
 func ConvertEntity2ProtoForMemberProfiles(members []models.Member) (protoMembers []*protos.GroupMemberProfile) {
 	protoMembers = make([]*protos.GroupMemberProfile, len(members))
 	for i, member := range members {

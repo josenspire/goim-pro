@@ -3,10 +3,10 @@ package services
 import (
 	demo "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
+	"goim-pro/internal/app/controller/group"
 	authsrv "goim-pro/internal/app/services/auth"
 	contactsrv "goim-pro/internal/app/services/contact"
 	waitersrv "goim-pro/internal/app/services/demowaiter"
-	groupsrv "goim-pro/internal/app/services/group"
 	usersrv "goim-pro/internal/app/services/user"
 )
 
@@ -24,6 +24,7 @@ func NewService() *Service {
 		SMSServer:     authsrv.New(),
 		UserServer:    usersrv.New(),
 		ContactServer: contactsrv.New(),
-		GroupServer:   groupsrv.New(),
+		//GroupServer:   groupsrv.New(),
+		GroupServer: group.New(),
 	}
 }
