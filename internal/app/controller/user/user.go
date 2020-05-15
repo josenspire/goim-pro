@@ -136,19 +136,148 @@ func (u *userServer) Logout(ctx context.Context, req *protos.GrpcReq) (resp *pro
 }
 
 func (u *userServer) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var updateUserInfoReq protos.UpdateUserInfoReq
+	if err = utils.UnmarshalGRPCReq(req, &updateUserInfoReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	// will over write the token value at rpc interceptor
+	userId := req.GetToken()
+	pbProfile := updateUserInfoReq.GetProfile()
+	if pbProfile == nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = errmsg.ErrInvalidParameters.Error()
+		return
+	}
+	userProfile := converters.ConvertProto2EntityForUserProfile(pbProfile)
+	userProfile.UserId = userId
+
+	if tErr := userService.UpdateUserInfo(userId, &userProfile); tErr != nil {
+		resp.Code = tErr.Code
+		resp.Message = tErr.Detail
+		return
+	}
+	return
 }
 
 func (u *userServer) ResetPassword(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var resetPwdReq protos.ResetPasswordReq
+	if err = utils.UnmarshalGRPCReq(req, &resetPwdReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+	verificationCode := strings.Trim(resetPwdReq.GetVerificationCode(), "")
+	oldPassword := strings.Trim(resetPwdReq.GetOldPassword(), "")
+	newPassword := strings.Trim(resetPwdReq.GetNewPassword(), "")
+	telephone := strings.Trim(resetPwdReq.GetTelephone(), "")
+	email := strings.Trim(resetPwdReq.GetEmail(), "")
+
+	if err = resetPwdParameterCalibration(verificationCode, oldPassword, newPassword, telephone, email); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		return
+	}
+
+	tErr := userService.ResetPassword(verificationCode, telephone, email, oldPassword, newPassword)
+	if tErr != nil {
+		resp.Code = tErr.Code
+		resp.Message = tErr.Detail
+		return
+	}
+
+	resetPwdResp := &protos.ResetPasswordResp{
+		IsNeedReLogin: true,
+	}
+	resp.Data, err = utils.MarshalMessageToAny(resetPwdResp)
+	if err != nil {
+		logger.Errorf("[reset password] response marshal message error: %s", err.Error())
+	}
+	resp.Message = "password reset successful"
+
+	return
 }
 
 func (u *userServer) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var getUserReq protos.GetUserInfoReq
+	if err = utils.UnmarshalGRPCReq(req, &getUserReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+	userId := strings.Trim(getUserReq.GetUserId(), "")
+	if utils.IsEmptyStrings(userId) {
+		resp.Code = http.StatusBadRequest
+		resp.Message = errmsg.ErrInvalidParameters.Error()
+		return
+	}
+
+	userProfile, tErr := userService.GetUserInfo(userId)
+	if tErr != nil {
+		resp.Code = tErr.Code
+		resp.Message = tErr.Detail
+		return
+	}
+
+	userInfoResp := &protos.GetUserInfoResp{
+		Profile: converters.ConvertEntity2ProtoForUserProfile(userProfile),
+	}
+	resp.Data, err = utils.MarshalMessageToAny(userInfoResp)
+	if err != nil {
+		logger.Errorf("[get user info] response marshal message error: %s", err.Error())
+	}
+	return
 }
 
 func (u *userServer) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	panic("implement me")
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var queryUserInfoReq protos.QueryUserInfoReq
+	if err = utils.UnmarshalGRPCReq(req, &queryUserInfoReq); err != nil {
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	telephone := queryUserInfoReq.GetTelephone()
+	email := queryUserInfoReq.GetEmail()
+	if utils.IsEmptyStrings(telephone, email) {
+		resp.Code = http.StatusBadRequest
+		resp.Message = errmsg.ErrInvalidParameters.Error()
+		return
+	}
+
+	userProfile, tErr := userService.QueryUserInfo(telephone, email)
+	if tErr != nil {
+		resp.Code = tErr.Code
+		resp.Message = tErr.Detail
+		return
+	}
+
+	userInfoResp := &protos.QueryUserInfoResp{
+		Profile: converters.ConvertEntity2ProtoForUserProfile(userProfile),
+	}
+	resp.Data, err = utils.MarshalMessageToAny(userInfoResp)
+	if err != nil {
+		logger.Errorf("[queryUserInfo] response marshal message error: %s", err.Error())
+	}
+	return
 }
 
 func registerParameterCalibration(req protos.RegisterReq) (err error) {

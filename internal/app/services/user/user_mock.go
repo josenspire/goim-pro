@@ -55,12 +55,12 @@ func (m *MockUserRepo) FindByUserId(userId string) (user *models.User, err error
 	return args.Get(0).(*models.User), args.Error(1)
 }
 
-func (m *MockUserRepo) FindOneUser(condition map[string]interface{}) (user *models.User, err error) {
+func (m *MockUserRepo) FindOneUser(condition interface{}) (user *models.User, err error) {
 	args := m.Called(condition)
 	return args.Get(0).(*models.User), args.Error(1)
 }
 
-func (m *MockUserRepo) FindOneAndUpdateProfile(condition, profile map[string]interface{}) (err error) {
+func (m *MockUserRepo) FindOneAndUpdateProfile(condition, profile interface{}) (err error) {
 	args := m.Called(condition, profile)
 	return args.Error(0)
 }

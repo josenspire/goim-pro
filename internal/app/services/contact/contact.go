@@ -23,26 +23,26 @@ var (
 	logger  = logs.GetLogger("INFO")
 	myRedis *redsrv.BaseClient
 	mysqlDB *gorm.DB
-)
 
-type contactService struct {
 	userRepo    IUserRepo
 	contactRepo IContactRepo
+)
+
+type ContactService struct {
 }
 
-func New() protos.ContactServiceServer {
+func New() *ContactService {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
 	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
 
-	//repoServer := repos.New(mysqlDB)
-	return &contactService{
-		userRepo:    NewUserRepo(mysqlDB),
-		contactRepo: NewContactRepo(mysqlDB),
-	}
+	userRepo = NewUserRepo(mysqlDB)
+	contactRepo = NewContactRepo(mysqlDB)
+
+	return &ContactService{}
 }
 
 // RequestContact: request add contact
-func (cs *contactService) RequestContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (cs *ContactService) RequestContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -65,7 +65,7 @@ func (cs *contactService) RequestContact(ctx context.Context, req *protos.GrpcRe
 	contactId := reqContactReq.GetUserId()
 	requestReason := reqContactReq.GetReason()
 
-	_, err = cs.userRepo.FindByUserId(contactId)
+	_, err = userRepo.FindByUserId(contactId)
 	if err != nil {
 		if err == errmsg.ErrInvalidUserId {
 			resp.Code = http.StatusBadRequest
@@ -78,7 +78,7 @@ func (cs *contactService) RequestContact(ctx context.Context, req *protos.GrpcRe
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
+	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -112,7 +112,7 @@ func (cs *contactService) RequestContact(ctx context.Context, req *protos.GrpcRe
 }
 
 // refused request contact
-func (cs *contactService) RefusedContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (cs *ContactService) RefusedContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -135,7 +135,7 @@ func (cs *contactService) RefusedContact(ctx context.Context, req *protos.GrpcRe
 	contactId := refContactReq.GetUserId()
 	refusedReason := refContactReq.GetReason()
 
-	_, err = cs.userRepo.FindByUserId(contactId)
+	_, err = userRepo.FindByUserId(contactId)
 	if err != nil {
 		if err == errmsg.ErrInvalidUserId {
 			resp.Code = http.StatusBadRequest
@@ -148,7 +148,7 @@ func (cs *contactService) RefusedContact(ctx context.Context, req *protos.GrpcRe
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
+	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -183,7 +183,7 @@ func (cs *contactService) RefusedContact(ctx context.Context, req *protos.GrpcRe
 }
 
 // accept contact request
-func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (cs *ContactService) AcceptContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -209,7 +209,7 @@ func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq
 		return
 	}
 
-	_, err = cs.userRepo.FindByUserId(contactId)
+	_, err = userRepo.FindByUserId(contactId)
 	if err != nil {
 		if err == errmsg.ErrInvalidUserId {
 			resp.Code = http.StatusBadRequest
@@ -222,7 +222,7 @@ func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
+	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -256,7 +256,7 @@ func (cs *contactService) AcceptContact(ctx context.Context, req *protos.GrpcReq
 }
 
 // delete contact
-func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (cs *ContactService) DeleteContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -282,7 +282,7 @@ func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
+	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -316,7 +316,7 @@ func (cs *contactService) DeleteContact(ctx context.Context, req *protos.GrpcReq
 }
 
 // update contact remark profile
-func (cs *contactService) UpdateRemarkInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (cs *ContactService) UpdateRemarkInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -338,7 +338,7 @@ func (cs *contactService) UpdateRemarkInfo(ctx context.Context, req *protos.Grpc
 		return
 	}
 
-	isExists, err := cs.contactRepo.IsContactExists(userId, contactId)
+	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -372,7 +372,7 @@ func (cs *contactService) UpdateRemarkInfo(ctx context.Context, req *protos.Grpc
 }
 
 // query user's contact list
-func (cs *contactService) GetContacts(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (cs *ContactService) GetContacts(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 	userId := req.GetToken()
 
@@ -380,7 +380,7 @@ func (cs *contactService) GetContacts(ctx context.Context, req *protos.GrpcReq) 
 	criteria := map[string]interface{}{
 		"UserId": userId,
 	}
-	contacts, err := cs.contactRepo.FindAll(criteria)
+	contacts, err := contactRepo.FindAll(criteria)
 	if err != nil {
 		logger.Errorf("query user contacts error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -432,7 +432,7 @@ func refusedContactParameterCalibration(userId string, req *protos.RefusedContac
 	return
 }
 
-func handleAcceptContact(cs *contactService, userId string, contactId string) (err error) {
+func handleAcceptContact(cs *ContactService, userId string, contactId string) (err error) {
 	newContact1 := &models.Contact{
 		UserId:    userId,
 		ContactId: contactId,
@@ -442,18 +442,18 @@ func handleAcceptContact(cs *contactService, userId string, contactId string) (e
 		ContactId: userId,
 	}
 
-	err = cs.contactRepo.InsertContacts(newContact1, newContact2)
+	err = contactRepo.InsertContacts(newContact1, newContact2)
 	return err
 }
 
-func handleDeleteContact(cs *contactService, userId string, contactId string) (err error) {
+func handleDeleteContact(cs *ContactService, userId string, contactId string) (err error) {
 	tx := mysqlDB.Begin()
-	if err = cs.contactRepo.RemoveContactsByIds(userId, contactId); err != nil {
+	if err = contactRepo.RemoveContactsByIds(userId, contactId); err != nil {
 		logger.Errorf("remove contact err: %s", err.Error())
 		tx.Rollback()
 		return
 	}
-	if err = cs.contactRepo.RemoveContactsByIds(contactId, userId); err != nil {
+	if err = contactRepo.RemoveContactsByIds(contactId, userId); err != nil {
 		tx.Rollback()
 		return
 	}
@@ -461,7 +461,7 @@ func handleDeleteContact(cs *contactService, userId string, contactId string) (e
 	return err
 }
 
-func handleUpdateContactRemark(cs *contactService, userId string, contactId string, pbProfile *protos.ContactRemark) (err error) {
+func handleUpdateContactRemark(cs *ContactService, userId string, contactId string, pbProfile *protos.ContactRemark) (err error) {
 	criteria := map[string]interface{}{
 		"UserId":    userId,
 		"ContactId": contactId,
@@ -470,7 +470,7 @@ func handleUpdateContactRemark(cs *contactService, userId string, contactId stri
 	remarkProfile := converters.ConvertProto2EntityForRemarkProfile(pbProfile)
 	updateMap := utils.TransformStructToMap(remarkProfile)
 
-	err = cs.contactRepo.FindOneAndUpdateRemark(criteria, updateMap)
+	err = contactRepo.FindOneAndUpdateRemark(criteria, updateMap)
 
 	return
 }

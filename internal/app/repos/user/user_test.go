@@ -210,9 +210,9 @@ func TestUser_GetUserByUserId(t *testing.T) {
 		Convey("get_user_info_failed_by_invalid_userId", func() {
 			var userId = "3"
 
-			_, err := u.FindByUserId(userId)
-			So(err, ShouldNotBeNil)
-			So(err, ShouldEqual, errmsg.ErrInvalidUserId)
+			user, err := u.FindByUserId(userId)
+			So(err, ShouldBeNil)
+			So(user, ShouldBeNil)
 		})
 	})
 	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user
@@ -245,15 +245,15 @@ func TestUser_FindOneUser(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(user.Email, ShouldEqual, "294001@qq.com")
 		})
-		Convey("get_user_info_failed_by_invalid_email_then_return_error", func() {
+		Convey("get_user_info_failed_by_invalid_email_then_return_nil", func() {
 			var userCriteria = map[string]interface{}{
 				"Email":     "294001@qq.com",
 				"Telephone": "13631210015",
 			}
 
-			_, err := u.FindOneUser(userCriteria)
-			So(err, ShouldNotBeNil)
-			So(err, ShouldEqual, errmsg.ErrUserNotExists)
+			user, err := u.FindOneUser(userCriteria)
+			So(err, ShouldBeNil)
+			So(user, ShouldBeNil)
 		})
 	})
 	_ = u.RemoveUserByUserId(user1.UserId, true) // remove demo user
@@ -282,7 +282,6 @@ func TestUser_FindOneAndUpdateProfile(t *testing.T) {
 				Birthday:    1578903121862,
 				Location:    "",
 			}
-
 			err := u.FindOneAndUpdateProfile(userCriteria, utils.TransformStructToMap(newProfile))
 			user, _ := u.FindByUserId(newProfile.UserId)
 

@@ -8,6 +8,9 @@ import (
 	"goim-pro/pkg/logs"
 )
 
+var logger = logs.GetLogger("ERROR")
+var mysqlDB *gorm.DB
+
 type UserImpl models.User
 
 type IUserRepo interface {
@@ -19,34 +22,14 @@ type IUserRepo interface {
 	ResetPasswordByTelephone(telephone string, newPassword string) error
 	ResetPasswordByEmail(email string, newPassword string) error
 	FindByUserId(userId string) (*models.User, error)
-	FindOneUser(condition map[string]interface{}) (*models.User, error)
-	FindOneAndUpdateProfile(condition map[string]interface{}, profile map[string]interface{}) error
+	FindOneUser(condition interface{}) (*models.User, error)
+	FindOneAndUpdateProfile(condition interface{}, profile interface{}) error
 }
-
-var logger = logs.GetLogger("ERROR")
-var mysqlDB *gorm.DB
 
 func NewUserRepo(db *gorm.DB) IUserRepo {
 	mysqlDB = db
 	return &UserImpl{}
 }
-
-// callbacks hock -- before create, encrypt password
-//func (u *UserImpl) BeforeCreate(scope *gorm.Scope) (err error) {
-//	if u.Password == "" {
-//		return errors.New("[aes] invalid password parameter")
-//	}
-//	encryptPassword, err := crypto.AESEncrypt(u.Password, config.GetApiSecretKey())
-//	if err != nil {
-//		logger.Errorf("[aes] encrypt password error: %s", err.Error())
-//		return
-//	}
-//	err = scope.SetColumn("password", encryptPassword)
-//	if err != nil {
-//		logger.Errorf("[aes] encrypt password error: %s", err.Error())
-//	}
-//	return
-//}
 
 func (u *UserImpl) Register(newUser *models.User) (err error) {
 	_db := mysqlDB.Create(&newUser)
@@ -153,25 +136,29 @@ func (u *UserImpl) FindByUserId(userId string) (user *models.User, err error) {
 	user = &models.User{}
 	db := mysqlDB.First(user, "userId = ?", userId)
 	if db.RecordNotFound() {
-		err = errmsg.ErrInvalidUserId
-	} else if err = db.Error; err != nil {
-		logger.Errorf("error happened to get user by userId: %v", err)
+		return nil, nil
 	}
-	return
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to get user by userId: %v", err)
+		return nil, err
+	}
+	return user, nil
 }
 
-func (u *UserImpl) FindOneUser(condition map[string]interface{}) (user *models.User, err error) {
+func (u *UserImpl) FindOneUser(condition interface{}) (user *models.User, err error) {
 	user = &models.User{}
 	db := mysqlDB.Where(condition).First(&user)
 	if db.RecordNotFound() {
-		err = errmsg.ErrUserNotExists
-	} else if err = db.Error; err != nil {
-		logger.Errorf("error happened to query user information: %v", err)
+		return nil, nil
 	}
-	return
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to query user information: %v", err)
+		return nil, err
+	}
+	return user, nil
 }
 
-func (u *UserImpl) FindOneAndUpdateProfile(condition map[string]interface{}, profile map[string]interface{}) (err error) {
+func (u *UserImpl) FindOneAndUpdateProfile(condition interface{}, profile interface{}) (err error) {
 	db := mysqlDB.Table(tbl.TableUsers).Where(condition).Update(profile)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to update user profile: %v", err)

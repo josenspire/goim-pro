@@ -16,11 +16,12 @@ var (
 	ErrAccountSecurityVerification = errors.New("account need security verification")
 	ErrAccountAlreadyExists        = errors.New("account is already exists")
 	ErrAccountNotExists            = errors.New("account not exists")
-	ErrAccountOrPwdInvalid         = errors.New("account or password is incorrect")
-	ErrPwdInvalid                  = errors.New("account's password is incorrect")
+	ErrUserNotExists               = errors.New("user not exists")
 	ErrInvalidVerificationCode     = errors.New("invalid verification code")
 	ErrInvalidUserId               = errors.New("invalid user id")
-	ErrUserNotExists               = errors.New("user not exists")
+	ErrAccountOrPwdInvalid         = errors.New("account or password is incorrect")
+	ErrPwdInvalid                  = errors.New("account's password is incorrect")
+	ErrRepeatPassword              = errors.New("the new password cannot be the same as the old one")
 
 	// contact
 	ErrContactNotExists       = errors.New("contact not exists")

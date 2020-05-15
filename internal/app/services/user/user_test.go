@@ -296,7 +296,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 	m := &MockUserRepo{}
 	m.On("FindOneUser", userCriteria1).Return(modelUser1, nil)
 	m.On("FindOneUser", userCriteria2).Return(modelUser1, nil)
-	m.On("FindOneUser", userCriteria3).Return(&user.UserImpl{}, errmsg.ErrUserNotExists)
+	m.On("FindOneUser", userCriteria3).Return(nil, nil)
 
 	Convey("testing_grpc_query_user_info", t, func() {
 		var ctx context.Context

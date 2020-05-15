@@ -42,7 +42,7 @@ func Test_contactService_RequestContact(t *testing.T) {
 	Convey("Test_DeleteContact", t, func() {
 		var ctx context.Context
 		var req *protos.GrpcReq
-		cs := &contactService{
+		cs := &ContactService{
 			userRepo:    mu,
 			contactRepo: mc,
 		}
@@ -74,7 +74,7 @@ func Test_contactService_DeleteContact(t *testing.T) {
 	Convey("Test_DeleteContact", t, func() {
 		var ctx context.Context
 		var req *protos.GrpcReq
-		cs := &contactService{
+		cs := &ContactService{
 			userRepo:    mu,
 			contactRepo: mc,
 		}
@@ -105,7 +105,7 @@ func Test_contactService_GetContacts(t *testing.T) {
 	//Convey("Test_DeleteContact", t, func() {
 	//	var ctx context.Context
 	//	var req *protos.GrpcReq
-	//	cs := &contactService{
+	//	cs := &ContactService{
 	//		userRepo:    mu,
 	//		contactRepo: mc,
 	//	}
