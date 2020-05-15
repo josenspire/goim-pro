@@ -9,6 +9,10 @@ var (
 	ErrOperationForbidden     = errors.New("illegal operation, user do not have permission")
 	ErrSystemUncheckException = errors.New("server uncheck exception")
 
+	ErrTelephoneExists    = errors.New("telephone has been registered")
+	ErrTelephoneNotExists = errors.New("telephone has not been registered")
+	ErrAccountNotExists   = errors.New("account not exists")
+
 	ErrAccountOrPwdInvalid     = errors.New("account or password is incorrect")
 	ErrPwdInvalid              = errors.New("account's password is incorrect")
 	ErrInvalidVerificationCode = errors.New("invalid verification code")
