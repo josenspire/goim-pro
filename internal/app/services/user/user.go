@@ -8,6 +8,7 @@ import (
 	"goim-pro/config"
 	. "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
+	. "goim-pro/internal/app/models/errors"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
 	mysqlsrv "goim-pro/pkg/db/mysql"
@@ -24,192 +25,98 @@ var (
 
 	myRedis *redsrv.BaseClient
 	mysqlDB *gorm.DB
+
+	userRepo IUserRepo
 )
 
-type userService struct {
-	userRepo IUserRepo
+type UserService struct {
 }
 
-func New() protos.UserServiceServer {
+func New() *UserService {
 	myRedis = redsrv.NewRedisConnection().GetRedisClient()
 	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+	userRepo = NewUserRepo(mysqlDB)
 
-	return &userService{
-		userRepo: NewUserRepo(mysqlDB),
-	}
+	return &UserService{}
 }
 
-func (us *userService) Register(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+func (s *UserService) Register(userProfile *protos.UserProfile, password, verificationCode string) (tErr *TError) {
+	var telephone = userProfile.Telephone
+	var email = userProfile.Email
 
-	var err error
-	var registerReq protos.RegisterReq
-	if err = utils.UnmarshalGRPCReq(req, &registerReq); err != nil {
-		resp.Code = http.StatusBadRequest
-		resp.Message = err.Error()
-		logger.Errorf(`unmarshal error: %v`, err)
-		return
-	}
-	if err = registerParameterCalibration(registerReq); err != nil {
-		resp.Code = http.StatusBadRequest
-		resp.Message = err.Error()
-		return
-	}
-
-	verificationCode := registerReq.GetVerificationCode()
-	telephone := registerReq.GetProfile().GetTelephone()
 	isValid, err := isVerificationCodeValid(verificationCode, telephone)
 	if !isValid {
-		resp.Code = http.StatusBadRequest
-		resp.Message = "verification code is invalid"
 		logger.Warnf("verification code is invalid: %s", verificationCode)
-		return
+		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidVerificationCode)
 	}
-	userProfile := registerReq.GetProfile()
 	userProfile.UserId = utils.NewULID()
 
-	isRegistered, err := us.userRepo.IsTelephoneOrEmailRegistered(userProfile.GetTelephone(), userProfile.GetEmail())
+	isRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, email)
 	if err != nil {
-		resp.Code = http.StatusInternalServerError
-		resp.Message = fmt.Sprintf("server error, %s", err.Error())
 		logger.Errorf("checking telephone validity error: %v", err.Error())
-		return
+		return NewTError(http.StatusInternalServerError, err)
 	}
 	if isRegistered {
-		resp.Code = http.StatusAccountExists
-		resp.Message = "the telephone or email has been registered, please login"
-		return
+		return NewTError(http.StatusAccountExists, errmsg.ErrAccountAlreadyExists)
 	}
-	if err = us.userRepo.Register(&models.User{
-		Password:    registerReq.GetPassword(),
+	if err = userRepo.Register(&models.User{
+		Password:    password,
 		UserProfile: converters.ConvertProto2EntityForUserProfile(userProfile),
 	}); err != nil {
-		resp.Code = http.StatusInternalServerError
-		resp.Message = err.Error()
 		logger.Errorf("register user error: %v", err.Error())
-		return
+		return NewTError(http.StatusInternalServerError, err)
 	}
 	// remove cache
 	myRedis.Del(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
 
-	registerResp := &protos.RegisterResp{
-		Profile: userProfile,
-	}
-	resp.Data, err = utils.MarshalMessageToAny(registerResp)
-	if err != nil {
-		logger.Errorf("register response marshal message error: %s", err.Error())
-	}
-	resp.Message = "user registration successful"
-	return
+	return nil
 }
 
-func (us *userService) Login(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
-
-	var err error
-	var loginReq protos.LoginReq
-	if err = utils.UnmarshalGRPCReq(req, &loginReq); err != nil {
-		resp.Code = http.StatusBadRequest
-		resp.Message = err.Error()
-		logger.Errorf(`unmarshal error: %v`, err)
-		return
-	}
-	if err = loginParameterCalibration(&loginReq); err != nil {
-		resp.Code = http.StatusBadRequest
-		resp.Message = err.Error()
-		return
-	}
-
-	telephone, email, password, verificationCode := loginReq.GetTelephone(), loginReq.GetEmail(), loginReq.GetPassword(), loginReq.GetVerificationCode()
-
-	var enPassword string = ""
-	if password != "" {
-		enPassword = utils.NewSHA256(password, config.GetApiSecretKey())
-	}
-
-	var user *models.User
+func (s *UserService) Login(telephone, email, enPassword, verificationCode, deviceId string, osVersion protos.GrpcReq_OS) (user *models.User, token string, tErr *TError) {
 	var isNeedVerify bool = false
-	isNeedVerify, user, err = us.accountLogin(telephone, email, enPassword, verificationCode, req.DeviceId, req.Os)
+	var err error
+	isNeedVerify, user, err = s.accountLogin(telephone, email, enPassword, verificationCode, deviceId, osVersion)
 	if err != nil {
-		resp.Code = http.StatusBadRequest
-		resp.Message = err.Error()
-		logger.Errorf("user login error: %v", err.Error())
-		return
+		return nil, "", NewTError(http.StatusBadRequest, err)
 	}
 	if isNeedVerify {
-		resp.Code = http.StatusAuthorizedRequired
-		resp.Message = `your account needs security verification`
-		return
+		return nil, "", NewTError(http.StatusAuthorizedRequired, errmsg.ErrAccountSecurityVerification)
 	}
-
 	// gen and save token
-	token := utils.NewToken([]byte(user.UserId))
+	token = utils.NewToken([]byte(user.UserId))
 	if err = myRedis.Set(fmt.Sprintf("TK-%s", user.UserId), token, ThreeDays); err != nil {
 		logger.Errorf("redis save token error: %v", err)
-		resp.Code = http.StatusInternalServerError
-		resp.Message = err.Error()
-		return
+		return nil, "", NewTError(http.StatusInternalServerError, err)
 	}
-
-	loginResp := &protos.LoginResp{
-		Token:   token,
-		Profile: converters.ConvertEntity2ProtoForUserProfile(&user.UserProfile),
-	}
-	resp.Data, err = utils.MarshalMessageToAny(loginResp)
-	if err != nil {
-		logger.Errorf("login response marshal message error: %s", err.Error())
-	}
-	resp.Message = "user login successful"
-
-	return
+	return user, token, nil
 }
 
-func (us *userService) Logout(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
-
-	var err error
-	var logoutReq protos.LogoutReq
-	if err = utils.UnmarshalGRPCReq(req, &logoutReq); err != nil {
-		resp.Code = http.StatusBadRequest
-		resp.Message = err.Error()
-		logger.Errorf(`unmarshal error: %v`, err)
-		return
-	}
-
-	token := req.GetToken()
+func (s *UserService) Logout(token string, isMandatoryLogout bool) (tErr *TError) {
 	isValid, payload, err := utils.TokenVerify(token)
 	if err != nil {
 		logger.Errorf("logout by token error: %s", err.Error())
-		resp.Code = http.StatusInternalServerError
-		resp.Message = err.Error()
-		return
+		return NewTError(http.StatusInternalServerError, err)
 	}
 	if !isValid {
-		resp.Code = http.StatusBadRequest
-		resp.Message = "this user has logged out"
-		return
+		return NewTError(http.StatusBadRequest, errmsg.ErrRepeatOperation)
 	}
 
 	key := fmt.Sprintf("TK-%s", string(payload))
-
 	_token := myRedis.Get(key)
 	if _token == "" {
-		resp.Code = http.StatusBadRequest
-		resp.Message = "this user has logged out"
-		return
+		return NewTError(http.StatusBadRequest, errmsg.ErrRepeatOperation)
 	}
 	// TODO: if true, mandatory and will remove all online user
-	if logoutReq.GetIsMandatoryLogout() {
+	if isMandatoryLogout {
 		myRedis.Del(key)
 	} else {
 		myRedis.Del(key)
 	}
 
-	resp.Message = "user logout successful"
-	return
+	return nil
 }
 
-func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *UserService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	// will over write the token value at rpc interceptor
@@ -269,7 +176,7 @@ func (us *userService) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) 
 	return
 }
 
-func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *UserService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -364,7 +271,7 @@ func (us *userService) ResetPassword(ctx context.Context, req *protos.GrpcReq) (
 	return
 }
 
-func (us *userService) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *UserService) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -403,7 +310,7 @@ func (us *userService) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (re
 	return
 }
 
-func (us *userService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *UserService) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
@@ -465,55 +372,7 @@ func isVerificationCodeValid(verificationCode, telephone string) (isValid bool, 
 	return true, nil
 }
 
-func registerParameterCalibration(req protos.RegisterReq) (err error) {
-	csErr := errmsg.ErrInvalidParameters
-	if utils.IsContainEmptyString(req.GetPassword(), req.GetVerificationCode()) || req.GetProfile() == nil {
-		err = csErr
-		return
-	}
-	profile := req.GetProfile()
-	//if registerType == protos.RegisterReq_TELEPHONE {
-	//	if utils.IsContainEmptyString(profile.GetTelephone()) {
-	//		err = csErr
-	//	}
-	//} else if registerType == protos.RegisterReq_EMAIL {
-	//	if utils.IsContainEmptyString(profile.GetEmail()) {
-	//		err = csErr
-	//	}
-	//}
-
-	// telephone calibration
-	if utils.IsContainEmptyString(profile.GetTelephone()) {
-		err = csErr
-	}
-	return
-}
-
-func loginParameterCalibration(req *protos.LoginReq) (err error) {
-	csErr := errmsg.ErrInvalidParameters
-	req.VerificationCode = strings.Trim(req.GetVerificationCode(), "")
-	req.Password = strings.Trim(req.GetPassword(), "")
-
-	if utils.IsEmptyStrings(req.GetTelephone(), req.GetEmail()) || utils.IsEmptyStrings(req.GetPassword(), req.GetVerificationCode()) {
-		err = csErr
-	}
-	return
-}
-
-func resetPwdParameterCalibration(verificationCode, oldPassword, newPassword string, telephone, email string) (err error) {
-	csErr := errmsg.ErrInvalidParameters
-
-	if utils.IsEmptyStrings(verificationCode, newPassword) || utils.IsEmptyStrings(oldPassword, newPassword) {
-		err = csErr
-	} else {
-		if utils.IsEmptyStrings(telephone, email) {
-			err = csErr
-		}
-	}
-	return
-}
-
-func loginByTelephone(us *userService, telephone, enPassword, verificationCode string) (user *models.User, err error) {
+func loginByTelephone(s *UserService, telephone, enPassword, verificationCode string) (user *models.User, err error) {
 	// 1. login by password
 	if enPassword != "" {
 		user, err = us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
@@ -545,7 +404,7 @@ func loginByTelephone(us *userService, telephone, enPassword, verificationCode s
 	return user, err
 }
 
-func loginByEmail(us *userService, email, enPassword, verificationCode string) (user *models.User, err error) {
+func loginByEmail(s *UserService, email, enPassword, verificationCode string) (user *models.User, err error) {
 	// 1. login by password
 	if enPassword != "" {
 		user, err = us.userRepo.QueryByEmailAndPassword(email, enPassword)
@@ -579,14 +438,14 @@ func loginByEmail(us *userService, email, enPassword, verificationCode string) (
 
 }
 
-func (us *userService) accountLogin(telephone, email, enPassword, verificationCode, deviceId string, osVersion protos.GrpcReq_OS) (isNeedVerify bool, user *models.User, err error) {
+func (s *UserService) accountLogin(telephone, email, enPassword, verificationCode, deviceId string, osVersion protos.GrpcReq_OS) (isNeedVerify bool, user *models.User, err error) {
 	var isLoginByTelephone bool = false
 	if telephone != "" {
 		isLoginByTelephone = true
 	}
 	// 1. login by verification code
 	if verificationCode != "" {
-		user, err = us.loginWithVerificationCode(isLoginByTelephone, telephone, email, verificationCode)
+		user, err = s.loginWithVerificationCode(isLoginByTelephone, telephone, email, verificationCode)
 		if err != nil {
 			return false, nil, err
 		}
@@ -615,7 +474,7 @@ func (us *userService) accountLogin(telephone, email, enPassword, verificationCo
 	return
 }
 
-func (us *userService) loginWithPassword(isTelephone bool, telephone, email, enPassword string) (user *models.User, err error) {
+func (s *UserService) loginWithPassword(isTelephone bool, telephone, email, enPassword string) (user *models.User, err error) {
 	if isTelephone {
 		return us.userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
 	} else {
@@ -623,7 +482,7 @@ func (us *userService) loginWithPassword(isTelephone bool, telephone, email, enP
 	}
 }
 
-func (us *userService) loginWithVerificationCode(isTelephone bool, telephone, email, verificationCode string) (user *models.User, err error) {
+func (s *UserService) loginWithVerificationCode(isTelephone bool, telephone, email, verificationCode string) (user *models.User, err error) {
 	var codeKey string = ""
 	var criteria = make(map[string]interface{})
 	if isTelephone {

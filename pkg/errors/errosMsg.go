@@ -7,21 +7,24 @@ var (
 	ErrIllegalOperation       = errors.New("illegal operation")
 	ErrInvalidParameters      = errors.New("bad request, invalid parameters")
 	ErrOperationForbidden     = errors.New("illegal operation, user do not have permission")
+	ErrRepeatOperation        = errors.New("do not repeat the operation")
 	ErrSystemUncheckException = errors.New("server uncheck exception")
 
-	ErrTelephoneExists    = errors.New("telephone has been registered")
-	ErrTelephoneNotExists = errors.New("telephone has not been registered")
-	ErrAccountNotExists   = errors.New("account not exists")
-
-	ErrAccountOrPwdInvalid     = errors.New("account or password is incorrect")
-	ErrPwdInvalid              = errors.New("account's password is incorrect")
-	ErrInvalidVerificationCode = errors.New("invalid verification code")
-	ErrInvalidUserId           = errors.New("invalid user id")
-	ErrUserNotExists           = errors.New("user not exists")
+	// user
+	ErrTelephoneExists             = errors.New("telephone has been registered")
+	ErrTelephoneNotExists          = errors.New("telephone has not been registered")
+	ErrAccountSecurityVerification = errors.New("account need security verification")
+	ErrAccountAlreadyExists        = errors.New("account is already exists")
+	ErrAccountNotExists            = errors.New("account not exists")
+	ErrAccountOrPwdInvalid         = errors.New("account or password is incorrect")
+	ErrPwdInvalid                  = errors.New("account's password is incorrect")
+	ErrInvalidVerificationCode     = errors.New("invalid verification code")
+	ErrInvalidUserId               = errors.New("invalid user id")
+	ErrUserNotExists               = errors.New("user not exists")
 
 	// contact
 	ErrContactNotExists       = errors.New("contact not exists")
-	ErrContactAlreadyExists   = errors.New("user are already your contact")
+	ErrContactAlreadyExists   = errors.New("user is already your contact")
 	ErrIllegalRequestContacts = errors.New("illegal request contacts")
 	ErrInvalidContact         = errors.New("invalid contacts")
 
