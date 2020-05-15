@@ -31,6 +31,7 @@ type Member struct {
 	Status string `json:"status" gorm:"column:status; type:ENUM('NORMAL', 'MUTE'); default: 'NORMAL'; not null"`
 	base.BaseModel
 	GroupId string `json:"groupId" gorm:"column:groupId; type:varchar(32); primary_key; not null"`
+	User    User   `gorm:"ForeignKey:UserId"`
 }
 
 func (Group) TableName() string {

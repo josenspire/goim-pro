@@ -38,8 +38,8 @@ func TestGroupImpl_FindOneGroup(t *testing.T) {
 	_ = mysqlDB.Connect()
 	NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
 
-	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
-	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
+	newMember1 := models.NewMember("01E59Z8HMG8SK8C65XV42M33QP", "JAMES_TEST_001")
+	newMember2 := models.NewMember("01E59ZNYB8KDNW0W3NHGDZDD6V", "JAMES_TEST_002")
 	members := []models.Member{
 		newMember1,
 		newMember2,
@@ -61,6 +61,7 @@ func TestGroupImpl_FindOneGroup(t *testing.T) {
 			ShouldBeNil(err)
 			So(profile.OwnerUserId, ShouldEqual, "TEST005")
 			So(len(profile.Members), ShouldEqual, 2)
+			So(profile.Members[0].User.Nickname, ShouldEqual, "JAMES01")
 		})
 		Convey("should_not_find_the_group_when_given_error_groupId_or_ownerUserId_then_return_nil", func() {
 			condition := map[string]interface{}{

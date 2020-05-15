@@ -164,5 +164,8 @@ func toolsIntroduce() {
 	logger.Info("** ['ct-udt']: update contact remark profile **")
 	logger.Info("** ['ct-fa']: get all contacts **")
 
+	logger.Info("** *********************** **")
+	logger.Info("** ['gp-ct']: create new group **")
+
 	logger.Info("** ['q']: exist [GRPC] client **")
 }

@@ -81,8 +81,10 @@ func Test_Register(t *testing.T) {
 		UserProfile: *modelUserProfile2,
 	}).Return(nil)
 
-	redisDB := redsrv.NewRedisConnection()
-	_ = redisDB.Connect()
+	redisClient := redsrv.NewRedisConnection()
+	if err := redisClient.Connect(); err != nil {
+		t.FailNow()
+	}
 
 	mr := &redsrv.MockCmdable{}
 	mr.On("Get", "0-13631210001").Return(123456)

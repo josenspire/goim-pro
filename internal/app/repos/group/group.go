@@ -50,9 +50,10 @@ func (i *GroupImpl) CreateGroup(groupProfile *Group) (newGroup *Group, err error
 	return _db.Value.(*Group), nil
 }
 
+// group(1)->(n)members(1)->(1)user
 func (i *GroupImpl) FindOneGroup(condition map[string]interface{}) (*Group, error) {
 	var groupProfile = Group{}
-	if err := mysqlDB.First(&groupProfile, condition).Related(&groupProfile.Members, "Members").Error; err != nil {
+	if err := mysqlDB.First(&groupProfile, condition).Preload("User").Related(&groupProfile.Members, "Members").Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}

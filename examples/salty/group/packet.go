@@ -16,8 +16,8 @@ func CreateGroup(t protos.GroupServiceClient) {
 	createGroupReq := &protos.CreateGroupReq{
 		GroupName: "NEW_GROUP",
 		MemberUserIdArr: []string{
-			"MEMBER_001",
-			"MEMBER_002",
+			"01E59Z8HMG8SK8C65XV42M33QP",
+			"01E59ZNYB8KDNW0W3NHGDZDD6V",
 		},
 	}
 	anyData, _ := utils.MarshalMessageToAny(createGroupReq)
