@@ -1,4 +1,4 @@
-package usersrv
+package user
 
 import (
 	"github.com/stretchr/testify/mock"
@@ -27,7 +27,12 @@ func (m *MockUserRepo) RemoveUserByUserId(userId string, isForce bool) error {
 
 func (m *MockUserRepo) QueryByTelephoneAndPassword(telephone string, enPassword string) (user *models.User, err error) {
 	args := m.Called(telephone, enPassword)
-	return (args.Get(0)).(*models.User), args.Error(1)
+	arg := args.Get(0)
+	err = args.Error(1)
+	if arg == nil {
+		return nil, err
+	}
+	return (args.Get(0)).(*models.User), err
 }
 
 func (m *MockUserRepo) QueryByEmailAndPassword(email string, enPassword string) (user *models.User, err error) {
@@ -52,12 +57,22 @@ func (m *MockUserRepo) ResetPasswordByEmail(email string, newPassword string) er
 
 func (m *MockUserRepo) FindByUserId(userId string) (user *models.User, err error) {
 	args := m.Called(userId)
-	return args.Get(0).(*models.User), args.Error(1)
+	arg1 := args.Get(0)
+	err = args.Error(1)
+	if arg1 != nil {
+		return arg1.(*models.User), err
+	}
+	return nil, err
 }
 
 func (m *MockUserRepo) FindOneUser(condition interface{}) (user *models.User, err error) {
 	args := m.Called(condition)
-	return args.Get(0).(*models.User), args.Error(1)
+	arg1 := args.Get(0)
+	err = args.Error(1)
+	if arg1 != nil {
+		return arg1.(*models.User), err
+	}
+	return nil, err
 }
 
 func (m *MockUserRepo) FindOneAndUpdateProfile(condition, profile interface{}) (err error) {

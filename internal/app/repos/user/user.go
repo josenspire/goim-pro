@@ -4,7 +4,6 @@ import (
 	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/models"
 	tbl "goim-pro/pkg/db"
-	"goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
 )
 
@@ -82,11 +81,11 @@ func (u *UserImpl) QueryByEmailAndPassword(email string, enPassword string) (*mo
 	var err error
 	db := mysqlDB.First(&user, "email = ? and password = ?", email, enPassword)
 	if db.RecordNotFound() {
-		err = errmsg.ErrAccountOrPwdInvalid
-	} else {
-		err = db.Error
+		return nil, nil
+	} else if err = db.Error; err != nil {
+		return nil, err
 	}
-	return user, err
+	return user, nil
 }
 
 func (u *UserImpl) QueryByTelephoneAndPassword(telephone string, enPassword string) (*models.User, error) {
@@ -94,11 +93,11 @@ func (u *UserImpl) QueryByTelephoneAndPassword(telephone string, enPassword stri
 	var err error
 	db := mysqlDB.First(user, "telephone = ? and password = ?", telephone, enPassword)
 	if db.RecordNotFound() {
-		err = errmsg.ErrAccountOrPwdInvalid
-	} else {
-		err = db.Error
+		return nil, nil
+	} else if err = db.Error; err != nil {
+		return nil, err
 	}
-	return user, err
+	return user, nil
 }
 
 func (u *UserImpl) RemoveUserByUserId(userId string, isForce bool) (err error) {
@@ -139,7 +138,6 @@ func (u *UserImpl) FindByUserId(userId string) (user *models.User, err error) {
 		return nil, nil
 	}
 	if err = db.Error; err != nil {
-		logger.Errorf("error happened to get user by userId: %v", err)
 		return nil, err
 	}
 	return user, nil
@@ -152,7 +150,6 @@ func (u *UserImpl) FindOneUser(condition interface{}) (user *models.User, err er
 		return nil, nil
 	}
 	if err = db.Error; err != nil {
-		logger.Errorf("error happened to query user information: %v", err)
 		return nil, err
 	}
 	return user, nil

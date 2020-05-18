@@ -4,7 +4,7 @@ import (
 	"context"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/models"
-	usersrv "goim-pro/internal/app/services/user"
+	"goim-pro/internal/app/repos/user"
 	"goim-pro/pkg/utils"
 	"testing"
 
@@ -33,7 +33,7 @@ var (
 )
 
 func Test_contactService_RequestContact(t *testing.T) {
-	mu := &usersrv.MockUserRepo{}
+	mu := &user.MockUserRepo{}
 	mu.On("FindByUserId", "TEST002").Return(mockUser, nil)
 
 	mc := &MockContactRepo{}
@@ -63,7 +63,7 @@ func Test_contactService_RequestContact(t *testing.T) {
 }
 
 func Test_contactService_DeleteContact(t *testing.T) {
-	mu := &usersrv.MockUserRepo{}
+	mu := &user.MockUserRepo{}
 
 	mc := &MockContactRepo{}
 	mc.On("IsContactExists", "TEST001", "TEST002").Return(true, nil)

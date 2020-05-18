@@ -73,7 +73,7 @@ func (s *UserService) Register(userProfile *protos.UserProfile, password, verifi
 func (s *UserService) Login(telephone, email, enPassword, verificationCode, deviceId string, osVersion protos.GrpcReq_OS) (user *models.User, token string, tErr *TError) {
 	var isNeedVerify bool = false
 	var err error
-	isNeedVerify, user, err = s.accountLogin(telephone, email, enPassword, verificationCode, deviceId, osVersion)
+	isNeedVerify, user, err = accountLogin(telephone, email, enPassword, verificationCode, deviceId, osVersion)
 	if err != nil {
 		return nil, "", NewTError(http.StatusBadRequest, err)
 	}
@@ -116,11 +116,11 @@ func (s *UserService) Logout(token string, isMandatoryLogout bool) (tErr *TError
 
 func (s *UserService) UpdateUserInfo(userId string, userProfile *models.UserProfile) (tErr *TError) {
 	originUserProfile, err := userRepo.FindByUserId(userId)
-	if err == errmsg.ErrInvalidUserId {
-		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidUserId)
-	}
 	if err != nil {
 		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidParameters)
+	}
+	if originUserProfile == nil {
+		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidUserId)
 	}
 	// nothing change, don't need to update
 	if isProfileNothing2Update(&originUserProfile.UserProfile, userProfile) {
@@ -147,6 +147,7 @@ func (s *UserService) UpdateUserInfo(userId string, userProfile *models.UserProf
 	return
 }
 
+// ResetPassword - reset user's password by verification code, or oldPassword
 func (s *UserService) ResetPassword(verificationCode, telephone, email, oldPassword, newPassword string) (tErr *TError) {
 	isRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, email)
 	if err != nil {
@@ -169,15 +170,19 @@ func (s *UserService) ResetPassword(verificationCode, telephone, email, oldPassw
 		if oldPassword == newPassword {
 			return NewTError(http.StatusBadRequest, errmsg.ErrRepeatPassword)
 		}
+		var user *models.User
 		enPassword := utils.NewSHA256(oldPassword, config.GetApiSecretKey())
 		if telephone != "" {
-			_, err = userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
+			user, err = userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
 		} else {
-			_, err = userRepo.QueryByEmailAndPassword(email, enPassword)
+			user, err = userRepo.QueryByEmailAndPassword(email, enPassword)
 		}
 		if err != nil {
 			logger.Errorf("reset password error: %s", err.Error())
 			return NewTError(http.StatusBadRequest, err)
+		}
+		if user == nil {
+			return NewTError(http.StatusBadRequest, errmsg.ErrAccountOrPwdInvalid)
 		}
 	}
 
@@ -209,12 +214,13 @@ func (s *UserService) GetUserInfo(userId string) (profile *models.UserProfile, t
 	return &user.UserProfile, nil
 }
 
+// QueryUserInfo - query user information by telephone, email
 func (s *UserService) QueryUserInfo(telephone, email string) (profile *models.UserProfile, tErr *TError) {
 	userCriteria := make(map[string]interface{})
 	if utils.IsEmptyStrings(telephone) {
-		userCriteria["Email"] = email
+		userCriteria["email"] = email
 	} else {
-		userCriteria["Telephone"] = telephone
+		userCriteria["telephone"] = telephone
 	}
 
 	user, err := userRepo.FindOneUser(userCriteria)
@@ -228,7 +234,7 @@ func (s *UserService) QueryUserInfo(telephone, email string) (profile *models.Us
 	return &user.UserProfile, nil
 }
 
-func (s *UserService) accountLogin(telephone, email, enPassword, verificationCode, deviceId string, osVersion protos.GrpcReq_OS) (isNeedVerify bool, user *models.User, err error) {
+func accountLogin(telephone, email, enPassword, verificationCode, deviceId string, osVersion protos.GrpcReq_OS) (isNeedVerify bool, user *models.User, err error) {
 	var isLoginByTelephone bool = false
 	if telephone != "" {
 		isLoginByTelephone = true
@@ -259,7 +265,10 @@ func (s *UserService) accountLogin(telephone, email, enPassword, verificationCod
 		if err != nil {
 			return false, nil, err
 		}
-		return isNeedToSMSVerify(deviceId, osVersion, user), user, err
+		if user == nil {
+			return false, nil, errmsg.ErrAccountOrPwdInvalid
+		}
+		return isNeedToSMSVerify(deviceId, osVersion, user), user, nil
 	}
 	return
 }
@@ -269,12 +278,8 @@ func isProfileNothing2Update(originProfile, newProfile *models.UserProfile) bool
 }
 
 func isVerificationCodeValid(verificationCode, telephone string) (isValid bool, err error) {
-	fmt.Println(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
 	code := myRedis.Get(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
-	if verificationCode != string(code) {
-		return false, nil
-	}
-	return true, nil
+	return verificationCode == string(code), nil
 }
 
 func loginWithPassword(isTelephone bool, telephone, email, enPassword string) (user *models.User, err error) {
@@ -291,12 +296,12 @@ func loginWithVerificationCode(isTelephone bool, telephone, email, verificationC
 	if isTelephone {
 		codeKey = fmt.Sprintf("%d-%s", CodeTypeLogin, telephone)
 		criteria = map[string]interface{}{
-			"Telephone": telephone,
+			"telephone": telephone,
 		}
 	} else {
 		codeKey = fmt.Sprintf("%d-%s", CodeTypeLogin, email)
 		criteria = map[string]interface{}{
-			"Email": email,
+			"email": email,
 		}
 	}
 	code := myRedis.Get(codeKey)
@@ -325,70 +330,4 @@ func isNeedToSMSVerify(deviceId string, osVersion protos.GrpcReq_OS, orgUser *mo
 	//case protos.GrpcReq_WINDOWS:
 	//case protos.GrpcReq_UNKNOWN:
 	//}
-}
-
-func loginByTelephone(s *UserService, telephone, enPassword, verificationCode string) (user *models.User, err error) {
-	// 1. login by password
-	if enPassword != "" {
-		user, err = userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
-		if err != nil {
-			if err != errmsg.ErrAccountOrPwdInvalid {
-				logger.Errorf("login by telephone and passwor error: %s", err)
-				return nil, err
-			}
-		} else {
-			return user, err
-		}
-	}
-	// 2. login by verification code
-	if verificationCode != "" {
-		codeKey := fmt.Sprintf("%d-%s", CodeTypeLogin, telephone)
-		code := myRedis.Get(codeKey)
-		if verificationCode == string(code) {
-			criteria := map[string]interface{}{
-				"Telephone": telephone,
-			}
-			if user, err = userRepo.FindOneUser(criteria); err != nil {
-				logger.Errorf("find user by telephone error: %s", err.Error())
-				return nil, err
-			}
-			myRedis.Del(codeKey)
-			return user, nil
-		}
-	}
-	return user, err
-}
-
-func loginByEmail(s *UserService, email, enPassword, verificationCode string) (user *models.User, err error) {
-	// 1. login by password
-	if enPassword != "" {
-		user, err = userRepo.QueryByEmailAndPassword(email, enPassword)
-		if err != nil {
-			if err != errmsg.ErrAccountOrPwdInvalid {
-				logger.Errorf("login by email and passwor error: %s", err)
-				return nil, err
-			}
-		} else {
-			return user, nil
-		}
-
-	}
-	// 2. login by verification code
-	if verificationCode != "" {
-		codeKey := fmt.Sprintf("%d-%s", CodeTypeLogin, email)
-		code := myRedis.Get(codeKey)
-		if verificationCode == string(code) {
-			criteria := map[string]interface{}{
-				"Email": email,
-			}
-			if user, err = userRepo.FindOneUser(criteria); err != nil {
-				logger.Errorf("find user by email error: %s", err.Error())
-				return nil, err
-			}
-			myRedis.Del(codeKey)
-			return user, nil
-		}
-	}
-	return user, nil
-
 }

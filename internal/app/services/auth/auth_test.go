@@ -1,48 +1,38 @@
 package authsrv
 
 import (
-	"context"
 	"fmt"
 	. "github.com/smartystreets/goconvey/convey"
 	protos "goim-pro/api/protos/salty"
-	usersrv "goim-pro/internal/app/services/user"
-	"goim-pro/pkg/utils"
-	"net/http"
+	"goim-pro/internal/app/repos/user"
+	mysqlsrv "goim-pro/pkg/db/mysql"
+	redsrv "goim-pro/pkg/db/redis"
 	"testing"
 )
 
-func Test_smsServer_ObtainSMSCode(t *testing.T) {
-	m := &usersrv.MockUserRepo{}
+func Test_authServer_ObtainSMSCode(t *testing.T) {
+	_ = redsrv.NewRedisConnection().Connect()
+	_ = mysqlsrv.NewMysqlConnection().Connect()
+
+	m := &user.MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(false, nil)
 	m.On("IsTelephoneOrEmailRegistered", "13631210002", "").Return(true, nil)
 	m.On("IsTelephoneOrEmailRegistered", "13631210003", "").Return(true, nil)
 	m.On("IsTelephoneOrEmailRegistered", "13631210004", "").Return(false, nil)
 
+	authServer := New()
+	userRepo = m
+
 	Convey("testing_ObtainSMSCodeReq", t, func() {
-		var ctx context.Context
-		var req *protos.GrpcReq
-
-		smsServer := &smsService{
-			userRepo: m,
-		}
 		Convey("should_return_correct_sms_code_for_register", func() {
-			smsReq := &protos.ObtainSMSCodeReq{
-				CodeType:  protos.ObtainSMSCodeReq_REGISTER,
-				Telephone: "13631210001",
-			}
-			any, _ := utils.MarshalMessageToAny(smsReq)
-			req = &protos.GrpcReq{
-				Data: any,
-			}
-			actualResp, err := smsServer.ObtainSMSCode(ctx, req)
+			actualCode, err := authServer.ObtainSMSCode("13631210001", protos.ObtainSMSCodeReq_REGISTER)
 
-			fmt.Println(actualResp.GetMessage())
-
+			fmt.Println(actualCode)
 			str := myRedis.Get(fmt.Sprintf("%d-%s", protos.ObtainSMSCodeReq_REGISTER, "13631210001"))
 
 			So(err, ShouldBeNil)
-			So(actualResp.Code, ShouldEqual, http.StatusOK)
-			So(len(str), ShouldEqual, 6)
+			So(actualCode, ShouldEqual, "123401")
+			So(str, ShouldEqual, "123401")
 		})
 	})
 }
