@@ -5,21 +5,28 @@ package com.salty.protos;
 import "google/protobuf/any.proto";
 
 service Waiter {
-    // defined interface (struct can be reuse)
-    // methods
-    rpc DoMD5 (Req) returns (Res) {
+    rpc SayHello (GrpcReq) returns (GrpcResp) {
     }
 }
 
 // defined Req message struct
-message Req {
-    // type
-    string jsonStr = 1;
-    google.protobuf.Any data = 2;
+message HelloReq {
+    string name = 1;
 }
 
 //defined Res message struct
-message Res {
-    string backJson = 1;
-    google.protobuf.Any data = 2;
+message HelloResp {
+    string message = 1;
+}
+
+// Basic Request
+message GrpcReq {
+    google.protobuf.Any data = 1;
+}
+
+// Basic Response
+message GrpcResp {
+    int32 code = 1;
+    string message = 2;
+    google.protobuf.Any data = 3;
 }

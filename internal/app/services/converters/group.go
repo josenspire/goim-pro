@@ -30,7 +30,7 @@ func convertEntity2ProtoForMemberProfiles(members []models.Member) (protoMembers
 		protoMembers[i] = &protos.GroupMemberProfile{
 			GroupId:     member.GroupId,
 			Alias:       member.Alias,
-			Role:        constants.MemberRoleStringMapping[member.Role],
+			Role:        consts.MemberRoleStringMapping[member.Role],
 			JoinTime:    0,
 			UserProfile: ConvertEntity2ProtoForUserProfile(&member.User.UserProfile),
 		}

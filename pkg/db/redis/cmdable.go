@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type IBaseCmdable interface {
+type IMyRedis interface {
 	Ping() (result string, err error)
 	HSet(key string, valueMap map[string]interface{}) (err error)
 	HGet(key string, fields ...string) (valueMap map[string]interface{}, err error)
@@ -20,7 +20,7 @@ type BaseClient struct {
 }
 
 // new base client with redis options
-func NewBaseClient(uriAddr string, password string, dbNum int) *BaseClient {
+func newBaseClient(uriAddr string, password string, dbNum int) *BaseClient {
 	baseClient := &BaseClient{}
 	baseClient.client = redis.NewClient(
 		&redis.Options{

@@ -15,7 +15,7 @@ func ConvertProto2EntityForUserProfile(profile *protos.UserProfile) models.UserP
 		Nickname:    profile.GetNickname(),
 		Avatar:      profile.GetAvatar(),
 		Description: profile.GetDescription(),
-		Sex:         constants.UserSexProtoMapping[profile.GetSex()],
+		Sex:         consts.UserSexProtoMapping[profile.GetSex()],
 		Birthday:    profile.GetBirthday(),
 		Location:    profile.GetLocation(),
 	}
@@ -29,7 +29,7 @@ func ConvertEntity2ProtoForUserProfile(profile *models.UserProfile) *protos.User
 		Nickname:    profile.Nickname,
 		Avatar:      profile.Avatar,
 		Description: profile.Description,
-		Sex:         constants.UserSexStringMapping[profile.Sex],
+		Sex:         consts.UserSexStringMapping[profile.Sex],
 		Birthday:    profile.Birthday,
 		Location:    profile.Location,
 	}

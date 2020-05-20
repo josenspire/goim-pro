@@ -4,11 +4,15 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	config "goim-pro/config"
+	"goim-pro/config"
 	"goim-pro/pkg/logs"
 	"strconv"
 	"sync"
 )
+
+type IMysql interface {
+	Connect() (err error)
+}
 
 // connection pool
 type MysqlConnectionPool struct{}

@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	example "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/examples/salty/contact"
+	"goim-pro/examples/salty/demo"
 	"goim-pro/examples/salty/group"
 	"goim-pro/examples/salty/user"
 	"goim-pro/pkg/logs"
@@ -46,6 +48,9 @@ func main() {
 		for {
 			_, _ = fmt.Scanln(&str)
 			switch str {
+			case "1":
+				t := example.NewWaiterClient(conn)
+				demo.SayHello(t)
 			case "s1":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
@@ -141,6 +146,7 @@ func toolsIntroduce() {
 	logger.Info("********************************************")
 	logger.Info("**** Welcome to [GRPC] client tools ****")
 	logger.Info("**** Can input the commons to test ****")
+	logger.Info("** ['1']: sayHello **")
 	logger.Info("** ['s1']: obtainSMSCode - register**")
 	logger.Info("** ['s2']: obtainSMSCode - login**")
 	logger.Info("** ['s3']: obtainSMSCode - resetPassword**")

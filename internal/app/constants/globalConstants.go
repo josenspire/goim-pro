@@ -1,4 +1,4 @@
-package constants
+package consts
 
 type CodeType int32
 

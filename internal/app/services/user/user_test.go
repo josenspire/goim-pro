@@ -1,8 +1,10 @@
 package usersrv
 
 import (
+	"fmt"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
+	consts "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/repos/user"
 	mysqlsrv "goim-pro/pkg/db/mysql"
@@ -75,7 +77,6 @@ var modelUser2 = &models.User{
 }
 
 func Test_Register(t *testing.T) {
-	_ = redsrv.NewRedisConnection().Connect()
 	_ = mysqlsrv.NewMysqlConnection().Connect()
 
 	m := &user.MockUserRepo{}
@@ -90,11 +91,18 @@ func Test_Register(t *testing.T) {
 		UserProfile: *modelUserProfile2,
 	}).Return(nil)
 
+	var registerKey1 = fmt.Sprintf("%d-%s", consts.CodeTypeRegister, "13631210001")
+	var registerKey2 = fmt.Sprintf("%d-%s", consts.CodeTypeRegister, "13631210002")
+	r := new(redsrv.MockCmdable)
+	r.On("Get", registerKey1).Return("123456")
+	r.On("Get", registerKey2).Return("123456")
+	r.On("Del", registerKey1).Return(0)
+	r.On("Del", registerKey2).Return(0)
+
 	us := New()
 	userRepo = m
+	myRedis = r
 
-	myRedis.Set("0-13631210001", "123456", time.Duration(60)*time.Second)
-	myRedis.Set("0-13631210002", "123456", time.Duration(60)*time.Second)
 	Convey("testing_grpc_user_register", t, func() {
 		Convey("user_registration_fail_by_invalid_verification_code", func() {
 			tErr := us.Register(pbUserProfile1, "1234567890", "123123")
@@ -113,13 +121,10 @@ func Test_Register(t *testing.T) {
 			So(tErr, ShouldBeNil)
 		})
 	})
-
-	myRedis.Del("0-13631210001")
-	myRedis.Del("0-13631210002")
 }
 
 func Test_userService_Login(t *testing.T) {
-	_ = redsrv.NewRedisConnection().Connect()
+	//_ = redsrv.NewRedisConnection().GetRedisClient()
 	_ = mysqlsrv.NewMysqlConnection().Connect()
 
 	m := &user.MockUserRepo{}
@@ -175,7 +180,7 @@ func Test_userService_Login(t *testing.T) {
 }
 
 func Test_userService_ResetPassword(t *testing.T) {
-	_ = redsrv.NewRedisConnection().Connect()
+	//_ = redsrv.NewRedisConnection().GetRedisClient()
 	_ = mysqlsrv.NewMysqlConnection().Connect()
 
 	//telephone, email := "13631210001", "123@qq.com"
@@ -231,7 +236,7 @@ func Test_userService_ResetPassword(t *testing.T) {
 }
 
 func Test_userService_GetUserInfo(t *testing.T) {
-	_ = redsrv.NewRedisConnection().Connect()
+	//_ = redsrv.NewRedisConnection().GetRedisClient()
 	_ = mysqlsrv.NewMysqlConnection().Connect()
 
 	m := &user.MockUserRepo{}
@@ -270,7 +275,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 		"telephone": "13631210012",
 	}
 
-	_ = redsrv.NewRedisConnection().Connect()
+	//_ = redsrv.NewRedisConnection().GetRedisClient()
 	_ = mysqlsrv.NewMysqlConnection().Connect()
 
 	m := &user.MockUserRepo{}
@@ -305,7 +310,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 }
 
 func Test_userService_UpdateUserInfo(t *testing.T) {
-	_ = redsrv.NewRedisConnection().Connect()
+	//_ = redsrv.NewRedisConnection().GetRedisClient()
 	_ = mysqlsrv.NewMysqlConnection().Connect()
 
 	criteria1 := &models.User{}

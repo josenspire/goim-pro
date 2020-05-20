@@ -2,21 +2,45 @@ package demowaitersrv
 
 import (
 	"context"
-	"crypto/md5"
 	"fmt"
-	"goim-pro/api/protos/example"
+	example "goim-pro/api/protos/example"
+	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
+	"goim-pro/pkg/utils"
 )
 
 type waiterServer struct{}
 
 var logger = logs.GetLogger("INFO")
 
-func New() com_salty_protos.WaiterServer {
+func New() example.WaiterServer {
 	return &waiterServer{}
 }
 
-func (hw *waiterServer) DoMD5(ctx context.Context, in *com_salty_protos.Req) (*com_salty_protos.Res, error) {
-	logger.Println("MD5方法请求的JSON: ", in.JsonStr)
-	return &com_salty_protos.Res{BackJson: "MD5 :" + fmt.Sprintf("%x", md5.Sum([]byte(in.JsonStr)))}, nil
+func (waiterServer) SayHello(ctx context.Context, req *example.GrpcReq) (resp *example.GrpcResp, gRPCErr error) {
+	resp = &example.GrpcResp{}
+
+	var err error
+	var demoReq example.HelloReq
+	if err = utils.UnMarshalAnyToMessage(req.GetData(), &demoReq); err != nil {
+		logger.Errorf(`data unmarshal error: %s`, err.Error())
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		return
+	}
+
+	name := demoReq.Name
+	message := fmt.Sprintf("Hello %s, wellcome!!!", name)
+	logger.Info(message)
+
+	demoResp := &example.HelloResp{
+		Message: message,
+	}
+	resp.Data, err = utils.MarshalMessageToAny(demoResp)
+	if err != nil {
+		logger.Errorf("register response marshal message error: %s", err.Error())
+	}
+	resp.Message = "user registration successful"
+
+	return
 }

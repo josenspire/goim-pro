@@ -4,6 +4,7 @@ import (
 	"fmt"
 	. "github.com/smartystreets/goconvey/convey"
 	protos "goim-pro/api/protos/salty"
+	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos/user"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
@@ -11,7 +12,6 @@ import (
 )
 
 func Test_authServer_ObtainSMSCode(t *testing.T) {
-	_ = redsrv.NewRedisConnection().Connect()
 	_ = mysqlsrv.NewMysqlConnection().Connect()
 
 	m := &user.MockUserRepo{}
@@ -20,19 +20,24 @@ func Test_authServer_ObtainSMSCode(t *testing.T) {
 	m.On("IsTelephoneOrEmailRegistered", "13631210003", "").Return(true, nil)
 	m.On("IsTelephoneOrEmailRegistered", "13631210004", "").Return(false, nil)
 
-	authServer := New()
+	var registerKey = fmt.Sprintf("%d-%s", protos.ObtainSMSCodeReq_REGISTER, "13631210001")
+
+	r := new(redsrv.MockCmdable)
+	r.On("Set", registerKey, "123401", consts.MinuteOf15).Return(nil)
+	r.On("Get", registerKey).Return("123401")
+
+	authServer := new(AuthService)
 	userRepo = m
+	myRedis = r
 
 	Convey("testing_ObtainSMSCodeReq", t, func() {
 		Convey("should_return_correct_sms_code_for_register", func() {
 			actualCode, err := authServer.ObtainSMSCode("13631210001", protos.ObtainSMSCodeReq_REGISTER)
 
 			fmt.Println(actualCode)
-			str := myRedis.Get(fmt.Sprintf("%d-%s", protos.ObtainSMSCodeReq_REGISTER, "13631210001"))
 
 			So(err, ShouldBeNil)
 			So(actualCode, ShouldEqual, "123401")
-			So(str, ShouldEqual, "123401")
 		})
 	})
 }

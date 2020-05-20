@@ -21,7 +21,7 @@ import (
 var (
 	logger = logs.GetLogger("INFO")
 
-	myRedis *redsrv.BaseClient
+	myRedis redsrv.IMyRedis
 	mysqlDB *gorm.DB
 
 	userRepo IUserRepo

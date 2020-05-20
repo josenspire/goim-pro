@@ -27,7 +27,8 @@ func (m *MockCmdable) Get(key string) (strVal string) {
 }
 
 func (m *MockCmdable) Set(key string, value string, expiresTime time.Duration) (err error) {
-	panic("implement me")
+	args := m.Called(key, value, expiresTime)
+	return args.Error(0)
 }
 
 func (m *MockCmdable) Del(key string) (resultInt64 int64) {

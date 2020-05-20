@@ -1,4 +1,4 @@
-package constants
+package consts
 
 import protos "goim-pro/api/protos/salty"
 

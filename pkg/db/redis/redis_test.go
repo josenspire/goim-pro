@@ -6,8 +6,7 @@ import (
 
 func TestRedisServiceConnection_GetRedisClient(t *testing.T) {
 	redisDB := NewRedisConnection()
-	err := redisDB.Connect()
-	if err != nil {
+	if redisDB.Error != nil {
 		t.FailNow()
 	} else {
 		db := redisDB.GetRedisClient()
@@ -16,4 +15,3 @@ func TestRedisServiceConnection_GetRedisClient(t *testing.T) {
 		}
 	}
 }
-

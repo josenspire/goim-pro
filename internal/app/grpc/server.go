@@ -34,7 +34,7 @@ var (
 	logger  = logs.GetLogger("INFO")
 	OpenTLS = true
 
-	myRedis *redsrv.BaseClient
+	myRedis redsrv.IMyRedis
 )
 
 // server constructor
@@ -52,11 +52,11 @@ func (gs *GRPCServer) InitServer() {
 			logger.Fatalf("mysql tables initialization fail: %s", err)
 		}
 	}
-	rdsClient := redsrv.NewRedisConnection()
-	if err := rdsClient.Connect(); err != nil {
+	rdsPool := redsrv.NewRedisConnection()
+	if err := rdsPool.Error; err != nil {
 		logger.Errorf("redis connect error: %v", err.Error())
 	} else {
-		myRedis = rdsClient.GetRedisClient()
+		myRedis = rdsPool.GetRedisClient()
 	}
 }
 

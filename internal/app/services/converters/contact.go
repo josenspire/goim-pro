@@ -23,15 +23,15 @@ func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []
 		userProfile := contact.User
 		protoContacts[i] = &protos.ContactProfile{
 			UserProfile: &protos.UserProfile{
-				UserId:               contact.UserId,
-				Telephone:            contact.Telephone,
-				Email:                userProfile.Email,
-				Nickname:             userProfile.Nickname,
-				Avatar:               userProfile.Avatar,
-				Description:          userProfile.Description,
-				Sex:                  constants.UserSexStringMapping[userProfile.Sex],
-				Birthday:             userProfile.Birthday,
-				Location:             userProfile.Location,
+				UserId:      contact.UserId,
+				Telephone:   contact.Telephone,
+				Email:       userProfile.Email,
+				Nickname:    userProfile.Nickname,
+				Avatar:      userProfile.Avatar,
+				Description: userProfile.Description,
+				Sex:         consts.UserSexStringMapping[userProfile.Sex],
+				Birthday:    userProfile.Birthday,
+				Location:    userProfile.Location,
 			},
 			RemarkInfo: &protos.ContactRemark{
 				RemarkName:           contact.RemarkName,
