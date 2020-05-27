@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewWUID(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
 
 	wuid1 := NewWUID()

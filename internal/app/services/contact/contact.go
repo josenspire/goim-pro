@@ -32,8 +32,8 @@ type ContactService struct {
 }
 
 func New() *ContactService {
-	myRedis = redsrv.NewRedisConnection().GetRedisClient()
-	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+	myRedis = redsrv.NewRedis()
+	mysqlDB = mysqlsrv.NewMysql()
 
 	userRepo = NewUserRepo(mysqlDB)
 	contactRepo = NewContactRepo(mysqlDB)
@@ -99,7 +99,7 @@ func (cs *ContactService) RequestContact(ctx context.Context, req *protos.GrpcRe
 	if err != nil {
 		logger.Errorf("redis operations error, transform map error: %s", err.Error())
 	}
-	err = myRedis.Set(ctKey, jsonStr, DefaultExpiresTime)
+	err = myRedis.RSet(ctKey, jsonStr, DefaultExpiresTime)
 
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
@@ -171,7 +171,7 @@ func (cs *ContactService) RefusedContact(ctx context.Context, req *protos.GrpcRe
 	if err != nil {
 		logger.Errorf("redis operations error, transform map error: %s", err.Error())
 	}
-	err = myRedis.Set(ctKey, jsonStr, DefaultExpiresTime)
+	err = myRedis.RSet(ctKey, jsonStr, DefaultExpiresTime)
 
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
@@ -237,7 +237,7 @@ func (cs *ContactService) AcceptContact(ctx context.Context, req *protos.GrpcReq
 
 	// TODO: cache in redis, should replace to Push notification server
 	ctKey := fmt.Sprintf("CT-ACP-%s-%s", userId, contactId)
-	err = myRedis.Set(ctKey, contactId, DefaultExpiresTime)
+	err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
 		resp.Code = http.StatusInternalServerError
@@ -298,7 +298,7 @@ func (cs *ContactService) DeleteContact(ctx context.Context, req *protos.GrpcReq
 	go func() {
 		// TODO: cache in redis, should replace to Push notification server
 		ctKey := fmt.Sprintf("CT-DEL-%s-%s", userId, contactId)
-		err = myRedis.Set(ctKey, contactId, DefaultExpiresTime)
+		err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
 		if err != nil {
 			// TODO: should log down exception information
 			logger.Errorf("redis cache error: %s", err.Error())
@@ -354,7 +354,7 @@ func (cs *ContactService) UpdateRemarkInfo(ctx context.Context, req *protos.Grpc
 	go func() {
 		// TODO: cache in redis, should replace to Push notification server
 		ctKey := fmt.Sprintf("CT-UDT-%s-%s", userId, contactId)
-		err = myRedis.Set(ctKey, contactId, DefaultExpiresTime)
+		err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
 		if err != nil {
 			// TODO: should log down exception information
 			logger.Errorf("redis cache error: %s", err.Error())

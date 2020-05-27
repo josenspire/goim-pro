@@ -5,57 +5,45 @@ import (
 	"github.com/go-redis/redis/v7"
 	"goim-pro/config"
 	"goim-pro/pkg/logs"
-	"log"
-	"os"
 	"sync"
 )
 
-type RedisConnectionPool struct {
-	*BaseClient
-	Error error
-}
-
 var logger = logs.GetLogger("INFO")
 var redisOnce sync.Once
-var redisInstance *RedisConnectionPool
+var redisClient IMyRedis
 
 var (
-	host     string = "0.0.0.0"
-	port     string = "6767"
-	password string = ""
-	dbNum    int    = 1
-	dbKey    string = "SaltyIMPro"
+	host     = "0.0.0.0"
+	port     = "6767"
+	password = ""
+	dbNum    = 1
 )
 
-func NewRedisConnection() *RedisConnectionPool {
+func NewRedis() IMyRedis {
 	redisOnce.Do(func() {
-		client, err := connect()
-		redisInstance = &RedisConnectionPool{
-			BaseClient: client,
-			Error:      err,
-		}
+		redisClient = connect()
 	})
-	return redisInstance
+	return redisClient
 }
 
-func connect() (client *BaseClient, err error) {
+func connect() *BaseClient {
 	host = config.GetRedisDBHost()
 	port = config.GetRedisDBPort()
 	password = config.GetRedisDBPassword()
 	dbNum = config.GetRedisDBNum()
-	dbKey = config.GetRedisDBKey()
+	//dbKey = config.GetRedisDBKey()
 
-	redis.SetLogger(log.New(os.Stderr, "redis: ", log.LstdFlags))
-
-	uriAddr := fmt.Sprintf("%s:%s", host, port)
-	client = newBaseClient(uriAddr, password, dbNum)
-	_, err = client.Ping()
-	if err == nil {
-		logger.Info("[redis] pong successfully!")
+	addrs := fmt.Sprintf("%s:%s", host, port)
+	opts := &redis.Options{
+		Addr:         addrs,
+		DB:           dbNum,
+		Password:     password,
+		PoolSize:     10,
+		MinIdleConns: 0,
+		MaxConnAge:   0,
+		PoolTimeout:  0,
+		IdleTimeout:  0,
 	}
-	return
-}
-
-func (rs *RedisConnectionPool) GetRedisClient() IMyRedis {
-	return rs.BaseClient
+	baseClient := newBaseClient(opts)
+	return baseClient
 }

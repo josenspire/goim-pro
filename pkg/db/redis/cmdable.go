@@ -1,3 +1,7 @@
+// custom cmdable
+// extends redis.UniversalClient
+// custom implement methods which is start with `R`
+
 package redsrv
 
 import (
@@ -7,65 +11,63 @@ import (
 )
 
 type IMyRedis interface {
-	Ping() (result string, err error)
-	HSet(key string, valueMap map[string]interface{}) (err error)
-	HGet(key string, fields ...string) (valueMap map[string]interface{}, err error)
-	Get(key string) (strVal string)
-	Set(key string, value string, expiresTime time.Duration) (err error)
-	Del(key string) (resultInt64 int64)
+	redis.UniversalClient
+
+	RPing() (result string, err error)
+
+	RHSet(key string, valueMap map[string]interface{}) (err error)
+	RHGet(key string, fields ...string) (valueMap map[string]interface{}, err error)
+	RGet(key string) (strVal string)
+	RSet(key string, value string, expiresTime time.Duration) (err error)
+	RDel(key string) (resultInt64 int64)
 }
 
 type BaseClient struct {
-	client *redis.Client
+	redis.Client
 }
 
 // new base client with redis options
-func newBaseClient(uriAddr string, password string, dbNum int) *BaseClient {
-	baseClient := &BaseClient{}
-	baseClient.client = redis.NewClient(
-		&redis.Options{
-			Addr:        uriAddr,
-			Password:    password,
-			DB:          dbNum,
-			DialTimeout: time.Second * 10,
-		})
+func newBaseClient(opts *redis.Options) *BaseClient {
+	baseClient := &BaseClient{
+		*redis.NewClient(opts),
+	}
 	return baseClient
 }
 
 // redis connection testing: ping
-func (bc *BaseClient) Ping() (result string, err error) {
-	return bc.client.Ping().Result()
+func (c *BaseClient) RPing() (result string, err error) {
+	return c.Ping().Result()
 }
 
 // get single string value by key
-func (bc *BaseClient) Get(key string) (strVal string) {
-	return bc.client.Get(key).Val()
+func (c *BaseClient) RGet(key string) (strVal string) {
+	return c.Get(key).Val()
 }
 
 // set single string value by key
-func (bc *BaseClient) Set(key string, value string, expiresTime time.Duration) (err error) {
-	return bc.client.Set(key, value, expiresTime).Err()
+func (c *BaseClient) RSet(key string, value string, expiresTime time.Duration) (err error) {
+	return c.Set(key, value, expiresTime).Err()
 }
 
 // del single record by key, return int64 as result: 0, 1
-func (bc *BaseClient) Del(key string) (resultInt64 int64) {
-	return bc.client.Del(key).Val()
+func (c *BaseClient) RDel(key string) (resultInt64 int64) {
+	return c.Del(key).Val()
 }
 
 // set hash record, input: key, mapValue; return error
-func (bc *BaseClient) HSet(key string, valueMap map[string]interface{}) (err error) {
+func (c *BaseClient) RHSet(key string, valueMap map[string]interface{}) (err error) {
 	for field, value := range valueMap {
-		err = bc.client.HSet(key, field, value).Err()
+		err = c.HSet(key, field, value).Err()
 	}
 	return
 }
 
 // get hash record, input: key; return map value, error
-func (bc *BaseClient) HGet(key string, fields ...string) (valueMap map[string]interface{}, err error) {
+func (c *BaseClient) RHGet(key string, fields ...string) (valueMap map[string]interface{}, err error) {
 	valueMap = make(map[string]interface{})
 	for _, field := range fields {
 		var result interface{}
-		val, err := bc.client.HGet(key, fmt.Sprintf("%s", field)).Result()
+		val, err := c.HGet(key, fmt.Sprintf("%s", field)).Result()
 		if err == redis.Nil {
 			valueMap[field] = result
 			err = nil

@@ -77,7 +77,7 @@ var modelUser2 = &models.User{
 }
 
 func Test_Register(t *testing.T) {
-	_ = mysqlsrv.NewMysqlConnection().Connect()
+	_ = mysqlsrv.NewMysql().Connect()
 
 	m := &user.MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "123@qq.com").Return(true, nil)
@@ -124,8 +124,7 @@ func Test_Register(t *testing.T) {
 }
 
 func Test_userService_Login(t *testing.T) {
-	//_ = redsrv.NewRedisConnection().GetRedisClient()
-	_ = mysqlsrv.NewMysqlConnection().Connect()
+	_ = mysqlsrv.NewMysql().Connect()
 
 	m := &user.MockUserRepo{}
 	enPassword := utils.NewSHA256("1234567890", config.GetApiSecretKey())
@@ -133,8 +132,17 @@ func Test_userService_Login(t *testing.T) {
 	m.On("QueryByEmailAndPassword", "123@qq.com", enPassword).Return(modelUser1, nil)
 	m.On("FindOneUser", map[string]interface{}{"telephone": "13631210001"}).Return(modelUser1, nil)
 
+	var registerKey1 = fmt.Sprintf("%d-%s", consts.CodeTypeLogin, "13631210001")
+	var registerKey2 = fmt.Sprintf("%d-%s", consts.CodeTypeLogin, "13631210002")
+	r := new(redsrv.MockCmdable)
+	r.On("Get", registerKey1).Return("123456")
+	r.On("Get", registerKey2).Return("123456")
+	r.On("Del", registerKey1).Return(0)
+	r.On("Del", registerKey2).Return(0)
+
 	us := New()
 	userRepo = m
+	myRedis = r
 
 	deviceId := "XIAOMI10"
 	osVersion := protos.GrpcReq_ANDROID
@@ -153,7 +161,7 @@ func Test_userService_Login(t *testing.T) {
 			So(token, ShouldNotBeEmpty)
 		})
 		Convey("should_login_successful_by_telephone_and_verification_code_then_return_user_profile", func() {
-			myRedis.Set("1-13631210001", "123456", time.Duration(60)*time.Second)
+			myRedis.RSet("1-13631210001", "123456", time.Duration(60)*time.Second)
 
 			user, token, tErr := us.Login("13631210001", "", "", "123456", deviceId, osVersion)
 			So(tErr, ShouldBeNil)
@@ -180,8 +188,7 @@ func Test_userService_Login(t *testing.T) {
 }
 
 func Test_userService_ResetPassword(t *testing.T) {
-	//_ = redsrv.NewRedisConnection().GetRedisClient()
-	_ = mysqlsrv.NewMysqlConnection().Connect()
+	_ = mysqlsrv.NewMysql().Connect()
 
 	//telephone, email := "13631210001", "123@qq.com"
 	enPassword := utils.NewSHA256("1234567890", config.GetApiSecretKey())
@@ -200,8 +207,14 @@ func Test_userService_ResetPassword(t *testing.T) {
 	m.On("ResetPasswordByTelephone", "13631210001", newEnPassword).Return(nil)
 	m.On("ResetPasswordByEmail", "123@qq.com", newEnPassword).Return(nil)
 
+	var registerKey1 = fmt.Sprintf("%d-%s", consts.CodeTypeResetPassword, "13631210001")
+	r := new(redsrv.MockCmdable)
+	r.On("Get", registerKey1).Return("123456")
+	r.On("Del", registerKey1).Return(0)
+
 	us := New()
 	userRepo = m
+	myRedis = r
 
 	Convey("Test_ResetPassword", t, func() {
 		Convey("user_reset_password_successful_by_telephone_with_old_password", func() {
@@ -209,7 +222,6 @@ func Test_userService_ResetPassword(t *testing.T) {
 			So(tErr, ShouldBeNil)
 		})
 		Convey("user_reset_password_successful_by_telephone_with_verification_code", func() {
-			myRedis.Set("2-13631210001", "123456", time.Duration(60)*time.Second)
 			tErr := us.ResetPassword("123456", "13631210001", "", "", "1122334455")
 			So(tErr, ShouldBeNil)
 
@@ -236,8 +248,7 @@ func Test_userService_ResetPassword(t *testing.T) {
 }
 
 func Test_userService_GetUserInfo(t *testing.T) {
-	//_ = redsrv.NewRedisConnection().GetRedisClient()
-	_ = mysqlsrv.NewMysqlConnection().Connect()
+	_ = mysqlsrv.NewMysql().Connect()
 
 	m := &user.MockUserRepo{}
 	m.On("FindByUserId", "13631210001").Return(modelUser1, nil)
@@ -275,8 +286,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 		"telephone": "13631210012",
 	}
 
-	//_ = redsrv.NewRedisConnection().GetRedisClient()
-	_ = mysqlsrv.NewMysqlConnection().Connect()
+	_ = mysqlsrv.NewMysql().Connect()
 
 	m := &user.MockUserRepo{}
 	m.On("FindOneUser", userCriteria1).Return(modelUser1, nil)
@@ -310,8 +320,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 }
 
 func Test_userService_UpdateUserInfo(t *testing.T) {
-	//_ = redsrv.NewRedisConnection().GetRedisClient()
-	_ = mysqlsrv.NewMysqlConnection().Connect()
+	_ = mysqlsrv.NewMysql().Connect()
 
 	criteria1 := &models.User{}
 	criteria1.UserId = "13631210001"

@@ -44,19 +44,19 @@ func NewServer() *GRPCServer {
 
 // initialize server config and db
 func (gs *GRPCServer) InitServer() {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
-	if err := mysqlDB.Connect(); err != nil {
+	mysqlDB := mysqlsrv.NewMysql()
+	if err := mysqlDB.Error; err != nil {
 		logger.Errorf("mysql connect error: %v", err)
 	} else {
-		if err := initialMysqlTables(mysqlDB.GetMysqlInstance()); err != nil {
+		if err := initialMysqlTables(mysqlDB); err != nil {
 			logger.Fatalf("mysql tables initialization fail: %s", err)
 		}
 	}
-	rdsPool := redsrv.NewRedisConnection()
-	if err := rdsPool.Error; err != nil {
-		logger.Errorf("redis connect error: %v", err.Error())
+	redisClient := redsrv.NewRedis()
+	if _, err := redisClient.RPing(); err != nil {
+		logger.Errorf("[redis] pong failed, %s", err.Error())
 	} else {
-		myRedis = rdsPool.GetRedisClient()
+		logger.Info("[redis] pong successfully!")
 	}
 }
 
@@ -122,7 +122,7 @@ func (gs *GRPCServer) StartGRPCServer() {
 				return resp, nil
 			}
 
-			redisToken := myRedis.Get(fmt.Sprintf("TK-%s", string(payload)))
+			redisToken := myRedis.RGet(fmt.Sprintf("TK-%s", string(payload)))
 			if redisToken == "" {
 				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, "the token has expired")
 				return resp, nil

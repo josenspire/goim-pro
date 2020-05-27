@@ -35,9 +35,9 @@ var user2 = &models.User{
 }
 
 func TestUser_IsTelephoneRegistered(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 	u := &UserImpl{}
 	_ = u.Register(user2) // create a user
 	Convey("Test_IsTelephoneRegistered", t, func() {
@@ -61,9 +61,9 @@ func TestUser_IsTelephoneRegistered(t *testing.T) {
 }
 
 func TestUser_Register(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 	u := &UserImpl{}
 	Convey("Test_Register", t, func() {
 		Convey("Registration_successful", func() {
@@ -80,9 +80,9 @@ func TestUser_Register(t *testing.T) {
 }
 
 func TestUser_RemoveUserByUserId(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 
 	Convey("TestUserRepo_RemoveUserByUserID", t, func() {
 		Convey("testing_RemoveUserByUserID_success", func() {
@@ -99,9 +99,9 @@ func TestUser_RemoveUserByUserId(t *testing.T) {
 }
 
 func TestUser_Login(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 
 	u := &UserImpl{}
 	_ = u.Register(user2) // create a user
@@ -122,9 +122,9 @@ func TestUser_Login(t *testing.T) {
 }
 
 func TestUser_LoginByEmail(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 
 	u := &UserImpl{}
 	_ = u.Register(user2) // create a user
@@ -145,9 +145,9 @@ func TestUser_LoginByEmail(t *testing.T) {
 }
 
 func TestUser_ResetPasswordByTelephone(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 
 	u := &UserImpl{}
 	_ = u.Register(user1) // create a user
@@ -169,9 +169,9 @@ func TestUser_ResetPasswordByTelephone(t *testing.T) {
 }
 
 func TestUser_ResetPasswordByEmail(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 
 	u := &UserImpl{}
 	_ = u.Register(user1) // create a user
@@ -193,9 +193,9 @@ func TestUser_ResetPasswordByEmail(t *testing.T) {
 }
 
 func TestUser_GetUserByUserId(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 
 	u := &UserImpl{}
 	_ = u.Register(user1) // create a user
@@ -219,9 +219,9 @@ func TestUser_GetUserByUserId(t *testing.T) {
 }
 
 func TestUser_FindOneUser(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 
 	u := &UserImpl{}
 	_ = u.Register(user1) // create a user
@@ -260,9 +260,9 @@ func TestUser_FindOneUser(t *testing.T) {
 }
 
 func TestUser_FindOneAndUpdateProfile(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewUserRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewUserRepo(mysqlsrv.NewMysql())
 
 	u := &UserImpl{}
 	_ = u.Register(user1) // create a user

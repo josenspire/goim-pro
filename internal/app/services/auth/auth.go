@@ -28,8 +28,8 @@ type AuthService struct {
 }
 
 func New() *AuthService {
-	myRedis = redsrv.NewRedisConnection().GetRedisClient()
-	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+	myRedis = redsrv.NewRedis()
+	mysqlDB = mysqlsrv.NewMysql()
 	userRepo = NewUserRepo(mysqlDB)
 	return &AuthService{}
 }
@@ -74,7 +74,7 @@ func (s *AuthService) ObtainSMSCode(telephone string, codeType protos.ObtainSMSC
 	default:
 		return "", NewTError(http.StatusBadRequest, errmsg.ErrInvalidParameters)
 	}
-	if err = myRedis.Set(redisKey, verificationCode, MinuteOf15); err != nil {
+	if err = myRedis.RSet(redisKey, verificationCode, MinuteOf15); err != nil {
 		logger.Errorf("redis save error: %v", err)
 		return "", NewTError(http.StatusInternalServerError, err)
 	}

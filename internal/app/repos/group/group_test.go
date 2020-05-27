@@ -9,9 +9,9 @@ import (
 )
 
 func TestGroupImpl_CreateGroup(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	s := NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	s := NewGroupRepo(mysqlsrv.NewMysql())
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
@@ -34,9 +34,9 @@ func TestGroupImpl_CreateGroup(t *testing.T) {
 }
 
 func TestGroupImpl_FindOneGroup(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewGroupRepo(mysqlsrv.NewMysql())
 
 	newMember1 := models.NewMember("01E59Z8HMG8SK8C65XV42M33QP", "JAMES_TEST_001")
 	newMember2 := models.NewMember("01E59ZNYB8KDNW0W3NHGDZDD6V", "JAMES_TEST_002")
@@ -78,9 +78,9 @@ func TestGroupImpl_FindOneGroup(t *testing.T) {
 }
 
 func TestGroupImpl_CountGroup(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	db := mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+	db := mysqlsrv.NewMysql()
 	NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
@@ -124,9 +124,9 @@ func TestGroupImpl_CountGroup(t *testing.T) {
 }
 
 func TestGroupImpl_FindOneGroupAndUpdate(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	db := mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+	db := mysqlsrv.NewMysql()
 	NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
@@ -175,9 +175,9 @@ func TestGroupImpl_FindOneGroupAndUpdate(t *testing.T) {
 }
 
 func TestGroupImpl_FindOneMember(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewGroupRepo(mysqlsrv.NewMysql())
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
@@ -220,9 +220,9 @@ func TestGroupImpl_FindOneMember(t *testing.T) {
 }
 
 func TestGroupImpl_InsertMembers(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewGroupRepo(mysqlsrv.NewMysql())
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
@@ -263,9 +263,9 @@ func TestGroupImpl_InsertMembers(t *testing.T) {
 }
 
 func TestGroupImpl_RemoveMembers(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewGroupRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewGroupRepo(mysqlsrv.NewMysql())
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
@@ -306,9 +306,9 @@ func TestGroupImpl_RemoveMembers(t *testing.T) {
 }
 
 func TestGroupImpl_FindOneMemberAndUpdate(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	db := mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+	db := mysqlsrv.NewMysql()
 	NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")

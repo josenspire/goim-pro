@@ -12,7 +12,7 @@ import (
 )
 
 func Test_authServer_ObtainSMSCode(t *testing.T) {
-	_ = mysqlsrv.NewMysqlConnection().Connect()
+	_ = mysqlsrv.NewMysql().Connect()
 
 	m := &user.MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(false, nil)

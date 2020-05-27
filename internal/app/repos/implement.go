@@ -1,15 +1,14 @@
 package repos
 
 import (
-	"github.com/jinzhu/gorm"
-	"goim-pro/pkg/logs"
+	. "goim-pro/pkg/db/mysql"
 )
 
 type GormRepoImpl struct {
-	db *gorm.DB
+	db *BaseMysql
 }
 
-func NewMysqlRepo(db *gorm.DB) IGormRepo {
+func NewMysqlRepo(db *BaseMysql) IGormRepo {
 	return &GormRepoImpl{db: db}
 }
 

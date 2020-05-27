@@ -10,9 +10,9 @@ import (
 )
 
 func TestContactImpl_IsExistContact(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewContactRepo(mysqlsrv.NewMysql())
 
 	newContact := &models.Contact{
 		UserId:    "TEST001",
@@ -38,9 +38,9 @@ func TestContactImpl_IsExistContact(t *testing.T) {
 }
 
 func TestContactImpl_FindOne(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewContactRepo(mysqlsrv.NewMysql())
 
 	newContact := &models.Contact{
 		UserId:    "TEST001",
@@ -68,9 +68,9 @@ func TestContactImpl_FindOne(t *testing.T) {
 }
 
 func TestContact_FindAll(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewContactRepo(mysqlsrv.NewMysql())
 
 	newContact1 := &models.Contact{
 		UserId:    "01E07SG858N3CGV5M1APVQKZYR", // 13631210003
@@ -104,9 +104,9 @@ func TestContact_FindAll(t *testing.T) {
 }
 
 func TestContact_InsertContacts(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewContactRepo(mysqlsrv.NewMysql())
 
 	newContact1 := &models.Contact{
 		UserId:    "01E07SG858N3CGV5M1APVQKZYR", // 13631210003
@@ -130,9 +130,9 @@ func TestContact_InsertContacts(t *testing.T) {
 }
 
 func TestContact_RemoveContactsByIds(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewContactRepo(mysqlsrv.NewMysql())
 
 	newContact1 := &models.Contact{
 		UserId:    "TEST001",
@@ -176,9 +176,9 @@ func TestContact_RemoveContactsByIds(t *testing.T) {
 }
 
 func TestContact_FindOneAndUpdateRemark(t *testing.T) {
-	mysqlDB := mysqlsrv.NewMysqlConnection()
+	mysqlDB := mysqlsrv.NewMysql()
 	_ = mysqlDB.Connect()
-	NewContactRepo(mysqlsrv.NewMysqlConnection().GetMysqlInstance())
+	NewContactRepo(mysqlsrv.NewMysql())
 
 	newContact1 := &models.Contact{
 		UserId:    "TEST001",

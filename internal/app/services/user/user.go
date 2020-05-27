@@ -31,8 +31,8 @@ type UserService struct {
 }
 
 func New() *UserService {
-	myRedis = redsrv.NewRedisConnection().GetRedisClient()
-	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+	myRedis = redsrv.NewRedis()
+	mysqlDB = mysqlsrv.NewMysql()
 	userRepo = NewUserRepo(mysqlDB)
 
 	return &UserService{}
@@ -82,7 +82,7 @@ func (s *UserService) Login(telephone, email, enPassword, verificationCode, devi
 	}
 	// gen and save token
 	token = utils.NewToken([]byte(user.UserId))
-	if err = myRedis.Set(fmt.Sprintf("TK-%s", user.UserId), token, ThreeDays); err != nil {
+	if err = myRedis.RSet(fmt.Sprintf("TK-%s", user.UserId), token, ThreeDays); err != nil {
 		logger.Errorf("redis save token error: %v", err)
 		return nil, "", NewTError(http.StatusInternalServerError, err)
 	}
@@ -100,7 +100,7 @@ func (s *UserService) Logout(token string, isMandatoryLogout bool) (tErr *TError
 	}
 
 	key := fmt.Sprintf("TK-%s", string(payload))
-	_token := myRedis.Get(key)
+	_token := myRedis.RGet(key)
 	if _token == "" {
 		return NewTError(http.StatusBadRequest, errmsg.ErrRepeatOperation)
 	}
@@ -161,7 +161,7 @@ func (s *UserService) ResetPassword(verificationCode, telephone, email, oldPassw
 
 	if verificationCode != "" {
 		// 1. code + newPassword
-		code := myRedis.Get(fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone))
+		code := myRedis.RGet(fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone))
 		if verificationCode != string(code) {
 			return NewTError(http.StatusBadRequest, errmsg.ErrInvalidVerificationCode)
 		}
@@ -278,7 +278,7 @@ func isProfileNothing2Update(originProfile, newProfile *models.UserProfile) bool
 }
 
 func isVerificationCodeValid(verificationCode, telephone string) (isValid bool, err error) {
-	code := myRedis.Get(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
+	code := myRedis.RGet(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
 	return verificationCode == string(code), nil
 }
 
@@ -304,7 +304,7 @@ func loginWithVerificationCode(isTelephone bool, telephone, email, verificationC
 			"email": email,
 		}
 	}
-	code := myRedis.Get(codeKey)
+	code := myRedis.RGet(codeKey)
 	if verificationCode == string(code) {
 		if user, err = userRepo.FindOneUser(criteria); err != nil {
 			logger.Errorf("find user by account error: %s", err.Error())

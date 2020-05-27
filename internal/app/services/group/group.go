@@ -26,7 +26,7 @@ var (
 type GroupService struct{}
 
 func New() *GroupService {
-	mysqlDB = mysqlsrv.NewMysqlConnection().GetMysqlInstance()
+	mysqlDB = mysqlsrv.NewMysql()
 	userRepo = NewUserRepo(mysqlDB)
 	groupRepo = NewGroupRepo(mysqlDB)
 	return &GroupService{}
