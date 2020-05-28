@@ -65,7 +65,7 @@ func (s *UserService) Register(userProfile *protos.UserProfile, password, verifi
 		return NewTError(http.StatusInternalServerError, err)
 	}
 	// remove cache
-	myRedis.Del(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
+	myRedis.RDel(fmt.Sprintf("%d-%s", CodeTypeRegister, telephone))
 
 	return nil
 }
@@ -106,9 +106,9 @@ func (s *UserService) Logout(token string, isMandatoryLogout bool) (tErr *TError
 	}
 	// TODO: if true, mandatory and will remove all online user
 	if isMandatoryLogout {
-		myRedis.Del(key)
+		myRedis.RDel(key)
 	} else {
-		myRedis.Del(key)
+		myRedis.RDel(key)
 	}
 
 	return nil
@@ -192,7 +192,7 @@ func (s *UserService) ResetPassword(verificationCode, telephone, email, oldPassw
 			logger.Errorf("reset password error: %s", err.Error())
 			return NewTError(http.StatusInternalServerError, err)
 		}
-		myRedis.Del(fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone))
+		myRedis.RDel(fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone))
 	} else {
 		if err = userRepo.ResetPasswordByEmail(email, enNewPassword); err != nil {
 			logger.Errorf("reset password error: %s", err.Error())
@@ -310,7 +310,7 @@ func loginWithVerificationCode(isTelephone bool, telephone, email, verificationC
 			logger.Errorf("find user by account error: %s", err.Error())
 			return nil, err
 		}
-		myRedis.Del(codeKey)
+		myRedis.RDel(codeKey)
 		return user, nil
 	}
 	return nil, errmsg.ErrInvalidVerificationCode

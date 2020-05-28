@@ -2,6 +2,8 @@ package usersrv
 
 import (
 	"fmt"
+	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/mock"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/config"
 	consts "goim-pro/internal/app/constants"
@@ -13,9 +15,6 @@ import (
 	"goim-pro/pkg/http"
 	"goim-pro/pkg/utils"
 	"testing"
-	"time"
-
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 var pbUserProfile1 = &protos.UserProfile{
@@ -77,7 +76,7 @@ var modelUser2 = &models.User{
 }
 
 func Test_Register(t *testing.T) {
-	_ = mysqlsrv.NewMysql().Connect()
+	_ = mysqlsrv.NewMysql()
 
 	m := &user.MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "123@qq.com").Return(true, nil)
@@ -94,10 +93,10 @@ func Test_Register(t *testing.T) {
 	var registerKey1 = fmt.Sprintf("%d-%s", consts.CodeTypeRegister, "13631210001")
 	var registerKey2 = fmt.Sprintf("%d-%s", consts.CodeTypeRegister, "13631210002")
 	r := new(redsrv.MockCmdable)
-	r.On("Get", registerKey1).Return("123456")
-	r.On("Get", registerKey2).Return("123456")
-	r.On("Del", registerKey1).Return(0)
-	r.On("Del", registerKey2).Return(0)
+	r.On("RGet", registerKey1).Return("123456")
+	r.On("RGet", registerKey2).Return("123456")
+	r.On("RDel", registerKey1).Return(0)
+	r.On("RDel", registerKey2).Return(0)
 
 	us := New()
 	userRepo = m
@@ -124,7 +123,7 @@ func Test_Register(t *testing.T) {
 }
 
 func Test_userService_Login(t *testing.T) {
-	_ = mysqlsrv.NewMysql().Connect()
+	_ = mysqlsrv.NewMysql()
 
 	m := &user.MockUserRepo{}
 	enPassword := utils.NewSHA256("1234567890", config.GetApiSecretKey())
@@ -132,13 +131,19 @@ func Test_userService_Login(t *testing.T) {
 	m.On("QueryByEmailAndPassword", "123@qq.com", enPassword).Return(modelUser1, nil)
 	m.On("FindOneUser", map[string]interface{}{"telephone": "13631210001"}).Return(modelUser1, nil)
 
-	var registerKey1 = fmt.Sprintf("%d-%s", consts.CodeTypeLogin, "13631210001")
-	var registerKey2 = fmt.Sprintf("%d-%s", consts.CodeTypeLogin, "13631210002")
+	var tokenKey = "TK-13631210001"
+	var loginKey1 = fmt.Sprintf("%d-%s", consts.CodeTypeLogin, "13631210001")
+	var loginKey2 = fmt.Sprintf("%d-%s", consts.CodeTypeLogin, "13631210002")
+
 	r := new(redsrv.MockCmdable)
-	r.On("Get", registerKey1).Return("123456")
-	r.On("Get", registerKey2).Return("123456")
-	r.On("Del", registerKey1).Return(0)
-	r.On("Del", registerKey2).Return(0)
+	r.On("RGet", loginKey1).Return("123456")
+	r.On("RGet", loginKey2).Return("123456")
+
+	r.On("RSet", tokenKey, mock.Anything, consts.ThreeDays).Return(nil)
+	//r.On("RSet", loginKey1, mock.Anything, consts.ThreeDays).Return("123456")
+
+	r.On("RDel", loginKey1).Return(0)
+	r.On("RDel", loginKey1).Return(0)
 
 	us := New()
 	userRepo = m
@@ -161,14 +166,10 @@ func Test_userService_Login(t *testing.T) {
 			So(token, ShouldNotBeEmpty)
 		})
 		Convey("should_login_successful_by_telephone_and_verification_code_then_return_user_profile", func() {
-			myRedis.RSet("1-13631210001", "123456", time.Duration(60)*time.Second)
-
 			user, token, tErr := us.Login("13631210001", "", "", "123456", deviceId, osVersion)
 			So(tErr, ShouldBeNil)
 			So(user.Telephone, ShouldEqual, "13631210001")
 			So(token, ShouldNotBeEmpty)
-
-			myRedis.Del("1-13631210001")
 		})
 		Convey("should_login_fail_by_telephone_and_verification_code_when_given_incorrect_code_then_return_error", func() {
 			user, token, tErr := us.Login("13631210001", "", "", "111111", deviceId, osVersion)
@@ -188,7 +189,7 @@ func Test_userService_Login(t *testing.T) {
 }
 
 func Test_userService_ResetPassword(t *testing.T) {
-	_ = mysqlsrv.NewMysql().Connect()
+	_ = mysqlsrv.NewMysql()
 
 	//telephone, email := "13631210001", "123@qq.com"
 	enPassword := utils.NewSHA256("1234567890", config.GetApiSecretKey())
@@ -209,8 +210,8 @@ func Test_userService_ResetPassword(t *testing.T) {
 
 	var registerKey1 = fmt.Sprintf("%d-%s", consts.CodeTypeResetPassword, "13631210001")
 	r := new(redsrv.MockCmdable)
-	r.On("Get", registerKey1).Return("123456")
-	r.On("Del", registerKey1).Return(0)
+	r.On("RGet", registerKey1).Return("123456")
+	r.On("RDel", registerKey1).Return(0)
 
 	us := New()
 	userRepo = m
@@ -225,7 +226,7 @@ func Test_userService_ResetPassword(t *testing.T) {
 			tErr := us.ResetPassword("123456", "13631210001", "", "", "1122334455")
 			So(tErr, ShouldBeNil)
 
-			myRedis.Del("2-13631210001")
+			myRedis.RDel("2-13631210001")
 		})
 		Convey("failed_by_newPassword_same_as_old", func() {
 			tErr := us.ResetPassword("", "13631210001", "", "1122334455", "1122334455")
@@ -248,7 +249,7 @@ func Test_userService_ResetPassword(t *testing.T) {
 }
 
 func Test_userService_GetUserInfo(t *testing.T) {
-	_ = mysqlsrv.NewMysql().Connect()
+	_ = mysqlsrv.NewMysql()
 
 	m := &user.MockUserRepo{}
 	m.On("FindByUserId", "13631210001").Return(modelUser1, nil)
@@ -286,7 +287,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 		"telephone": "13631210012",
 	}
 
-	_ = mysqlsrv.NewMysql().Connect()
+	_ = mysqlsrv.NewMysql()
 
 	m := &user.MockUserRepo{}
 	m.On("FindOneUser", userCriteria1).Return(modelUser1, nil)
@@ -320,7 +321,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 }
 
 func Test_userService_UpdateUserInfo(t *testing.T) {
-	_ = mysqlsrv.NewMysql().Connect()
+	_ = mysqlsrv.NewMysql()
 
 	criteria1 := &models.User{}
 	criteria1.UserId = "13631210001"

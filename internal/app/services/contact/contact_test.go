@@ -39,13 +39,11 @@ func Test_contactService_RequestContact(t *testing.T) {
 	mc := &MockContactRepo{}
 	mc.On("IsContactExists", "TEST001", "TEST002").Return(true, nil)
 
+	cs := new(ContactService)
+	userRepo = mu
+	contactRepo = mc
+
 	Convey("Test_DeleteContact", t, func() {
-		var ctx context.Context
-		var req *protos.GrpcReq
-		cs := &ContactService{
-			userRepo:    mu,
-			contactRepo: mc,
-		}
 		Convey("should_found_and_send_notification_to_contact", func() {
 			reqContactReq := &protos.RequestContactReq{
 				UserId: "TEST002",

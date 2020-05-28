@@ -3,7 +3,9 @@ package mysqlsrv
 import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"goim-pro/config"
 	"goim-pro/pkg/logs"
+	"strconv"
 	"sync"
 )
 
@@ -25,14 +27,19 @@ func NewMysql() *gorm.DB {
 
 /* the method to init mysql connection pool */
 func connect() *gorm.DB {
-	return newBaseMysql()
-}
+	dbMaxIdleConns, _ := strconv.Atoi(config.GetMysqlDBMaxIdleConns())
+	dbMaxOpenConns, _ := strconv.Atoi(config.GetMysqlDBMaxOpenConns())
 
-//func (m *MysqlConnectionPool) Connect() (err error) {
-//	err = initConnectionPool()
-//	return
-//}
-//
-//func (m *MysqlConnectionPool) GetMysqlInstance() *gorm.DB {
-//	return mysqlDB
-//}
+	var options *mysqlOptions = &mysqlOptions{
+		dbUserName:      config.GetMysqlDBUserName(),
+		dbPassword:      config.GetMysqlDBPassword(),
+		dbUri:           config.GetMysqlDBUri(),
+		dbPort:          config.GetMysqlDBPort(),
+		dbName:          config.GetMysqlDBName(),
+		dbEngine:        config.GetMysqlDBEngine(),
+		dbMaxIdleConns:  dbMaxIdleConns,
+		dbMaxOpenConns:  dbMaxOpenConns,
+		dbEnableLogMode: config.GetMysqlDBEnableLogMode(),
+	}
+	return newBaseMysql(options)
+}

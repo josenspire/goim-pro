@@ -12,7 +12,7 @@ import (
 )
 
 func Test_authServer_ObtainSMSCode(t *testing.T) {
-	_ = mysqlsrv.NewMysql().Connect()
+	_ = mysqlsrv.NewMysql()
 
 	m := &user.MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(false, nil)
@@ -23,8 +23,8 @@ func Test_authServer_ObtainSMSCode(t *testing.T) {
 	var registerKey = fmt.Sprintf("%d-%s", protos.ObtainSMSCodeReq_REGISTER, "13631210001")
 
 	r := new(redsrv.MockCmdable)
-	r.On("Set", registerKey, "123401", consts.MinuteOf15).Return(nil)
-	r.On("Get", registerKey).Return("123401")
+	r.On("RSet", registerKey, "123401", consts.MinuteOf15).Return(nil)
+	r.On("RGet", registerKey).Return("123401")
 
 	authServer := new(AuthService)
 	userRepo = m

@@ -14,11 +14,13 @@ func (m *MockCmdable) RPing() (result string, err error) {
 }
 
 func (m *MockCmdable) RHSet(key string, valueMap map[string]interface{}) (err error) {
-	panic("implement me")
+	args := m.Called(key, valueMap)
+	return args.Error(0)
 }
 
 func (m *MockCmdable) RHGet(key string, fields ...string) (valueMap map[string]interface{}, err error) {
-	panic("implement me")
+	args := m.Called(key, fields)
+	return args.Get(0).(map[string]interface{}), args.Error(1)
 }
 
 func (m *MockCmdable) RGet(key string) (strVal string) {
