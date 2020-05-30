@@ -1,11 +1,8 @@
 package contactsrv
 
 import (
-	"context"
-	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/repos/user"
-	"goim-pro/pkg/utils"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -13,7 +10,7 @@ import (
 
 var (
 	mockUser = &models.User{
-		Password:    "1234567890",
+		Password: "1234567890",
 		UserProfile: models.UserProfile{
 			UserId:      "TEST002",
 			Telephone:   "13631210001",
@@ -45,17 +42,12 @@ func Test_contactService_RequestContact(t *testing.T) {
 
 	Convey("Test_DeleteContact", t, func() {
 		Convey("should_found_and_send_notification_to_contact", func() {
-			reqContactReq := &protos.RequestContactReq{
-				UserId: "TEST002",
-				Reason: "请求添加好友！",
-			}
-			any, _ := utils.MarshalMessageToAny(reqContactReq)
-			req = &protos.GrpcReq{
-				Data: any,
-			}
-			actualResp, err := cs.RequestContact(ctx, req)
-			So(err, ShouldBeNil)
-			So(actualResp.Code, ShouldEqual, 200)
+			var userId = "TEST002"
+			var contactId = "TEST002"
+			var reqReason = "请求添加好友！"
+
+			tErr := cs.RequestContact(userId, contactId, reqReason)
+			So(tErr.Code, ShouldBeNil)
 		})
 	})
 }
@@ -69,26 +61,17 @@ func Test_contactService_DeleteContact(t *testing.T) {
 	mc.On("RemoveContactsByIds", "TEST001", "TEST002").Return(nil)
 	mc.On("RemoveContactsByIds", "TEST002", "TEST001").Return(nil)
 
-	Convey("Test_DeleteContact", t, func() {
-		var ctx context.Context
-		var req *protos.GrpcReq
-		cs := &ContactService{
-			userRepo:    mu,
-			contactRepo: mc,
-		}
+	cs := new(ContactService)
+	userRepo = mu
+	contactRepo = mc
 
+	Convey("Test_DeleteContact", t, func() {
 		Convey("should_delete_successfully", func() {
-			delContactReq := &protos.DeleteContactReq{
-				UserId: "TEST002",
-			}
-			any, _ := utils.MarshalMessageToAny(delContactReq)
-			req = &protos.GrpcReq{
-				Data:  any,
-				Token: "TEST001",
-			}
-			actualResp, err := cs.DeleteContact(ctx, req)
-			ShouldBeNil(err)
-			So(actualResp.Message, ShouldEqual, "contact deleted successfully")
+			var userId = "TEST001"
+			var contactId = "TEST002"
+
+			tErr := cs.DeleteContact(userId, contactId)
+			So(tErr, ShouldBeNil)
 		})
 	})
 }
@@ -113,22 +96,5 @@ func Test_contactService_GetContacts(t *testing.T) {
 }
 
 func Test_requestContactParameterCalibration(t *testing.T) {
-	type args struct {
-		userId string
-		req    *protos.RequestContactReq
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := requestContactParameterCalibration(tt.args.userId, tt.args.req); (err != nil) != tt.wantErr {
-				t.Errorf("requestContactParameterCalibration() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+
 }

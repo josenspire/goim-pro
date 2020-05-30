@@ -13,7 +13,6 @@ import (
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/errors"
-	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 )
@@ -45,19 +44,19 @@ func (cs *ContactService) RequestContact(userId, contactId, reqReason string) (t
 	contact, err := userRepo.FindByUserId(contactId)
 	if err != nil {
 		logger.Errorf("find contact by userId error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if contact == nil {
-		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidContact)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidContact)
 	}
 
 	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if isExists {
-		return NewTError(http.StatusBadRequest, errmsg.ErrContactAlreadyExists)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactAlreadyExists)
 	}
 
 	// TODO: cache in redis, should replace to Push notification server
@@ -73,7 +72,7 @@ func (cs *ContactService) RequestContact(userId, contactId, reqReason string) (t
 
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	return
 }
@@ -83,19 +82,19 @@ func (cs *ContactService) RefusedContact(userId, contactId, refusedReason string
 	contact, err := userRepo.FindByUserId(contactId)
 	if err != nil {
 		logger.Errorf("find contact by userId error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if contact == nil {
-		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidContact)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidContact)
 	}
 
 	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if isExists {
-		return NewTError(http.StatusBadRequest, errmsg.ErrContactAlreadyExists)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactAlreadyExists)
 	}
 
 	// TODO: cache in redis, should replace to Push notification server
@@ -112,7 +111,7 @@ func (cs *ContactService) RefusedContact(userId, contactId, refusedReason string
 
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	return
 }
@@ -122,19 +121,19 @@ func (cs *ContactService) AcceptContact(userId, contactId string) (tErr *TError)
 	contact, err := userRepo.FindByUserId(contactId)
 	if err != nil {
 		logger.Errorf("find contact by userId error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if contact == nil {
-		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidContact)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidContact)
 	}
 
 	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if isExists {
-		return NewTError(http.StatusBadRequest, errmsg.ErrContactAlreadyExists)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactAlreadyExists)
 	}
 
 	// TODO: cache in redis, should replace to Push notification server
@@ -142,12 +141,12 @@ func (cs *ContactService) AcceptContact(userId, contactId string) (tErr *TError)
 	err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 
 	if err = handleAcceptContact(userId, contactId); err != nil {
 		logger.Errorf("insert contact error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	return
 }
@@ -157,10 +156,10 @@ func (cs *ContactService) DeleteContact(userId, contactId string) (tErr *TError)
 	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if !isExists {
-		return NewTError(http.StatusBadRequest, errmsg.ErrContactNotExists)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactNotExists)
 	}
 
 	go func() {
@@ -175,7 +174,7 @@ func (cs *ContactService) DeleteContact(userId, contactId string) (tErr *TError)
 
 	if err = handleDeleteContact(userId, contactId); err != nil {
 		logger.Errorf("remove contact error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 
 	return
@@ -186,10 +185,10 @@ func (cs *ContactService) UpdateRemarkInfo(userId, contactId string, contactRema
 	isExists, err := contactRepo.IsContactExists(userId, contactId)
 	if err != nil {
 		logger.Errorf("checking contact error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if !isExists {
-		return NewTError(http.StatusBadRequest, errmsg.ErrContactNotExists)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactNotExists)
 	}
 
 	go func() {
@@ -204,7 +203,7 @@ func (cs *ContactService) UpdateRemarkInfo(userId, contactId string, contactRema
 
 	if err = handleUpdateContactRemark(userId, contactId, contactRemark); err != nil {
 		logger.Errorf("update contact remark error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	return
 }
@@ -218,7 +217,7 @@ func (cs *ContactService) GetContacts(userId string) (contacts []models.Contact,
 	contacts, err := contactRepo.FindAll(criteria)
 	if err != nil {
 		logger.Errorf("query user contacts error: %s", err.Error())
-		return nil, NewTError(http.StatusInternalServerError, err)
+		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 
 	return contacts, nil

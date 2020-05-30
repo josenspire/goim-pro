@@ -13,7 +13,6 @@ import (
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/errors"
-	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 )
@@ -47,17 +46,17 @@ func (s *UserService) Register(userProfile *protos.UserProfile, password string)
 	isRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, email)
 	if err != nil {
 		logger.Errorf("checking telephone validity error: %v", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if isRegistered {
-		return NewTError(http.StatusAccountExists, errmsg.ErrAccountAlreadyExists)
+		return NewTError(protos.StatusCode_STATUS_ACCOUNT_EXISTS, errmsg.ErrAccountAlreadyExists)
 	}
 	if err = userRepo.Register(&models.User{
 		Password:    password,
 		UserProfile: converters.ConvertProto2EntityForUserProfile(userProfile),
 	}); err != nil {
 		logger.Errorf("register user error: %v", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 
 	return nil
@@ -68,16 +67,16 @@ func (s *UserService) Login(telephone, email, enPassword, deviceId string, osVer
 	var err error
 	isNeedVerify, user, err = accountLogin(telephone, email, enPassword, deviceId, osVersion)
 	if err != nil {
-		return nil, "", NewTError(http.StatusBadRequest, err)
+		return nil, "", NewTError(protos.StatusCode_STATUS_BAD_REQUEST, err)
 	}
 	if isNeedVerify {
-		return nil, "", NewTError(http.StatusAuthorizedRequired, errmsg.ErrAccountSecurityVerification)
+		return nil, "", NewTError(protos.StatusCode_STATUS_ACCOUNT_AUTHORIZED_REQUIRED, errmsg.ErrAccountSecurityVerification)
 	}
 	// gen and save token
 	token = utils.NewToken([]byte(user.UserId))
 	if err = myRedis.RSet(fmt.Sprintf("TK-%s", user.UserId), token, ThreeDays); err != nil {
 		logger.Errorf("redis save token error: %v", err)
-		return nil, "", NewTError(http.StatusInternalServerError, err)
+		return nil, "", NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	return user, token, nil
 }
@@ -86,16 +85,16 @@ func (s *UserService) Logout(token string, isMandatoryLogout bool) (tErr *TError
 	isValid, payload, err := utils.TokenVerify(token)
 	if err != nil {
 		logger.Errorf("logout by token error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if !isValid {
-		return NewTError(http.StatusBadRequest, errmsg.ErrRepeatOperation)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrRepeatOperation)
 	}
 
 	tokenKey := fmt.Sprintf("TK-%s", string(payload))
 	_token := myRedis.RGet(tokenKey)
 	if _token == "" {
-		return NewTError(http.StatusBadRequest, errmsg.ErrRepeatOperation)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrRepeatOperation)
 	}
 	// TODO: if true, mandatory and will remove all online user
 	if isMandatoryLogout {
@@ -109,10 +108,10 @@ func (s *UserService) Logout(token string, isMandatoryLogout bool) (tErr *TError
 func (s *UserService) UpdateUserInfo(userId string, userProfile *models.UserProfile) (tErr *TError) {
 	originUserProfile, err := userRepo.FindByUserId(userId)
 	if err != nil {
-		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidParameters)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidParameters)
 	}
 	if originUserProfile == nil {
-		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidUserId)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidUserId)
 	}
 	// nothing change, don't need to update
 	if isProfileNothing2Update(&originUserProfile.UserProfile, userProfile) {
@@ -134,7 +133,7 @@ func (s *UserService) UpdateUserInfo(userId string, userProfile *models.UserProf
 	err = userRepo.FindOneAndUpdateProfile(criteria, updated)
 	if err != nil {
 		logger.Errorf("[get user info] response marshal message error: %s", err.Error())
-		return NewTError(http.StatusInternalServerError, err)
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	return
 }
@@ -144,15 +143,15 @@ func (s *UserService) ResetPassword(telephone, email, oldPassword, newPassword s
 	isRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, email)
 	if err != nil {
 		logger.Errorf("reset password error: %s", err.Error())
-		return NewTError(http.StatusBadRequest, err)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, err)
 	}
 	if !isRegistered {
 		logger.Warn("reset password failed: account not exist")
-		return NewTError(http.StatusBadRequest, errmsg.ErrUserNotExists)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrUserNotExists)
 	}
 
 	if oldPassword == newPassword {
-		return NewTError(http.StatusBadRequest, errmsg.ErrRepeatPassword)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrRepeatPassword)
 	}
 	var user *models.User
 	enPassword := utils.NewSHA256(oldPassword, config.GetApiSecretKey())
@@ -163,22 +162,22 @@ func (s *UserService) ResetPassword(telephone, email, oldPassword, newPassword s
 	}
 	if err != nil {
 		logger.Errorf("reset password error: %s", err.Error())
-		return NewTError(http.StatusBadRequest, err)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, err)
 	}
 	if user == nil {
-		return NewTError(http.StatusBadRequest, errmsg.ErrAccountOrPwdInvalid)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrAccountOrPwdInvalid)
 	}
 
 	//if verificationCode != "" {
 	//	// 1. code + newPassword
 	//	code := myRedis.RGet(fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone))
 	//	if verificationCode != string(code) {
-	//		return NewTError(http.StatusBadRequest, errmsg.ErrInvalidVerificationCode)
+	//		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidVerificationCode)
 	//	}
 	//} else {
 	//	// 2. oldPassword + newPassword
 	//	if oldPassword == newPassword {
-	//		return NewTError(http.StatusBadRequest, errmsg.ErrRepeatPassword)
+	//		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrRepeatPassword)
 	//	}
 	//	var user *models.User
 	//	enPassword := utils.NewSHA256(oldPassword, config.GetApiSecretKey())
@@ -189,10 +188,10 @@ func (s *UserService) ResetPassword(telephone, email, oldPassword, newPassword s
 	//	}
 	//	if err != nil {
 	//		logger.Errorf("reset password error: %s", err.Error())
-	//		return NewTError(http.StatusBadRequest, err)
+	//		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, err)
 	//	}
 	//	if user == nil {
-	//		return NewTError(http.StatusBadRequest, errmsg.ErrAccountOrPwdInvalid)
+	//		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrAccountOrPwdInvalid)
 	//	}
 	//}
 
@@ -200,13 +199,13 @@ func (s *UserService) ResetPassword(telephone, email, oldPassword, newPassword s
 	if telephone != "" {
 		if err = userRepo.ResetPasswordByTelephone(telephone, enNewPassword); err != nil {
 			logger.Errorf("reset password error: %s", err.Error())
-			return NewTError(http.StatusInternalServerError, err)
+			return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 		}
 		//myRedis.RDel(fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone))
 	} else {
 		if err = userRepo.ResetPasswordByEmail(email, enNewPassword); err != nil {
 			logger.Errorf("reset password error: %s", err.Error())
-			return NewTError(http.StatusInternalServerError, err)
+			return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 		}
 	}
 
@@ -216,10 +215,10 @@ func (s *UserService) ResetPassword(telephone, email, oldPassword, newPassword s
 func (s *UserService) GetUserInfo(userId string) (profile *models.UserProfile, tErr *TError) {
 	user, err := userRepo.FindByUserId(userId)
 	if err != nil {
-		return nil, NewTError(http.StatusInternalServerError, err)
+		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if user == nil {
-		return nil, NewTError(http.StatusBadRequest, errmsg.ErrInvalidUserId)
+		return nil, NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidUserId)
 	}
 	return &user.UserProfile, nil
 }
@@ -235,10 +234,10 @@ func (s *UserService) QueryUserInfo(telephone, email string) (profile *models.Us
 
 	user, err := userRepo.FindOneUser(userCriteria)
 	if err != nil {
-		return nil, NewTError(http.StatusInternalServerError, err)
+		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if user == nil {
-		return nil, NewTError(http.StatusBadRequest, errmsg.ErrUserNotExists)
+		return nil, NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrUserNotExists)
 	}
 
 	return &user.UserProfile, nil

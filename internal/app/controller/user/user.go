@@ -7,7 +7,6 @@ import (
 	"goim-pro/internal/app/services/converters"
 	usersrv "goim-pro/internal/app/services/user"
 	errmsg "goim-pro/pkg/errors"
-	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"strings"
@@ -27,18 +26,18 @@ func New() protos.UserServiceServer {
 }
 
 func (u *userServer) Register(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var registerReq protos.RegisterReq
 	if err = utils.UnmarshalGRPCReq(req, &registerReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
 	if err = registerParameterCalibration(registerReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		return
 	}
@@ -65,19 +64,19 @@ func (u *userServer) Register(ctx context.Context, req *protos.GrpcReq) (resp *p
 }
 
 func (u *userServer) Login(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var loginReq protos.LoginReq
 	if err = utils.UnmarshalGRPCReq(req, &loginReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
 
 	if err = loginParameterCalibration(&loginReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		return
 	}
@@ -114,12 +113,12 @@ func (u *userServer) Login(ctx context.Context, req *protos.GrpcReq) (resp *prot
 }
 
 func (u *userServer) Logout(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var logoutReq protos.LogoutReq
 	if err = utils.UnmarshalGRPCReq(req, &logoutReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -136,12 +135,12 @@ func (u *userServer) Logout(ctx context.Context, req *protos.GrpcReq) (resp *pro
 }
 
 func (u *userServer) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var updateUserInfoReq protos.UpdateUserInfoReq
 	if err = utils.UnmarshalGRPCReq(req, &updateUserInfoReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -151,7 +150,7 @@ func (u *userServer) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) (r
 	userId := req.GetToken()
 	pbProfile := updateUserInfoReq.GetProfile()
 	if pbProfile == nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
@@ -167,12 +166,12 @@ func (u *userServer) UpdateUserInfo(ctx context.Context, req *protos.GrpcReq) (r
 }
 
 func (u *userServer) ResetPassword(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var resetPwdReq protos.ResetPasswordReq
 	if err = utils.UnmarshalGRPCReq(req, &resetPwdReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -183,7 +182,7 @@ func (u *userServer) ResetPassword(ctx context.Context, req *protos.GrpcReq) (re
 	email := strings.Trim(resetPwdReq.GetEmail(), "")
 
 	if err = resetPwdParameterCalibration(oldPassword, newPassword, telephone, email); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		return
 	}
@@ -208,19 +207,19 @@ func (u *userServer) ResetPassword(ctx context.Context, req *protos.GrpcReq) (re
 }
 
 func (u *userServer) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var getUserReq protos.GetUserInfoReq
 	if err = utils.UnmarshalGRPCReq(req, &getUserReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
 	userId := strings.Trim(getUserReq.GetUserId(), "")
 	if utils.IsEmptyStrings(userId) {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
@@ -243,12 +242,12 @@ func (u *userServer) GetUserInfo(ctx context.Context, req *protos.GrpcReq) (resp
 }
 
 func (u *userServer) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var queryUserInfoReq protos.QueryUserInfoReq
 	if err = utils.UnmarshalGRPCReq(req, &queryUserInfoReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -257,7 +256,7 @@ func (u *userServer) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (re
 	telephone := queryUserInfoReq.GetTelephone()
 	email := queryUserInfoReq.GetEmail()
 	if utils.IsEmptyStrings(telephone, email) {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}

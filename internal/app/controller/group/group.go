@@ -6,7 +6,6 @@ import (
 	"goim-pro/internal/app/services/converters"
 	groupsrv "goim-pro/internal/app/services/group"
 	errmsg "goim-pro/pkg/errors"
-	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"strings"
@@ -26,12 +25,12 @@ func New() protos.GroupServiceServer {
 }
 
 func (s *groupServer) CreateGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var createGroupReq protos.CreateGroupReq
 	if err = utils.UnmarshalGRPCReq(req, &createGroupReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -42,7 +41,7 @@ func (s *groupServer) CreateGroup(ctx context.Context, req *protos.GrpcReq) (res
 	memberIds := createGroupReq.MemberUserIdArr
 
 	if len(memberIds) <= 0 || (len(memberIds) == 1 && memberIds[0] == userId) {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
@@ -66,12 +65,12 @@ func (s *groupServer) CreateGroup(ctx context.Context, req *protos.GrpcReq) (res
 }
 
 func (s *groupServer) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var joinGroupReq protos.JoinGroupReq
 	if err = utils.UnmarshalGRPCReq(req, &joinGroupReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -83,7 +82,7 @@ func (s *groupServer) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp 
 	requestReason := joinGroupReq.Reason
 
 	if groupId == "" {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
@@ -107,12 +106,12 @@ func (s *groupServer) JoinGroup(ctx context.Context, req *protos.GrpcReq) (resp 
 }
 
 func (s *groupServer) QuitGroup(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var quitGroupReq protos.QuitGroupReq
 	if err = utils.UnmarshalGRPCReq(req, &quitGroupReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -122,7 +121,7 @@ func (s *groupServer) QuitGroup(ctx context.Context, req *protos.GrpcReq) (resp 
 	groupId := quitGroupReq.GroupId
 
 	if groupId == "" {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
@@ -136,12 +135,12 @@ func (s *groupServer) QuitGroup(ctx context.Context, req *protos.GrpcReq) (resp 
 }
 
 func (s *groupServer) AddGroupMember(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var addGroupMemberReq protos.AddGroupMemberReq
 	if err = utils.UnmarshalGRPCReq(req, &addGroupMemberReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -152,7 +151,7 @@ func (s *groupServer) AddGroupMember(ctx context.Context, req *protos.GrpcReq) (
 	memberIds := addGroupMemberReq.MemberUserIdArr
 
 	if groupId == "" || len(memberIds) == 0 {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
@@ -175,12 +174,12 @@ func (s *groupServer) AddGroupMember(ctx context.Context, req *protos.GrpcReq) (
 }
 
 func (s *groupServer) KickGroupMember(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var kickGroupMemberReq protos.KickGroupMemberReq
 	if err = utils.UnmarshalGRPCReq(req, &kickGroupMemberReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -191,7 +190,7 @@ func (s *groupServer) KickGroupMember(ctx context.Context, req *protos.GrpcReq) 
 	memberUserId := kickGroupMemberReq.MemberUserId
 
 	if utils.IsContainEmptyString(groupId, memberUserId) {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
@@ -213,12 +212,12 @@ func (s *groupServer) KickGroupMember(ctx context.Context, req *protos.GrpcReq) 
 }
 
 func (s *groupServer) UpdateGroupName(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var updateGroupNameReq protos.UpdateGroupNameReq
 	if err = utils.UnmarshalGRPCReq(req, &updateGroupNameReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -229,7 +228,7 @@ func (s *groupServer) UpdateGroupName(ctx context.Context, req *protos.GrpcReq) 
 	newGroupName := updateGroupNameReq.GroupName
 
 	if groupId == "" {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
@@ -252,12 +251,12 @@ func (s *groupServer) UpdateGroupName(ctx context.Context, req *protos.GrpcReq) 
 }
 
 func (s *groupServer) UpdateGroupNotice(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var updateGroupNoticeReq protos.UpdateGroupNoticeReq
 	if err = utils.UnmarshalGRPCReq(req, &updateGroupNoticeReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -268,7 +267,7 @@ func (s *groupServer) UpdateGroupNotice(ctx context.Context, req *protos.GrpcReq
 	newNotice := updateGroupNoticeReq.Notice
 
 	if groupId == "" {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
@@ -289,12 +288,12 @@ func (s *groupServer) UpdateGroupNotice(ctx context.Context, req *protos.GrpcReq
 }
 
 func (s *groupServer) UpdateMemberNickname(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var updateMemberNicknameReq protos.UpdateMemberNicknameReq
 	if err = utils.UnmarshalGRPCReq(req, &updateMemberNicknameReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -304,7 +303,7 @@ func (s *groupServer) UpdateMemberNickname(ctx context.Context, req *protos.Grpc
 	groupId := updateMemberNicknameReq.GroupId
 	newAlias := updateMemberNicknameReq.MemberNickname
 	if groupId == "" {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}

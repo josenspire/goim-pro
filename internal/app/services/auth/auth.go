@@ -10,7 +10,6 @@ import (
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/errors"
-	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"strings"
@@ -45,7 +44,7 @@ func (s *AuthService) ObtainSMSCode(telephone string, operationType protos.SMSOp
 	isTelephoneRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, "")
 	if err != nil {
 		logger.Errorf("checking sms telephone error: %s", err)
-		return "", NewTError(http.StatusInternalServerError, err)
+		return "", NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 
 	// generate random num string
@@ -55,7 +54,7 @@ func (s *AuthService) ObtainSMSCode(telephone string, operationType protos.SMSOp
 	switch operationType {
 	case protos.SMSOperationType_REGISTER:
 		if isTelephoneRegistered {
-			return "", NewTError(http.StatusAccountExists, errmsg.ErrTelephoneExists)
+			return "", NewTError(protos.StatusCode_STATUS_ACCOUNT_EXISTS, errmsg.ErrTelephoneExists)
 		}
 
 		verificationCode = "123401"
@@ -63,7 +62,7 @@ func (s *AuthService) ObtainSMSCode(telephone string, operationType protos.SMSOp
 		code = verificationCode
 	case protos.SMSOperationType_LOGIN:
 		if !isTelephoneRegistered {
-			return "", NewTError(http.StatusBadRequest, errmsg.ErrTelephoneNotExists)
+			return "", NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrTelephoneNotExists)
 		}
 
 		verificationCode = "123402"
@@ -71,18 +70,18 @@ func (s *AuthService) ObtainSMSCode(telephone string, operationType protos.SMSOp
 		code = verificationCode
 	case protos.SMSOperationType_RESET_PASSWORD:
 		if !isTelephoneRegistered {
-			return "", NewTError(http.StatusBadRequest, errmsg.ErrAccountNotExists)
+			return "", NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrAccountNotExists)
 		}
 
 		verificationCode = "123403"
 		redisKey = fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone)
 		code = verificationCode
 	default:
-		return "", NewTError(http.StatusBadRequest, errmsg.ErrInvalidParameters)
+		return "", NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidParameters)
 	}
 	if err = myRedis.RSet(redisKey, verificationCode, MinuteOf15); err != nil {
 		logger.Errorf("redis save error: %v", err)
-		return "", NewTError(http.StatusInternalServerError, err)
+		return "", NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	return code, nil
 }
@@ -93,11 +92,11 @@ func (s *AuthService) VerifySMSCode(telephone string, operationType protos.SMSOp
 
 	code := myRedis.RGet(codeKey)
 	if utils.IsEmptyStrings(code) {
-		return false, NewTError(http.StatusBadRequest, errmsg.ErrVerificationCodeExpired)
+		return false, NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrVerificationCodeExpired)
 	}
 
 	if !strings.EqualFold(codeStr, code) {
-		return false, NewTError(http.StatusBadRequest, errmsg.ErrInvalidVerificationCode)
+		return false, NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidVerificationCode)
 	}
 
 	myRedis.RDel(codeKey)

@@ -12,7 +12,6 @@ import (
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/errors"
-	"goim-pro/pkg/http"
 	"goim-pro/pkg/utils"
 	"testing"
 )
@@ -106,7 +105,7 @@ func Test_Register(t *testing.T) {
 		Convey("user_registration_fail_by_exist_telephone", func() {
 			tErr := us.Register(pbUserProfile1, "1234567890")
 			So(tErr, ShouldNotBeNil)
-			So(tErr.Code, ShouldEqual, http.StatusAccountExists)
+			So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_ACCOUNT_EXISTS)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrAccountAlreadyExists.Error())
 		})
 		Convey("user_registration_successful", func() {
@@ -164,7 +163,7 @@ func Test_userService_Login(t *testing.T) {
 			So(token, ShouldBeEmpty)
 			So(user, ShouldBeNil)
 			So(tErr, ShouldNotBeNil)
-			So(tErr.Code, ShouldEqual, http.StatusAuthorizedRequired)
+			So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_ACCOUNT_AUTHORIZED_REQUIRED)
 		})
 	})
 }
@@ -206,13 +205,13 @@ func Test_userService_ResetPassword(t *testing.T) {
 		Convey("failed_by_newPassword_same_as_old", func() {
 			tErr := us.ResetPassword("13631210001", "", "1122334455", "1122334455")
 			So(tErr, ShouldNotBeNil)
-			So(tErr.Code, ShouldEqual, http.StatusBadRequest)
+			So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_BAD_REQUEST)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrRepeatPassword.Error())
 		})
 		Convey("failed_by_not_exist_account", func() {
 			tErr := us.ResetPassword("", "123456@qq.com", "1234567890", "1122334455")
 			So(tErr, ShouldNotBeNil)
-			So(tErr.Code, ShouldEqual, http.StatusBadRequest)
+			So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_BAD_REQUEST)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrUserNotExists.Error())
 		})
 		Convey("failed_by_invalid_oldPassword", func() {
@@ -243,7 +242,7 @@ func Test_userService_GetUserInfo(t *testing.T) {
 			profile, tErr := us.GetUserInfo("13631210002")
 			So(profile, ShouldBeNil)
 			So(tErr, ShouldNotBeNil)
-			So(tErr.Code, ShouldEqual, http.StatusBadRequest)
+			So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_BAD_REQUEST)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrInvalidUserId.Error())
 		})
 	})
@@ -289,7 +288,7 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 
 			So(profile, ShouldBeNil)
 			So(tErr, ShouldNotBeNil)
-			So(tErr.Code, ShouldEqual, http.StatusBadRequest)
+			So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_BAD_REQUEST)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrUserNotExists.Error())
 		})
 	})

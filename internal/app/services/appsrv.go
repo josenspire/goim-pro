@@ -20,11 +20,7 @@ type Service struct {
 
 func NewService() *Service {
 	return &Service{
-		WaiterServer: waitersrv.New(),
-		//SMSServer:     authsrv.New(),
-		//UserServer:    usersrv.New(),
-		//ContactServer: contactsrv.New(),
-		//GroupServer:   groupsrv.New(),
+		WaiterServer:  waitersrv.New(),
 		SMSServer:     auth.New(),
 		UserServer:    user.New(),
 		ContactServer: contact.New(),

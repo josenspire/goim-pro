@@ -15,7 +15,6 @@ import (
 	"goim-pro/internal/app/services"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
-	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"google.golang.org/grpc"
@@ -107,24 +106,24 @@ func (gs *GRPCServer) StartGRPCServer() {
 			return handler(ctx, req)
 		}
 		if utils.IsEmptyStrings(token) {
-			resp, _ = utils.NewGRPCResp(http.StatusNonAuthoritativeInfo, nil, "unauthorized access to this resource")
+			resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_NON_AUTHORITATIVE_INFO, nil, "unauthorized access to this resource")
 			return resp, nil
 		} else {
 			// TODO: maybe remove token verify logic and only query from redis
 			isValid, payload, err := utils.TokenVerify(token)
 			logger.Infof("[userID]: %s", string(payload))
 			if err != nil {
-				resp, _ = utils.NewGRPCResp(http.StatusInternalServerError, nil, err.Error())
+				resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, nil, err.Error())
 				return resp, nil
 			}
 			if !isValid {
-				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, "token validation failed")
+				resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_UNAUTHORIZED, nil, "token validation failed")
 				return resp, nil
 			}
 
 			redisToken := myRedis.RGet(fmt.Sprintf("TK-%s", string(payload)))
 			if redisToken == "" {
-				resp, _ = utils.NewGRPCResp(http.StatusUnauthorized, nil, "the token has expired")
+				resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_UNAUTHORIZED, nil, "the token has expired")
 				return resp, nil
 			}
 			gRPCReq.Token = string(payload)

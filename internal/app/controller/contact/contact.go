@@ -6,7 +6,6 @@ import (
 	contactsrv "goim-pro/internal/app/services/contact"
 	"goim-pro/internal/app/services/converters"
 	errmsg "goim-pro/pkg/errors"
-	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"strings"
@@ -26,12 +25,12 @@ func New() protos.ContactServiceServer {
 }
 
 func (s *contactServer) RequestContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var reqContactReq protos.RequestContactReq
 	if err = utils.UnmarshalGRPCReq(req, &reqContactReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -40,7 +39,7 @@ func (s *contactServer) RequestContact(ctx context.Context, req *protos.GrpcReq)
 	userId := req.GetToken()
 
 	if err = requestContactParameterCalibration(userId, &reqContactReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		return
 	}
@@ -59,12 +58,12 @@ func (s *contactServer) RequestContact(ctx context.Context, req *protos.GrpcReq)
 }
 
 func (s *contactServer) RefusedContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var refContactReq protos.RefusedContactReq
 	if err = utils.UnmarshalGRPCReq(req, &refContactReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -73,7 +72,7 @@ func (s *contactServer) RefusedContact(ctx context.Context, req *protos.GrpcReq)
 	userId := req.GetToken()
 
 	if err = refusedContactParameterCalibration(userId, &refContactReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		return
 	}
@@ -91,12 +90,12 @@ func (s *contactServer) RefusedContact(ctx context.Context, req *protos.GrpcReq)
 }
 
 func (s *contactServer) AcceptContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var acpContactReq protos.AcceptContactReq
 	if err = utils.UnmarshalGRPCReq(req, &acpContactReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -106,12 +105,12 @@ func (s *contactServer) AcceptContact(ctx context.Context, req *protos.GrpcReq) 
 	contactId := strings.Trim(acpContactReq.GetUserId(), "")
 
 	if contactId == "" {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
 	if strings.EqualFold(userId, contactId) {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
@@ -128,12 +127,12 @@ func (s *contactServer) AcceptContact(ctx context.Context, req *protos.GrpcReq) 
 }
 
 func (s *contactServer) DeleteContact(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var delContactReq protos.DeleteContactReq
 	if err = utils.UnmarshalGRPCReq(req, &delContactReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -143,12 +142,12 @@ func (s *contactServer) DeleteContact(ctx context.Context, req *protos.GrpcReq) 
 	contactId := strings.Trim(delContactReq.GetUserId(), "")
 
 	if contactId == "" {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
 	if strings.EqualFold(userId, contactId) {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrIllegalOperation.Error()
 		return
 	}
@@ -165,12 +164,12 @@ func (s *contactServer) DeleteContact(ctx context.Context, req *protos.GrpcReq) 
 }
 
 func (s *contactServer) UpdateRemarkInfo(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var updateRemarkInfoReq protos.UpdateRemarkInfoReq
 	if err = utils.UnmarshalGRPCReq(req, &updateRemarkInfoReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
@@ -181,7 +180,7 @@ func (s *contactServer) UpdateRemarkInfo(ctx context.Context, req *protos.GrpcRe
 	contactRemark := updateRemarkInfoReq.GetRemarkInfo()
 
 	if contactId == "" {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
@@ -198,7 +197,7 @@ func (s *contactServer) UpdateRemarkInfo(ctx context.Context, req *protos.GrpcRe
 }
 
 func (s *contactServer) GetContacts(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 	userId := req.GetToken()
 
 	contacts, tErr := contactService.GetContacts(userId)

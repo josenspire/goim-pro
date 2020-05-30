@@ -6,7 +6,6 @@ import (
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/services/auth"
 	errmsg "goim-pro/pkg/errors"
-	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"strings"
@@ -26,19 +25,19 @@ func New() protos.SMSServiceServer {
 }
 
 func (a *authServer) ObtainTelephoneSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPC error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var smsReq protos.ObtainTelephoneSMSCodeReq
 	if err = utils.UnMarshalAnyToMessage(req.GetData(), &smsReq); err != nil {
 		logger.Errorf(`data unmarshal error: %s`, err.Error())
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		return
 	}
 
 	if err = parameterCalibration(&smsReq); err != nil {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		return
 	}
@@ -56,13 +55,13 @@ func (a *authServer) ObtainTelephoneSMSCode(ctx context.Context, req *protos.Grp
 }
 
 func (a *authServer) VerifyTelephoneSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPC error) {
-	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
 	var verifyReq protos.VerifyTelephoneSMSCodeReq
 	if err = utils.UnMarshalAnyToMessage(req.GetData(), &verifyReq); err != nil {
 		logger.Errorf(`data unmarshal error: %s`, err.Error())
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		return
 	}
@@ -72,7 +71,7 @@ func (a *authServer) VerifyTelephoneSMSCode(ctx context.Context, req *protos.Grp
 	codeStr := strings.Trim(verifyReq.SmsCode, "")
 
 	if utils.IsContainEmptyString(telephone, codeStr) {
-		resp.Code = http.StatusBadRequest
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = errmsg.ErrInvalidParameters.Error()
 		return
 	}
