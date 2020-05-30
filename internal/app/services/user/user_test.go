@@ -103,20 +103,14 @@ func Test_Register(t *testing.T) {
 	myRedis = r
 
 	Convey("testing_grpc_user_register", t, func() {
-		Convey("user_registration_fail_by_invalid_verification_code", func() {
-			tErr := us.Register(pbUserProfile1, "1234567890", "123123")
-			So(tErr, ShouldNotBeNil)
-			So(tErr.Code, ShouldEqual, http.StatusBadRequest)
-			So(tErr.Detail, ShouldEqual, errmsg.ErrInvalidVerificationCode.Error())
-		})
 		Convey("user_registration_fail_by_exist_telephone", func() {
-			tErr := us.Register(pbUserProfile1, "1234567890", "123456")
+			tErr := us.Register(pbUserProfile1, "1234567890")
 			So(tErr, ShouldNotBeNil)
 			So(tErr.Code, ShouldEqual, http.StatusAccountExists)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrAccountAlreadyExists.Error())
 		})
 		Convey("user_registration_successful", func() {
-			tErr := us.Register(pbUserProfile2, "1234567890", "123456")
+			tErr := us.Register(pbUserProfile2, "1234567890")
 			So(tErr, ShouldBeNil)
 		})
 	})
@@ -154,32 +148,19 @@ func Test_userService_Login(t *testing.T) {
 
 	Convey("Test_Login", t, func() {
 		Convey("should_login_successful_by_telephone_and_password_then_return_user_profile", func() {
-			user, token, tErr := us.Login("13631210001", "", enPassword, "", deviceId, osVersion)
+			user, token, tErr := us.Login("13631210001", "", enPassword, deviceId, osVersion)
 			So(tErr, ShouldBeNil)
 			So(user.Telephone, ShouldEqual, "13631210001")
 			So(token, ShouldNotBeEmpty)
 		})
 		Convey("should_login_successful_by_email_and_password_then_return_user_profile", func() {
-			user, token, tErr := us.Login("", "123@qq.com", enPassword, "", deviceId, osVersion)
+			user, token, tErr := us.Login("", "123@qq.com", enPassword, deviceId, osVersion)
 			So(tErr, ShouldBeNil)
 			So(user.Email, ShouldEqual, "123@qq.com")
 			So(token, ShouldNotBeEmpty)
 		})
-		Convey("should_login_successful_by_telephone_and_verification_code_then_return_user_profile", func() {
-			user, token, tErr := us.Login("13631210001", "", "", "123456", deviceId, osVersion)
-			So(tErr, ShouldBeNil)
-			So(user.Telephone, ShouldEqual, "13631210001")
-			So(token, ShouldNotBeEmpty)
-		})
-		Convey("should_login_fail_by_telephone_and_verification_code_when_given_incorrect_code_then_return_error", func() {
-			user, token, tErr := us.Login("13631210001", "", "", "111111", deviceId, osVersion)
-			So(user, ShouldBeNil)
-			So(token, ShouldBeEmpty)
-			So(tErr, ShouldNotBeNil)
-			So(tErr.Code, ShouldEqual, http.StatusBadRequest)
-		})
 		Convey("should_login_by_account_fail_when_deviceId_change_then_return_security_verification_require_message", func() {
-			user, token, tErr := us.Login("13631210001", "", enPassword, "", "OnePlus 8", osVersion)
+			user, token, tErr := us.Login("13631210001", "", enPassword, "OnePlus 8", osVersion)
 			So(token, ShouldBeEmpty)
 			So(user, ShouldBeNil)
 			So(tErr, ShouldNotBeNil)
@@ -219,29 +200,23 @@ func Test_userService_ResetPassword(t *testing.T) {
 
 	Convey("Test_ResetPassword", t, func() {
 		Convey("user_reset_password_successful_by_telephone_with_old_password", func() {
-			tErr := us.ResetPassword("", "13631210001", "", "1234567890", "1122334455")
+			tErr := us.ResetPassword("13631210001", "", "1234567890", "1122334455")
 			So(tErr, ShouldBeNil)
-		})
-		Convey("user_reset_password_successful_by_telephone_with_verification_code", func() {
-			tErr := us.ResetPassword("123456", "13631210001", "", "", "1122334455")
-			So(tErr, ShouldBeNil)
-
-			myRedis.RDel("2-13631210001")
 		})
 		Convey("failed_by_newPassword_same_as_old", func() {
-			tErr := us.ResetPassword("", "13631210001", "", "1122334455", "1122334455")
+			tErr := us.ResetPassword("13631210001", "", "1122334455", "1122334455")
 			So(tErr, ShouldNotBeNil)
 			So(tErr.Code, ShouldEqual, http.StatusBadRequest)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrRepeatPassword.Error())
 		})
 		Convey("failed_by_not_exist_account", func() {
-			tErr := us.ResetPassword("", "", "123456@qq.com", "1234567890", "1122334455")
+			tErr := us.ResetPassword("", "123456@qq.com", "1234567890", "1122334455")
 			So(tErr, ShouldNotBeNil)
 			So(tErr.Code, ShouldEqual, http.StatusBadRequest)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrUserNotExists.Error())
 		})
 		Convey("failed_by_invalid_oldPassword", func() {
-			tErr := us.ResetPassword("", "13631210001", "", "123456789111", "1122334455")
+			tErr := us.ResetPassword("13631210001", "", "123456789111", "1122334455")
 			So(tErr, ShouldNotBeNil)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrAccountOrPwdInvalid.Error())
 		})

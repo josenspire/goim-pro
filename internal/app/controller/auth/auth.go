@@ -25,11 +25,11 @@ func New() protos.SMSServiceServer {
 	return &authServer{}
 }
 
-func (a authServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (a *authServer) ObtainTelephoneSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPC error) {
 	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
 
 	var err error
-	var smsReq protos.ObtainSMSCodeReq
+	var smsReq protos.ObtainTelephoneSMSCodeReq
 	if err = utils.UnMarshalAnyToMessage(req.GetData(), &smsReq); err != nil {
 		logger.Errorf(`data unmarshal error: %s`, err.Error())
 		resp.Code = http.StatusBadRequest
@@ -43,9 +43,9 @@ func (a authServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (res
 		return
 	}
 	telephone := smsReq.GetTelephone()
-	codeType := smsReq.GetCodeType()
+	operationType := smsReq.GetOperationType()
 
-	code, tErr := authService.ObtainSMSCode(telephone, codeType)
+	code, tErr := authService.ObtainSMSCode(telephone, operationType)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail
@@ -55,7 +55,39 @@ func (a authServer) ObtainSMSCode(ctx context.Context, req *protos.GrpcReq) (res
 	return
 }
 
-func parameterCalibration(req *protos.ObtainSMSCodeReq) (err error) {
+func (a *authServer) VerifyTelephoneSMSCode(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPC error) {
+	resp, _ = utils.NewGRPCResp(http.StatusOK, nil, "")
+
+	var err error
+	var verifyReq protos.VerifyTelephoneSMSCodeReq
+	if err = utils.UnMarshalAnyToMessage(req.GetData(), &verifyReq); err != nil {
+		logger.Errorf(`data unmarshal error: %s`, err.Error())
+		resp.Code = http.StatusBadRequest
+		resp.Message = err.Error()
+		return
+	}
+
+	operationType := verifyReq.GetOperationType()
+	telephone := strings.Trim(verifyReq.GetTelephone(), "")
+	codeStr := strings.Trim(verifyReq.SmsCode, "")
+
+	if utils.IsContainEmptyString(telephone, codeStr) {
+		resp.Code = http.StatusBadRequest
+		resp.Message = errmsg.ErrInvalidParameters.Error()
+		return
+	}
+
+	_, tErr := authService.VerifySMSCode(telephone, operationType, codeStr)
+	if tErr != nil {
+		resp.Code = tErr.Code
+		resp.Message = tErr.Detail
+		return
+	}
+	resp.Message = "the verification code is valid"
+	return
+}
+
+func parameterCalibration(req *protos.ObtainTelephoneSMSCodeReq) (err error) {
 	csErr := errmsg.ErrInvalidParameters
 	req.Telephone = strings.Trim(req.GetTelephone(), "")
 

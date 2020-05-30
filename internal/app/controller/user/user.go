@@ -44,10 +44,9 @@ func (u *userServer) Register(ctx context.Context, req *protos.GrpcReq) (resp *p
 	}
 
 	userProfile := registerReq.GetProfile()
-	verificationCode := registerReq.GetVerificationCode()
 	password := registerReq.Password
 
-	tErr := userService.Register(userProfile, password, verificationCode)
+	tErr := userService.Register(userProfile, password)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail
@@ -76,24 +75,25 @@ func (u *userServer) Login(ctx context.Context, req *protos.GrpcReq) (resp *prot
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
+
 	if err = loginParameterCalibration(&loginReq); err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Message = err.Error()
 		return
 	}
-	telephone := loginReq.GetTelephone()
-	email := loginReq.GetEmail()
-	password := loginReq.GetPassword()
-	verificationCode := loginReq.GetVerificationCode()
-	deviceId := req.DeviceId
-	osVersion := req.Os
+
+	telephone := strings.Trim(loginReq.GetTelephone(), "")
+	email := strings.Trim(loginReq.GetEmail(), "")
+	password := strings.Trim(loginReq.GetPassword(), "")
+	deviceId := strings.Trim(req.GetDeviceId(), "")
+	osVersion := req.GetOs()
 
 	var enPassword string = ""
 	if password != "" {
 		enPassword = utils.NewSHA256(password, config.GetApiSecretKey())
 	}
 
-	user, token, tErr := userService.Login(telephone, email, enPassword, verificationCode, deviceId, osVersion)
+	user, token, tErr := userService.Login(telephone, email, enPassword, deviceId, osVersion)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail
@@ -177,19 +177,18 @@ func (u *userServer) ResetPassword(ctx context.Context, req *protos.GrpcReq) (re
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
-	verificationCode := strings.Trim(resetPwdReq.GetVerificationCode(), "")
 	oldPassword := strings.Trim(resetPwdReq.GetOldPassword(), "")
 	newPassword := strings.Trim(resetPwdReq.GetNewPassword(), "")
 	telephone := strings.Trim(resetPwdReq.GetTelephone(), "")
 	email := strings.Trim(resetPwdReq.GetEmail(), "")
 
-	if err = resetPwdParameterCalibration(verificationCode, oldPassword, newPassword, telephone, email); err != nil {
+	if err = resetPwdParameterCalibration(oldPassword, newPassword, telephone, email); err != nil {
 		resp.Code = http.StatusBadRequest
 		resp.Message = err.Error()
 		return
 	}
 
-	tErr := userService.ResetPassword(verificationCode, telephone, email, oldPassword, newPassword)
+	tErr := userService.ResetPassword(telephone, email, oldPassword, newPassword)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail
@@ -282,7 +281,7 @@ func (u *userServer) QueryUserInfo(ctx context.Context, req *protos.GrpcReq) (re
 
 func registerParameterCalibration(req protos.RegisterReq) (err error) {
 	csErr := errmsg.ErrInvalidParameters
-	if utils.IsContainEmptyString(req.GetPassword(), req.GetVerificationCode()) || req.GetProfile() == nil {
+	if utils.IsContainEmptyString(req.GetPassword()) || req.GetProfile() == nil {
 		err = csErr
 		return
 	}
@@ -306,19 +305,18 @@ func registerParameterCalibration(req protos.RegisterReq) (err error) {
 
 func loginParameterCalibration(req *protos.LoginReq) (err error) {
 	csErr := errmsg.ErrInvalidParameters
-	req.VerificationCode = strings.Trim(req.GetVerificationCode(), "")
 	req.Password = strings.Trim(req.GetPassword(), "")
 
-	if utils.IsEmptyStrings(req.GetTelephone(), req.GetEmail()) || utils.IsEmptyStrings(req.GetPassword(), req.GetVerificationCode()) {
+	if utils.IsEmptyStrings(req.GetTelephone(), req.GetEmail()) || utils.IsEmptyStrings(req.GetPassword()) {
 		err = csErr
 	}
 	return
 }
 
-func resetPwdParameterCalibration(verificationCode, oldPassword, newPassword string, telephone, email string) (err error) {
+func resetPwdParameterCalibration(oldPassword, newPassword string, telephone, email string) (err error) {
 	csErr := errmsg.ErrInvalidParameters
 
-	if utils.IsEmptyStrings(verificationCode, newPassword) || utils.IsEmptyStrings(oldPassword, newPassword) {
+	if utils.IsContainEmptyString(oldPassword, newPassword) {
 		err = csErr
 	} else {
 		if utils.IsEmptyStrings(telephone, email) {

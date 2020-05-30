@@ -13,6 +13,7 @@ import (
 	"goim-pro/pkg/http"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
+	"strings"
 )
 
 var (
@@ -34,7 +35,12 @@ func New() *AuthService {
 	return &AuthService{}
 }
 
-func (s *AuthService) ObtainSMSCode(telephone string, codeType protos.ObtainSMSCodeReq_CodeType) (code string, tErr *TError) {
+// ObtainSMSCode - obtain verification code by telephone with operation type
+// operation type include:
+// - register: SMSOperationType_REGISTER
+// - login: SMSOperationType_LOGIN
+// - reset password: SMSOperationType_RESET_PASSWORD
+func (s *AuthService) ObtainSMSCode(telephone string, operationType protos.SMSOperationType) (code string, tErr *TError) {
 	// checking user account status by telephone
 	isTelephoneRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, "")
 	if err != nil {
@@ -46,8 +52,8 @@ func (s *AuthService) ObtainSMSCode(telephone string, codeType protos.ObtainSMSC
 	verificationCode := utils.GenerateRandomNum(codeSize)
 	var redisKey string = ""
 
-	switch codeType {
-	case protos.ObtainSMSCodeReq_CodeType(CodeTypeRegister):
+	switch operationType {
+	case protos.SMSOperationType_REGISTER:
 		if isTelephoneRegistered {
 			return "", NewTError(http.StatusAccountExists, errmsg.ErrTelephoneExists)
 		}
@@ -55,7 +61,7 @@ func (s *AuthService) ObtainSMSCode(telephone string, codeType protos.ObtainSMSC
 		verificationCode = "123401"
 		redisKey = fmt.Sprintf("%d-%s", CodeTypeRegister, telephone)
 		code = verificationCode
-	case protos.ObtainSMSCodeReq_CodeType(CodeTypeLogin):
+	case protos.SMSOperationType_LOGIN:
 		if !isTelephoneRegistered {
 			return "", NewTError(http.StatusBadRequest, errmsg.ErrTelephoneNotExists)
 		}
@@ -63,7 +69,7 @@ func (s *AuthService) ObtainSMSCode(telephone string, codeType protos.ObtainSMSC
 		verificationCode = "123402"
 		redisKey = fmt.Sprintf("%d-%s", CodeTypeLogin, telephone)
 		code = verificationCode
-	case protos.ObtainSMSCodeReq_CodeType(CodeTypeResetPassword):
+	case protos.SMSOperationType_RESET_PASSWORD:
 		if !isTelephoneRegistered {
 			return "", NewTError(http.StatusBadRequest, errmsg.ErrAccountNotExists)
 		}
@@ -79,4 +85,22 @@ func (s *AuthService) ObtainSMSCode(telephone string, codeType protos.ObtainSMSC
 		return "", NewTError(http.StatusInternalServerError, err)
 	}
 	return code, nil
+}
+
+// VerifySMSCode - verify sms code
+func (s *AuthService) VerifySMSCode(telephone string, operationType protos.SMSOperationType, codeStr string) (isPass bool, tErr *TError) {
+	codeKey := fmt.Sprintf("%d-%s", operationType, telephone)
+
+	code := myRedis.RGet(codeKey)
+	if utils.IsEmptyStrings(code) {
+		return false, NewTError(http.StatusBadRequest, errmsg.ErrVerificationCodeExpired)
+	}
+
+	if !strings.EqualFold(codeStr, code) {
+		return false, NewTError(http.StatusBadRequest, errmsg.ErrInvalidVerificationCode)
+	}
+
+	myRedis.RDel(codeKey)
+
+	return true, nil
 }

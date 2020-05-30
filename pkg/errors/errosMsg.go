@@ -17,6 +17,7 @@ var (
 	ErrAccountAlreadyExists        = errors.New("account is already exists")
 	ErrAccountNotExists            = errors.New("account not exists")
 	ErrUserNotExists               = errors.New("user not exists")
+	ErrVerificationCodeExpired     = errors.New("verification code has expired")
 	ErrInvalidVerificationCode     = errors.New("invalid verification code")
 	ErrInvalidUserId               = errors.New("invalid user id")
 	ErrAccountOrPwdInvalid         = errors.New("account or password is incorrect")
