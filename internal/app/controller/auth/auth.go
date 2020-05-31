@@ -13,7 +13,7 @@ import (
 
 var (
 	logger      = logs.GetLogger("INFO")
-	authService *authsrv.AuthService
+	authService authsrv.IAuthService
 )
 
 type authServer struct {

@@ -24,10 +24,15 @@ var (
 	userRepo IUserRepo
 )
 
+type IAuthService interface {
+	ObtainSMSCode(telephone string, operationType protos.SMSOperationType) (code string, tErr *TError)
+	VerifySMSCode(telephone string, operationType protos.SMSOperationType, codeStr string) (isPass bool, tErr *TError)
+}
+
 type AuthService struct {
 }
 
-func New() *AuthService {
+func New() IAuthService {
 	myRedis = redsrv.NewRedis()
 	mysqlDB = mysqlsrv.NewMysql()
 	userRepo = NewUserRepo(mysqlDB)
