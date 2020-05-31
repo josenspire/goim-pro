@@ -70,7 +70,7 @@ func (s *AuthService) ObtainSMSCode(telephone string, operationType protos.SMSOp
 		code = verificationCode
 	case protos.SMSOperationType_RESET_PASSWORD:
 		if !isTelephoneRegistered {
-			return "", NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrAccountNotExists)
+			return "", NewTError(protos.StatusCode_STATUS_ACCOUNT_NOT_EXISTS, errmsg.ErrAccountNotExists)
 		}
 
 		verificationCode = "123403"
