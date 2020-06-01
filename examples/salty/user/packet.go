@@ -14,12 +14,12 @@ var (
 	logger = logs.GetLogger("INFO")
 )
 
-func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_CodeType, index int) {
+func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.SMSOperationType, index int) {
 	tel := fmt.Sprintf("1363121000%d", index)
 	fmt.Println(tel)
-	smsReq := protos.ObtainSMSCodeReq{
-		CodeType:  codeType,
-		Telephone: tel,
+	smsReq := protos.ObtainTelephoneSMSCodeReq{
+		OperationType: codeType,
+		Telephone:     tel,
 	}
 	anyData, _ := utils.MarshalMessageToAny(&smsReq)
 	grpcReq := &protos.GrpcReq{
@@ -31,7 +31,7 @@ func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_C
 		Data:     anyData,
 	}
 	// 调用 gRPC 接口
-	tr, err := t.ObtainSMSCode(context.Background(), grpcReq)
+	tr, err := t.ObtainTelephoneSMSCode(context.Background(), grpcReq)
 	//tr, err := t.Register(context.Background(), grpcReq)
 	if err != nil {
 		log.Fatalf("could not greet: %v", err.Error())
@@ -53,31 +53,38 @@ func ObtainSMSCode(t protos.SMSServiceClient, codeType protos.ObtainSMSCodeReq_C
 	//logger.Infof("[code]: %d", tr)
 }
 
+func VerifyCode(t protos.SMSServiceClient) {
+	tel := "13631210003"
+	fmt.Println(tel)
+	smsReq := protos.VerifyTelephoneSMSCodeReq{
+		OperationType: protos.SMSOperationType_LOGIN,
+		Telephone:     tel,
+	}
+	anyData, _ := utils.MarshalMessageToAny(&smsReq)
+	grpcReq := &protos.GrpcReq{
+		DeviceId: "One Plus 7 Pro",
+		Version:  "1",
+		Language: 0,
+		Os:       0,
+		Token:    "",
+		Data:     anyData,
+	}
+	// 调用 gRPC 接口
+	tr, err := t.VerifyTelephoneSMSCode(context.Background(), grpcReq)
+	if err != nil {
+		log.Fatalf("could not greet: %v", err.Error())
+	}
+	printResp(tr)
+}
+
 func ResetPasswordByTelephone(t protos.UserServiceClient, channel string) {
 	var resetPasswordReq *protos.ResetPasswordReq
-	switch channel {
-	case "OLD_PASSWORD":
-		resetPasswordReq = &protos.ResetPasswordReq{
-			NewPassword: "112233445566",
-			ResetCertificate: &protos.ResetPasswordReq_OldPassword{
-				OldPassword: "1234567890",
-			},
-			TargetAccount: &protos.ResetPasswordReq_Telephone{
-				Telephone: "13631210003",
-			},
-		}
-		break
-	case "VERIFICATION":
-		resetPasswordReq = &protos.ResetPasswordReq{
-			NewPassword: "1234567890",
-			ResetCertificate: &protos.ResetPasswordReq_VerificationCode{
-				VerificationCode: "112233",
-			},
-			TargetAccount: &protos.ResetPasswordReq_Telephone{
-				Telephone: "13631210003",
-			},
-		}
-		break
+	resetPasswordReq = &protos.ResetPasswordReq{
+		NewPassword: "112233445566",
+		OldPassword: "1234567890",
+		TargetAccount: &protos.ResetPasswordReq_Telephone{
+			Telephone: "13631210003",
+		},
 	}
 
 	anyData, _ := utils.MarshalMessageToAny(resetPasswordReq)
@@ -101,7 +108,6 @@ func ResetPasswordByTelephone(t protos.UserServiceClient, channel string) {
 func Register(t protos.UserServiceClient) {
 	registerReq := &protos.RegisterReq{
 		Password:         "1234567890",
-		VerificationCode: "471133",
 		Profile: &protos.UserProfile{
 			Telephone:   "13631210003",
 			Email:       "12345673@qq.com",
@@ -177,8 +183,7 @@ func LoginWithCode(t protos.UserServiceClient, typeStr string) {
 			TargetAccount: &protos.LoginReq_Telephone{
 				Telephone: "13631210003",
 			},
-			VerificationCode:     "037585",
-			Password: "",
+			Password:         "",
 		}
 	} else {
 		loginReq = &protos.LoginReq{

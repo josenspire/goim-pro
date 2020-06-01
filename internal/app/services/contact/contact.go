@@ -26,10 +26,19 @@ var (
 	contactRepo IContactRepo
 )
 
+type IContactService interface {
+	RequestContact(userId, contactId, reqReason string) (tErr *TError)
+	RefusedContact(userId, contactId, refusedReason string) (tErr *TError)
+	AcceptContact(userId, contactId string) (tErr *TError)
+	DeleteContact(userId, contactId string) (tErr *TError)
+	UpdateRemarkInfo(userId, contactId string, contactRemark *protos.ContactRemark) (tErr *TError)
+	GetContacts(userId string) (contacts []models.Contact, tErr *TError)
+}
+
 type ContactService struct {
 }
 
-func New() *ContactService {
+func New() IContactService {
 	myRedis = redsrv.NewRedis()
 	mysqlDB = mysqlsrv.NewMysql()
 
@@ -212,7 +221,7 @@ func (cs *ContactService) UpdateRemarkInfo(userId, contactId string, contactRema
 func (cs *ContactService) GetContacts(userId string) (contacts []models.Contact, tErr *TError) {
 	// TODO: should consider the black list function
 	criteria := map[string]interface{}{
-		"UserId": userId,
+		"userId": userId,
 	}
 	contacts, err := contactRepo.FindAll(criteria)
 	if err != nil {

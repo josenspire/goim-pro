@@ -8,7 +8,7 @@
     "dbUserName": "root",
     "dbPassword": "Password1!",
     "dbUri": "111.231.238.209",
-    "dbPort": "3306",
+    "dbPort": "53306",
     "dbName": "goim",
     "dbEngine": "InnoDB",
     "dbMaxIdleConns": "10",

@@ -55,15 +55,18 @@ func main() {
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
 				for i := 1; i <= 3; i++ {
-					user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_REGISTER, i)
+					user.ObtainSMSCode(t, protos.SMSOperationType_REGISTER, i)
 				}
 			case "s2":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
-				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_LOGIN, 3)
+				user.ObtainSMSCode(t, protos.SMSOperationType_LOGIN, 3)
 			case "s3":
 				t := protos.NewSMSServiceClient(conn)
-				user.ObtainSMSCode(t, protos.ObtainSMSCodeReq_RESET_PASSWORD, 3)
+				user.ObtainSMSCode(t, protos.SMSOperationType_RESET_PASSWORD, 3)
+			case "v1":
+				t := protos.NewSMSServiceClient(conn)
+				user.VerifyCode(t)
 			case "rst1":
 				t := protos.NewUserServiceClient(conn)
 				user.ResetPasswordByTelephone(t, "OLD_PASSWORD")
@@ -150,6 +153,7 @@ func toolsIntroduce() {
 	logger.Info("** ['s1']: obtainSMSCode - register**")
 	logger.Info("** ['s2']: obtainSMSCode - login**")
 	logger.Info("** ['s3']: obtainSMSCode - resetPassword**")
+	logger.Info("** ['v1']: verifySMSCode - login**")
 	logger.Info("** ['rst1']: resetPassword by telephone with oldPassword**")
 	logger.Info("** ['rst2']: resetPassword by telephone with verification**")
 	logger.Info("** ['r']: register **")

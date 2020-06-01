@@ -34,10 +34,12 @@ func (cta *ContactImpl) IsContactExists(userId, contactId string) (isExists bool
 	db := mysqlDB.First(&models.Contact{}, "userId = ? and contactId = ?", userId, contactId)
 	if db.RecordNotFound() {
 		return false, nil
-	} else if err = db.Error; err != nil {
-		logger.Errorf("checking contact error: %v", err)
 	}
-	return true, err
+	if err = db.Error; err != nil {
+		logger.Errorf("checking contact error: %v", err)
+		return false, err
+	}
+	return true, nil
 }
 
 func (cta *ContactImpl) FindOne(condition map[string]interface{}) (contact *models.Contact, err error) {
@@ -55,8 +57,14 @@ func (cta *ContactImpl) FindOne(condition map[string]interface{}) (contact *mode
 func (cta *ContactImpl) FindAll(condition map[string]interface{}) (contacts []models.Contact, err error) {
 	// SELECT * FROM `contacts`  WHERE `contacts`.`deletedAt` IS NULL AND ((`contacts`.`UserId` = '01E07SG858N3CGV5M1APVQKZYR'))
 	// SELECT * FROM `users`  WHERE `users`.`deletedAt` IS NULL AND ((`userId` IN ('01E2JVWZTG60NG2SXFYNEPNMCB','01E2JXMC98SZXMGEGVTDECSD78')))
-	err = mysqlDB.Preload("User").Find(&contacts, condition).Error
-	return
+	db := mysqlDB.Preload("User").Find(&contacts, condition)
+	if db.RecordNotFound() {
+		return nil, nil
+	}
+	if err = db.Error; err != nil {
+		return nil, err
+	}
+	return contacts, nil
 }
 
 func (cta *ContactImpl) InsertContacts(newContacts ...*models.Contact) (err error) {

@@ -13,7 +13,7 @@ import (
 
 var (
 	logger         = logs.GetLogger("INFO")
-	contactService *contactsrv.ContactService
+	contactService contactsrv.IContactService
 )
 
 type contactServer struct {

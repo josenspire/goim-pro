@@ -16,6 +16,10 @@ var (
 	authService authsrv.IAuthService
 )
 
+const (
+	CodeLength = 6
+)
+
 type authServer struct {
 }
 
@@ -82,7 +86,15 @@ func (a *authServer) VerifyTelephoneSMSCode(ctx context.Context, req *protos.Grp
 		resp.Message = tErr.Detail
 		return
 	}
-	resp.Message = "the verification code is valid"
+
+	obtainTelephoneSMSCodeResp := &protos.ObtainTelephoneSMSCodeResp{
+		SmsCodeLength: CodeLength,
+	}
+	resp.Data, err = utils.MarshalMessageToAny(obtainTelephoneSMSCodeResp)
+	if err != nil {
+		logger.Errorf("obtain sms code response marshal message error: %s", err.Error())
+	}
+	resp.Message = "successful verification"
 	return
 }
 

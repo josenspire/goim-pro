@@ -36,5 +36,9 @@ func (m *MockContactRepo) FindOneAndUpdateRemark(ct map[string]interface{}, rema
 
 func (m *MockContactRepo) FindAll(condition map[string]interface{}) ([]models.Contact, error) {
 	args := m.Called(condition)
-	return args.Get(0).([]models.Contact), args.Error(1)
+	arg1 := args.Get(0)
+	if arg1 == nil {
+		return nil, args.Error(1)
+	}
+	return arg1.([]models.Contact), args.Error(1)
 }

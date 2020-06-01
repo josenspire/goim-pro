@@ -82,7 +82,8 @@ func (u *UserImpl) QueryByEmailAndPassword(email string, enPassword string) (*mo
 	db := mysqlDB.First(&user, "email = ? and password = ?", email, enPassword)
 	if db.RecordNotFound() {
 		return nil, nil
-	} else if err = db.Error; err != nil {
+	}
+	if err = db.Error; err != nil {
 		return nil, err
 	}
 	return user, nil
@@ -94,7 +95,8 @@ func (u *UserImpl) QueryByTelephoneAndPassword(telephone string, enPassword stri
 	db := mysqlDB.First(user, "telephone = ? and password = ?", telephone, enPassword)
 	if db.RecordNotFound() {
 		return nil, nil
-	} else if err = db.Error; err != nil {
+	}
+	if err = db.Error; err != nil {
 		return nil, err
 	}
 	return user, nil
