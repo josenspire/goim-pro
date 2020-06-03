@@ -18,15 +18,15 @@ type IGroupRepo interface {
 	// group
 	CreateGroup(groupProfile *Group) (newGroup *Group, err error)
 	RemoveGroupByGroupId(groupId string, isForce bool) (err error)
-	FindOneGroup(condition map[string]interface{}) (groupProfile *Group, err error)
-	CountGroup(condition map[string]interface{}) (count int, err error)
-	FindOneGroupAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Group, err error)
+	FindOneGroup(condition interface{}) (groupProfile *Group, err error)
+	CountGroup(condition interface{}) (count int, err error)
+	FindOneGroupAndUpdate(condition interface{}, updated interface{}) (newProfile *Group, err error)
 
 	// member
-	FindOneMember(condition map[string]interface{}) (memberProfile *Member, err error)
+	FindOneMember(condition interface{}) (memberProfile *Member, err error)
 	InsertMembers(members ...*Member) (err error)
 	RemoveMembers(groupId string, memberIds []string, isForce bool) (deleteCount int64, err error)
-	FindOneMemberAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Member, err error)
+	FindOneMemberAndUpdate(condition interface{}, updated interface{}) (newProfile *Member, err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -51,7 +51,7 @@ func (i *GroupImpl) CreateGroup(groupProfile *Group) (newGroup *Group, err error
 }
 
 // group(1)->(n)members(1)->(1)user
-func (i *GroupImpl) FindOneGroup(condition map[string]interface{}) (*Group, error) {
+func (i *GroupImpl) FindOneGroup(condition interface{}) (*Group, error) {
 	var groupProfile = Group{}
 	if err := mysqlDB.First(&groupProfile, condition).Preload("User").Related(&groupProfile.Members, "Members").Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -62,7 +62,7 @@ func (i *GroupImpl) FindOneGroup(condition map[string]interface{}) (*Group, erro
 	return &groupProfile, nil
 }
 
-func (i *GroupImpl) CountGroup(condition map[string]interface{}) (count int, err error) {
+func (i *GroupImpl) CountGroup(condition interface{}) (count int, err error) {
 	db := mysqlDB.Model(&Group{}).Where(condition).Count(&count)
 	if db.RecordNotFound() {
 		return 0, nil
@@ -73,7 +73,7 @@ func (i *GroupImpl) CountGroup(condition map[string]interface{}) (count int, err
 	return count, nil
 }
 
-func (i *GroupImpl) FindOneGroupAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Group, err error) {
+func (i *GroupImpl) FindOneGroupAndUpdate(condition interface{}, updated interface{}) (newProfile *Group, err error) {
 	newProfile = &Group{}
 	db := mysqlDB.Model(&Group{}).Where(condition).Update(updated).First(newProfile)
 	if db.RecordNotFound() {
@@ -122,7 +122,7 @@ func (i *GroupImpl) InsertMembers(members ...*Member) (err error) {
 	return nil
 }
 
-func (i *GroupImpl) FindOneMember(condition map[string]interface{}) (memberProfile *Member, err error) {
+func (i *GroupImpl) FindOneMember(condition interface{}) (memberProfile *Member, err error) {
 	memberProfile = &Member{}
 	db := mysqlDB.Where(condition).First(&memberProfile)
 	if db.RecordNotFound() {
@@ -150,7 +150,7 @@ func (i *GroupImpl) RemoveMembers(groupId string, memberIds []string, isForce bo
 	return _db.RowsAffected, nil
 }
 
-func (i *GroupImpl) FindOneMemberAndUpdate(condition map[string]interface{}, updated map[string]interface{}) (newProfile *Member, err error) {
+func (i *GroupImpl) FindOneMemberAndUpdate(condition interface{}, updated interface{}) (newProfile *Member, err error) {
 	newProfile = &Member{}
 	db := mysqlDB.Model(&Member{}).Where(condition).Update(updated).First(newProfile)
 	if db.RecordNotFound() {

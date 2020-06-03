@@ -37,6 +37,7 @@ func New() *UserService {
 	return &UserService{}
 }
 
+// Register - register service, accept base user profile and password{string}
 func (s *UserService) Register(userProfile *protos.UserProfile, password string) (tErr *TError) {
 	var telephone = userProfile.Telephone
 	var email = userProfile.Email
@@ -62,6 +63,7 @@ func (s *UserService) Register(userProfile *protos.UserProfile, password string)
 	return nil
 }
 
+// Login - user login service, support telephone and email as account
 func (s *UserService) Login(telephone, email, enPassword, deviceId string, osVersion protos.GrpcReq_OS) (user *models.User, token string, tErr *TError) {
 	var isNeedVerify bool = false
 	var err error
@@ -81,6 +83,7 @@ func (s *UserService) Login(telephone, email, enPassword, deviceId string, osVer
 	return user, token, nil
 }
 
+// Logout - user logout service, accept user token{string}
 func (s *UserService) Logout(token string, isMandatoryLogout bool) (tErr *TError) {
 	isValid, payload, err := utils.TokenVerify(token)
 	if err != nil {
@@ -105,6 +108,7 @@ func (s *UserService) Logout(token string, isMandatoryLogout bool) (tErr *TError
 	return nil
 }
 
+// UpdateUserInfo - update user profile service
 func (s *UserService) UpdateUserInfo(userId string, userProfile *models.UserProfile) (tErr *TError) {
 	originUserProfile, err := userRepo.FindByUserId(userId)
 	if err != nil {
@@ -213,6 +217,7 @@ func (s *UserService) ResetPassword(telephone, email, newPassword string) (tErr 
 	return nil
 }
 
+// GetUserInfo - would return target user information, accept userId{string}
 func (s *UserService) GetUserInfo(userId string) (profile *models.UserProfile, tErr *TError) {
 	user, err := userRepo.FindByUserId(userId)
 	if err != nil {

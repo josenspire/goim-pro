@@ -27,6 +27,7 @@ var (
 	// contact
 	ErrContactNotExists       = errors.New("contact not exists")
 	ErrContactAlreadyExists   = errors.New("user is already your contact")
+	ErrContactRepeatOperation = errors.New("please do not repeat the operation")
 	ErrIllegalRequestContacts = errors.New("illegal request contacts")
 	ErrInvalidContact         = errors.New("invalid contacts")
 

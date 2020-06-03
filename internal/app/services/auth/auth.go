@@ -88,6 +88,7 @@ func (s *AuthService) ObtainSMSCode(telephone string, operationType protos.SMSOp
 		logger.Errorf("redis save error: %v", err)
 		return "", NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
+	myRedis.RSet(redisKey)
 	return code, nil
 }
 

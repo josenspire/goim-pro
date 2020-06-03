@@ -69,7 +69,7 @@ func (s *GroupService) JoinGroup(userId, groupId, reason string) (profile *model
 		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if isMember {
-		return nil, NewTError(protos.StatusCode_STATUS_REPEAT_OPERATION, errmsg.ErrRepeatedlyJoinGroup)
+		return nil, NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrRepeatedlyJoinGroup)
 	}
 
 	newMember := models.NewMember(userId, "")
@@ -97,7 +97,7 @@ func (s *GroupService) QuitGroup(userId, groupId string) (tErr *TError) {
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if !isMember {
-		return NewTError(protos.StatusCode_STATUS_REPEAT_OPERATION, errmsg.ErrNotGroupMembers)
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrNotGroupMembers)
 	}
 
 	memberIds := []string{userId}
@@ -154,7 +154,7 @@ func (s *GroupService) KickGroupMember(userId, groupId, memberUserId string) (pr
 		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 	if !isMember {
-		return nil, NewTError(protos.StatusCode_STATUS_REPEAT_OPERATION, errmsg.ErrNotGroupMembers)
+		return nil, NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrNotGroupMembers)
 	}
 
 	// check out currently user permission

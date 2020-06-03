@@ -116,8 +116,10 @@ func (cs *ContactService) RefusedContact(userId, contactId, refusedReason string
 	if err != nil {
 		logger.Errorf("redis operations error, transform map error: %s", err.Error())
 	}
+	if len(myRedis.RGet(ctKey)) > 0 { // already send notification
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactRepeatOperation)
+	}
 	err = myRedis.RSet(ctKey, jsonStr, DefaultExpiresTime)
-
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
@@ -147,6 +149,10 @@ func (cs *ContactService) AcceptContact(userId, contactId string) (tErr *TError)
 
 	// TODO: cache in redis, should replace to Push notification server
 	ctKey := fmt.Sprintf("CT-ACP-%s-%s", userId, contactId)
+	if len(myRedis.RGet(ctKey)) > 0 { // already send notification
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactRepeatOperation)
+	}
+
 	err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
@@ -171,15 +177,17 @@ func (cs *ContactService) DeleteContact(userId, contactId string) (tErr *TError)
 		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactNotExists)
 	}
 
-	go func() {
-		// TODO: cache in redis, should replace to Push notification server
-		ctKey := fmt.Sprintf("CT-DEL-%s-%s", userId, contactId)
-		err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
-		if err != nil {
-			// TODO: should log down exception information
-			logger.Errorf("redis cache error: %s", err.Error())
-		}
-	}()
+	// TODO: cache in redis, should replace to Push notification server
+	ctKey := fmt.Sprintf("CT-DEL-%s-%s", userId, contactId)
+	if len(myRedis.RGet(ctKey)) > 0 { // already send notification
+		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactRepeatOperation)
+	}
+
+	err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
+	if err != nil {
+		// TODO: should log down exception information
+		logger.Errorf("redis cache error: %s", err.Error())
+	}
 
 	if err = handleDeleteContact(userId, contactId); err != nil {
 		logger.Errorf("remove contact error: %s", err.Error())
@@ -199,16 +207,6 @@ func (cs *ContactService) UpdateRemarkInfo(userId, contactId string, contactRema
 	if !isExists {
 		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactNotExists)
 	}
-
-	go func() {
-		// TODO: cache in redis, should replace to Push notification server
-		ctKey := fmt.Sprintf("CT-UDT-%s-%s", userId, contactId)
-		err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
-		if err != nil {
-			// TODO: should log down exception information
-			logger.Errorf("redis cache error: %s", err.Error())
-		}
-	}()
 
 	if err = handleUpdateContactRemark(userId, contactId, contactRemark); err != nil {
 		logger.Errorf("update contact remark error: %s", err.Error())
