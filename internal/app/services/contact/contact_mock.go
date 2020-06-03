@@ -29,9 +29,9 @@ func (m *MockContactRepo) RemoveContactsByIds(userId string, contactIds ...strin
 	return args.Error(0)
 }
 
-func (m *MockContactRepo) FindOneAndUpdateRemark(ct map[string]interface{}, remarkInfo map[string]interface{}) (err error) {
-
-	return nil
+func (m *MockContactRepo) FindOneAndUpdateRemark(condition interface{}, remarkInfo interface{}) (err error) {
+	args := m.Called(condition, remarkInfo)
+	return args.Error(0)
 }
 
 func (m *MockContactRepo) FindAll(condition map[string]interface{}) ([]models.Contact, error) {

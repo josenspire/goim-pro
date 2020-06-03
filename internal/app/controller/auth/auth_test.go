@@ -50,6 +50,11 @@ func Test_authServer_ObtainTelephoneSMSCode(t *testing.T) {
 			resp, grpcErr := authController.ObtainTelephoneSMSCode(ctx, grpcReq)
 			So(grpcErr, ShouldBeNil)
 			So(resp.Code, ShouldEqual, protos.StatusCode_STATUS_OK)
+
+			var smsResp = &protos.ObtainTelephoneSMSCodeResp{}
+			err := utils.UnMarshalAnyToMessage(resp.Data, smsResp)
+			So(err, ShouldBeNil)
+			So(smsResp.SmsCodeLength, ShouldEqual, 6)
 		})
 		Convey("should_call_and_return_error_when_given_exists_telephone_to_register", func() {
 			authReq := &protos.ObtainTelephoneSMSCodeReq{

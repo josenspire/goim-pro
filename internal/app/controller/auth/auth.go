@@ -54,6 +54,15 @@ func (a *authServer) ObtainTelephoneSMSCode(ctx context.Context, req *protos.Grp
 		resp.Message = tErr.Detail
 		return
 	}
+
+	obtainTelephoneSMSCodeResp := &protos.ObtainTelephoneSMSCodeResp{
+		SmsCodeLength: int32(len(code)),
+	}
+	resp.Data, err = utils.MarshalMessageToAny(obtainTelephoneSMSCodeResp)
+	if err != nil {
+		logger.Errorf("obtain sms code response marshal message error: %s", err.Error())
+	}
+
 	resp.Message = fmt.Sprintf("send verification code succeed: %s", code)
 	return
 }
@@ -87,13 +96,6 @@ func (a *authServer) VerifyTelephoneSMSCode(ctx context.Context, req *protos.Grp
 		return
 	}
 
-	obtainTelephoneSMSCodeResp := &protos.ObtainTelephoneSMSCodeResp{
-		SmsCodeLength: CodeLength,
-	}
-	resp.Data, err = utils.MarshalMessageToAny(obtainTelephoneSMSCodeResp)
-	if err != nil {
-		logger.Errorf("obtain sms code response marshal message error: %s", err.Error())
-	}
 	resp.Message = "successful verification"
 	return
 }

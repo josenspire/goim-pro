@@ -19,7 +19,7 @@ type IContactRepo interface {
 	FindAll(condition map[string]interface{}) (contacts []models.Contact, err error)
 	InsertContacts(newContacts ...*models.Contact) (err error)
 	RemoveContactsByIds(userId string, contactIds ...string) (err error)
-	FindOneAndUpdateRemark(ct map[string]interface{}, remarkInfo map[string]interface{}) (err error)
+	FindOneAndUpdateRemark(condition interface{}, remarkInfo interface{}) (err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -100,7 +100,7 @@ func (cta *ContactImpl) RemoveContactsByIds(userId string, contactIds ...string)
 	return
 }
 
-func (cta *ContactImpl) FindOneAndUpdateRemark(condition map[string]interface{}, remarkProfile map[string]interface{}) (err error) {
+func (cta *ContactImpl) FindOneAndUpdateRemark(condition interface{}, remarkProfile interface{}) (err error) {
 	db := mysqlDB.Table(tbl.TableContacts).Where(condition).Update(remarkProfile)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to update user profile: %v", err)

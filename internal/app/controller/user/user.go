@@ -176,18 +176,17 @@ func (u *userServer) ResetPassword(ctx context.Context, req *protos.GrpcReq) (re
 		logger.Errorf(`unmarshal error: %v`, err)
 		return
 	}
-	oldPassword := strings.Trim(resetPwdReq.GetOldPassword(), "")
 	newPassword := strings.Trim(resetPwdReq.GetNewPassword(), "")
 	telephone := strings.Trim(resetPwdReq.GetTelephone(), "")
 	email := strings.Trim(resetPwdReq.GetEmail(), "")
 
-	if err = resetPwdParameterCalibration(oldPassword, newPassword, telephone, email); err != nil {
+	if err = resetPwdParameterCalibration(newPassword, telephone, email); err != nil {
 		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
 		return
 	}
 
-	tErr := userService.ResetPassword(telephone, email, oldPassword, newPassword)
+	tErr := userService.ResetPassword(telephone, email, newPassword)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail
@@ -312,15 +311,11 @@ func loginParameterCalibration(req *protos.LoginReq) (err error) {
 	return
 }
 
-func resetPwdParameterCalibration(oldPassword, newPassword string, telephone, email string) (err error) {
+func resetPwdParameterCalibration(newPassword string, telephone, email string) (err error) {
 	csErr := errmsg.ErrInvalidParameters
 
-	if utils.IsContainEmptyString(oldPassword, newPassword) {
+	if utils.IsEmptyStrings(newPassword) || utils.IsEmptyStrings(telephone, email) {
 		err = csErr
-	} else {
-		if utils.IsEmptyStrings(telephone, email) {
-			err = csErr
-		}
 	}
 	return
 }

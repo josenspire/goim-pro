@@ -138,8 +138,8 @@ func (s *UserService) UpdateUserInfo(userId string, userProfile *models.UserProf
 	return
 }
 
-// ResetPassword - reset user's password by verification code, or oldPassword
-func (s *UserService) ResetPassword(telephone, email, oldPassword, newPassword string) (tErr *TError) {
+// ResetPassword - reset user's password by verification code
+func (s *UserService) ResetPassword(telephone, email, newPassword string) (tErr *TError) {
 	isRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, email)
 	if err != nil {
 		logger.Errorf("reset password error: %s", err.Error())
@@ -150,23 +150,24 @@ func (s *UserService) ResetPassword(telephone, email, oldPassword, newPassword s
 		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrUserNotExists)
 	}
 
-	if oldPassword == newPassword {
-		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrRepeatPassword)
-	}
-	var user *models.User
-	enPassword := utils.NewSHA256(oldPassword, config.GetApiSecretKey())
-	if telephone != "" {
-		user, err = userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
-	} else {
-		user, err = userRepo.QueryByEmailAndPassword(email, enPassword)
-	}
-	if err != nil {
-		logger.Errorf("reset password error: %s", err.Error())
-		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, err)
-	}
-	if user == nil {
-		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrAccountOrPwdInvalid)
-	}
+	// reset password by old password
+	//if oldPassword == newPassword {
+	//	return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrRepeatPassword)
+	//}
+	//var user *models.User
+	//enPassword := utils.NewSHA256(oldPassword, config.GetApiSecretKey())
+	//if telephone != "" {
+	//	user, err = userRepo.QueryByTelephoneAndPassword(telephone, enPassword)
+	//} else {
+	//	user, err = userRepo.QueryByEmailAndPassword(email, enPassword)
+	//}
+	//if err != nil {
+	//	logger.Errorf("reset password error: %s", err.Error())
+	//	return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, err)
+	//}
+	//if user == nil {
+	//	return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrAccountOrPwdInvalid)
+	//}
 
 	//if verificationCode != "" {
 	//	// 1. code + newPassword
@@ -256,7 +257,9 @@ func accountLogin(telephone, email, enPassword, deviceId string, osVersion proto
 	if user == nil {
 		return false, nil, errmsg.ErrAccountOrPwdInvalid
 	}
-	return isNeedToSMSVerify(deviceId, osVersion, user), user, nil
+	// TODO: need to had previous verify function
+	//return isNeedToSMSVerify(deviceId, osVersion, user), user, nil
+	return false, user, nil
 }
 
 func isProfileNothing2Update(originProfile, newProfile *models.UserProfile) bool {
