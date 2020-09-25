@@ -4,6 +4,7 @@ import (
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
+	"goim-pro/pkg/utils"
 	"strings"
 )
 
@@ -39,6 +40,7 @@ func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []
 				Telephones:           strings.Split(contact.Telephone, ","),
 				Tags:                 strings.Split(contact.Tags, ","),
 			},
+			SortId: utils.GetStringLetters(userProfile.Nickname),
 		}
 	}
 	return protoContacts

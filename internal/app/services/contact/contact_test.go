@@ -1,7 +1,6 @@
 package contactsrv
 
 import (
-	"github.com/stretchr/testify/mock"
 	protos "goim-pro/api/protos/salty"
 	consts "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
@@ -12,6 +11,7 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/mock"
 )
 
 var (
@@ -306,6 +306,31 @@ func Test_contactService_UpdateRemarkInfo(t *testing.T) {
 }
 
 func Test_contactService_GetContacts(t *testing.T) {
+	mysqlDB = mysqlsrv.NewMysql()
+
+	var contacts = make([]models.Contact, 5)
+	mc := &MockContactRepo{}
+	mc.On("FindAll", map[string]interface{}{"userId": "TEST001"}).Return(contacts, nil)
+	mc.On("FindAll", map[string]interface{}{"userId": "TEST002"}).Return(nil, nil)
+
+	cs := new(ContactService)
+	contactRepo = mc
+
+	Convey("Test_DeleteContact", t, func() {
+		Convey("should_find_all_user's_contacts_then_return", func() {
+			contacts, tErr := cs.GetContacts("TEST001")
+			So(tErr, ShouldBeNil)
+			So(len(contacts), ShouldEqual, 5)
+		})
+		Convey("should_not_found_contacts_when_given_invalid_userId", func() {
+			contacts, tErr := cs.GetContacts("TEST002")
+			So(tErr, ShouldBeNil)
+			So(contacts, ShouldBeNil)
+		})
+	})
+}
+
+func TestContactService_GetContactOperationMessageList(t *testing.T) {
 	mysqlDB = mysqlsrv.NewMysql()
 
 	var contacts = make([]models.Contact, 5)

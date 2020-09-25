@@ -11,6 +11,7 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.3.5
 	github.com/jinzhu/gorm v1.9.11
+	github.com/mozillazg/go-pinyin v0.18.0
 	github.com/oklog/ulid v1.3.1
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/sirupsen/logrus v1.4.2

@@ -24,6 +24,7 @@ var (
 
 	userRepo    IUserRepo
 	contactRepo IContactRepo
+	//notificationLogRepo INotificationLogRepo
 )
 
 type IContactService interface {
@@ -33,6 +34,7 @@ type IContactService interface {
 	DeleteContact(userId, contactId string) (tErr *TError)
 	UpdateRemarkInfo(userId, contactId string, contactRemark *protos.ContactRemark) (tErr *TError)
 	GetContacts(userId string) (contacts []models.Contact, tErr *TError)
+	GetContactOperationMessageList(userId string, maxMessageTime int64) (contactOptsList []models.Contact, tErr *TError)
 }
 
 type ContactService struct {
@@ -44,6 +46,7 @@ func New() IContactService {
 
 	userRepo = NewUserRepo(mysqlDB)
 	contactRepo = NewContactRepo(mysqlDB)
+	//notificationLogRepo = NewNotificationLogRepo(mysqlDB)
 
 	return &ContactService{}
 }
@@ -71,8 +74,15 @@ func (cs *ContactService) RequestContact(userId, contactId, reqReason string) (t
 	// TODO: cache in redis, should replace to Push notification server
 	ctKey := fmt.Sprintf("CT-REQ-%s-%s", userId, contactId)
 	cacheContent := make(map[string]interface{})
+	cacheContent["userId"] = userId
 	cacheContent["contactId"] = contactId
-	cacheContent["reason"] = reqReason
+	cacheContent["addReason"] = reqReason
+	cacheContent["rejectReason"] = ""
+	cacheContent["messageId"] = utils.NewULID()
+	cacheContent["createdTime"] = utils.MakeTimestamp()
+	cacheContent["isNeedRemind"] = true
+	cacheContent["operationType"] = protos.ContactOperationMessage_ACCEPT_ACTIVE
+
 	jsonStr, err := utils.TransformMapToJSONString(cacheContent)
 	if err != nil {
 		logger.Errorf("redis operations error, transform map error: %s", err.Error())
@@ -109,8 +119,14 @@ func (cs *ContactService) RefusedContact(userId, contactId, refusedReason string
 	// TODO: cache in redis, should replace to Push notification server
 	ctKey := fmt.Sprintf("CT-REF-%s-%s", userId, contactId)
 	cacheContent := make(map[string]interface{})
+	cacheContent["userId"] = userId
 	cacheContent["contactId"] = contactId
-	cacheContent["reason"] = refusedReason
+	cacheContent["addReason"] = ""
+	cacheContent["rejectReason"] = refusedReason
+	cacheContent["messageId"] = utils.NewULID()
+	cacheContent["createdTime"] = utils.MakeTimestamp()
+	cacheContent["isNeedRemind"] = true
+	cacheContent["operationType"] = protos.ContactOperationMessage_REJECT_PASSIVE
 
 	jsonStr, err := utils.TransformMapToJSONString(cacheContent)
 	if err != nil {
@@ -153,7 +169,18 @@ func (cs *ContactService) AcceptContact(userId, contactId string) (tErr *TError)
 		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactRepeatOperation)
 	}
 
-	err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
+	cacheContent := make(map[string]interface{})
+	cacheContent["userId"] = userId
+	cacheContent["contactId"] = contactId
+	cacheContent["addReason"] = ""
+	cacheContent["rejectReason"] = ""
+	cacheContent["messageId"] = utils.NewULID()
+	cacheContent["createdTime"] = utils.MakeTimestamp()
+	cacheContent["isNeedRemind"] = true
+	cacheContent["operationType"] = protos.ContactOperationMessage_ACCEPT_PASSIVE
+	jsonStr, err := utils.TransformMapToJSONString(cacheContent)
+
+	err = myRedis.RSet(ctKey, jsonStr, DefaultExpiresTime)
 	if err != nil {
 		logger.Errorf("redis cache error: %s", err.Error())
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
@@ -183,7 +210,18 @@ func (cs *ContactService) DeleteContact(userId, contactId string) (tErr *TError)
 		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactRepeatOperation)
 	}
 
-	err = myRedis.RSet(ctKey, contactId, DefaultExpiresTime)
+	cacheContent := make(map[string]interface{})
+	cacheContent["userId"] = userId
+	cacheContent["contactId"] = contactId
+	cacheContent["addReason"] = ""
+	cacheContent["rejectReason"] = ""
+	cacheContent["messageId"] = utils.NewULID()
+	cacheContent["createdTime"] = utils.MakeTimestamp()
+	cacheContent["isNeedRemind"] = true
+	cacheContent["operationType"] = protos.ContactOperationMessage_DELETE_ACTIVE
+	jsonStr, err := utils.TransformMapToJSONString(cacheContent)
+
+	err = myRedis.RSet(ctKey, jsonStr, DefaultExpiresTime)
 	if err != nil {
 		// TODO: should log down exception information
 		logger.Errorf("redis cache error: %s", err.Error())
@@ -228,6 +266,20 @@ func (cs *ContactService) GetContacts(userId string) (contacts []models.Contact,
 	}
 
 	return contacts, nil
+}
+
+func (cs *ContactService) GetContactOperationMessageList(userId string, maxMessageTime int64) (contacts []models.Contact, tErr *TError) {
+	// TODO: should check the regx pattern
+	ctKey := fmt.Sprintf("^CT-.*%s*", userId)
+	_, err := myRedis.RHGetAll(ctKey)
+	if err != nil {
+		logger.Errorf("query user contacts operation message list error: %s", err.Error())
+		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
+	}
+
+
+
+	return nil, nil
 }
 
 func handleAcceptContact(userId string, contactId string) (err error) {

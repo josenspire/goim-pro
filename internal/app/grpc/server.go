@@ -229,6 +229,33 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 			logger.Errorf("init table constraint relation error: %s", err.Error())
 		}
 	}
+	// notification
+	if !db.HasTable(&models.NotificationMessage{}) {
+		err = db.Set(
+			"gorm:table_options",
+			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
+		).CreateTable(&models.NotificationMessage{}).Error
+		if err != nil {
+			logger.Errorf("initial mysql tables [notificationMsgs] error: %s", err.Error())
+			return
+		}
+	}
+	// notification
+	if !db.HasTable(&models.Notification{}) {
+		err = db.Set(
+			"gorm:table_options",
+			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
+		).CreateTable(&models.Notification{}).Error
+		if err != nil {
+			logger.Errorf("initial mysql tables [notifications] error: %s", err.Error())
+			return
+		}
+
+		err = db.Model(&models.Notification{}).AddForeignKey("messageId", "notificationMsgs(messageId)", "CASCADE", "CASCADE").Error
+		if err != nil {
+			logger.Errorf("init table constraint relation error: %s", err.Error())
+		}
+	}
 	return
 }
 

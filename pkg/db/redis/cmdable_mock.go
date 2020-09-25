@@ -9,6 +9,10 @@ type MockCmdable struct {
 	mock.Mock
 }
 
+func (m *MockCmdable) RHGetAll(key string) (strVal []string, err error) {
+	panic("implement me")
+}
+
 func (m *MockCmdable) RPing() (result string, err error) {
 	panic("implement me")
 }

@@ -81,7 +81,6 @@ func ResetPasswordByTelephone(t protos.UserServiceClient, channel string) {
 	var resetPasswordReq *protos.ResetPasswordReq
 	resetPasswordReq = &protos.ResetPasswordReq{
 		NewPassword: "112233445566",
-		OldPassword: "1234567890",
 		TargetAccount: &protos.ResetPasswordReq_Telephone{
 			Telephone: "13631210003",
 		},

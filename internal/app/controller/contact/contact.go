@@ -222,6 +222,42 @@ func (s *contactServer) GetContacts(ctx context.Context, req *protos.GrpcReq) (r
 	return
 }
 
+func (s *contactServer) GetContactOperationMessageList(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
+
+	var err error
+	var optsMessageReq protos.GetContactOperationMessageListReq
+	if err = utils.UnmarshalGRPCReq(req, &optsMessageReq); err != nil {
+		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
+		resp.Message = err.Error()
+		logger.Errorf(`unmarshal error: %v`, err)
+		return
+	}
+
+	userId := req.GetToken()
+
+	maxMessageTime := optsMessageReq.MaxMessageTime
+	contacts, tErr := contactService.GetContactOperationMessageList(userId, maxMessageTime)
+	if tErr != nil {
+		resp.Code = tErr.Code
+		resp.Message = tErr.Detail
+		return
+	}
+	if contacts == nil || len(contacts) == 0 {
+		return
+	}
+
+	getContactsResp := &protos.GetContactOperationMessageListResp{
+	}
+	anyData, err := utils.MarshalMessageToAny(getContactsResp)
+	if err != nil {
+		logger.Errorf("[get contacts] response marshal message error: %s", err.Error())
+		return
+	}
+	req.Data = anyData
+	return
+}
+
 func requestContactParameterCalibration(userId string, req *protos.RequestContactReq) (err error) {
 	csErr := errmsg.ErrInvalidParameters
 

@@ -20,6 +20,7 @@ type IMyRedis interface {
 	RGet(key string) (strVal string)
 	RSet(key string, value string, expiresTime time.Duration) (err error)
 	RDel(key string) (resultInt64 int64)
+	RHGetAll(key string) (strVal []string, err error)
 }
 
 type BaseClient struct {
@@ -82,4 +83,11 @@ func (c *BaseClient) RHGet(key string, fields ...string) (valueMap map[string]in
 		}
 	}
 	return valueMap, err
+}
+
+func (c *BaseClient) RHGetAll(key string) (strVal []string, err error) {
+
+	_ = c.HKeys(key)
+
+	return nil, nil
 }
