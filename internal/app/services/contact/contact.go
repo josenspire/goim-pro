@@ -8,6 +8,7 @@ import (
 	"goim-pro/internal/app/models"
 	. "goim-pro/internal/app/models/errors"
 	. "goim-pro/internal/app/repos/contact"
+	. "goim-pro/internal/app/repos/notification"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
 	mysqlsrv "goim-pro/pkg/db/mysql"
@@ -22,9 +23,9 @@ var (
 	myRedis redsrv.IMyRedis
 	mysqlDB *gorm.DB
 
-	userRepo    IUserRepo
-	contactRepo IContactRepo
-	//notificationLogRepo INotificationLogRepo
+	userRepo         IUserRepo
+	contactRepo      IContactRepo
+	notificationRepo INotificationRepo
 )
 
 type IContactService interface {
@@ -46,7 +47,7 @@ func New() IContactService {
 
 	userRepo = NewUserRepo(mysqlDB)
 	contactRepo = NewContactRepo(mysqlDB)
-	//notificationLogRepo = NewNotificationLogRepo(mysqlDB)
+	notificationRepo = NewNotificationRepo(mysqlDB)
 
 	return &ContactService{}
 }
@@ -72,28 +73,67 @@ func (cs *ContactService) RequestContact(userId, contactId, reqReason string) (t
 	}
 
 	// TODO: cache in redis, should replace to Push notification server
-	ctKey := fmt.Sprintf("CT-REQ-%s-%s", userId, contactId)
-	cacheContent := make(map[string]interface{})
-	cacheContent["userId"] = userId
-	cacheContent["contactId"] = contactId
-	cacheContent["addReason"] = reqReason
-	cacheContent["rejectReason"] = ""
-	cacheContent["messageId"] = utils.NewULID()
-	cacheContent["createdTime"] = utils.MakeTimestamp()
-	cacheContent["isNeedRemind"] = true
-	cacheContent["operationType"] = protos.ContactOperationMessage_ACCEPT_ACTIVE
+	//ctKey := fmt.Sprintf("CT-REQ-%s-%s", userId, contactId)
+	//cacheContent := make(map[string]interface{})
+	//cacheContent["userId"] = userId
+	//cacheContent["contactId"] = contactId
+	//cacheContent["addReason"] = reqReason
+	//cacheContent["rejectReason"] = ""
+	//cacheContent["messageId"] = utils.NewULID()
+	//cacheContent["createdTime"] = utils.MakeTimestamp()
+	//cacheContent["isNeedRemind"] = true
+	//cacheContent["operationType"] = protos.ContactOperationMessage_ACCEPT_ACTIVE
 
-	jsonStr, err := utils.TransformMapToJSONString(cacheContent)
+	//jsonStr, err := utils.TransformMapToJSONString(cacheContent)
+	//if err != nil {
+	//	logger.Errorf("redis operations error, transform map error: %s", err.Error())
+	//}
+	//err = myRedis.RSet(ctKey, jsonStr, DefaultExpiresTime)
+	//if err != nil {
+	//	logger.Errorf("redis cache error: %s", err.Error())
+	//	return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
+	//}
+	msgContent := make(map[string]interface{})
+	msgContent["addReason"] = reqReason
+	msgContent["rejectReason"] = ""
+	msgContent["isNeedRemind"] = true
+	msgContent["operationType"] = protos.ContactOperationMessage_ACCEPT_ACTIVE
+	jsonStr, _ := utils.TransformMapToJSONString(msgContent)
+	err = dispatchNotificationMessage(userId, contactId, protos.ContactOperationMessage_ACCEPT_ACTIVE, jsonStr)
 	if err != nil {
-		logger.Errorf("redis operations error, transform map error: %s", err.Error())
-	}
-	err = myRedis.RSet(ctKey, jsonStr, DefaultExpiresTime)
-
-	if err != nil {
-		logger.Errorf("redis cache error: %s", err.Error())
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
-	return
+	return nil
+}
+
+func dispatchNotificationMessage(userId, contactId string, operation protos.ContactOperationMessage_OperationType, strContent string) (err error) {
+	messageId := utils.NewULID()
+	notification := &models.Notification{
+		NotifyId:         utils.NewULID(),
+		MessageId:        messageId,
+		NotificationType: models.NotifyTypeSystem,
+		FromUserId:       userId,
+		ToUserId:         contactId,
+		IsNeedRemind:     true,
+		Status:           models.StsPending,
+		Message: models.NotificationMessage{
+			MessageId:    messageId,
+			MsgType:      models.MsgTypeContactRequest,
+			MsgOperation: int32(operation),
+			MsgContent:   strContent,
+		},
+	}
+
+	notifyMsg, err := notificationRepo.InsertOne(notification)
+	if err != nil {
+		logger.Errorf("insert new notification error: %s", err.Error())
+		return err
+	}
+
+	// TODO: send notification
+	logger.Info(notifyMsg)
+
+	return nil
 }
 
 // refused request contact
@@ -276,8 +316,6 @@ func (cs *ContactService) GetContactOperationMessageList(userId string, maxMessa
 		logger.Errorf("query user contacts operation message list error: %s", err.Error())
 		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
-
-
 
 	return nil, nil
 }

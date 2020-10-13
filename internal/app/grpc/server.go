@@ -230,17 +230,6 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 		}
 	}
 	// notification
-	if !db.HasTable(&models.NotificationMessage{}) {
-		err = db.Set(
-			"gorm:table_options",
-			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
-		).CreateTable(&models.NotificationMessage{}).Error
-		if err != nil {
-			logger.Errorf("initial mysql tables [notificationMsgs] error: %s", err.Error())
-			return
-		}
-	}
-	// notification
 	if !db.HasTable(&models.Notification{}) {
 		err = db.Set(
 			"gorm:table_options",
@@ -251,9 +240,20 @@ func initialMysqlTables(db *gorm.DB) (err error) {
 			return
 		}
 
-		err = db.Model(&models.Notification{}).AddForeignKey("messageId", "notificationMsgs(messageId)", "CASCADE", "CASCADE").Error
+		err = db.Model(&models.Notification{}).AddForeignKey("messageId", "`notificationMsgs`(`messageId`)", "CASCADE", "CASCADE").Error
 		if err != nil {
 			logger.Errorf("init table constraint relation error: %s", err.Error())
+		}
+	}
+	// notificationMsgs
+	if !db.HasTable(&models.NotificationMessage{}) {
+		err = db.Set(
+			"gorm:table_options",
+			"ENGINE=InnoDB DEFAULT CHARSET=utf8",
+		).CreateTable(&models.NotificationMessage{}).Error
+		if err != nil {
+			logger.Errorf("initial mysql tables [notificationMsgs] error: %s", err.Error())
+			return
 		}
 	}
 	return

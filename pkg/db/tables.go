@@ -7,5 +7,4 @@ const (
 	TableMembers          = "members"
 	TableNotifications    = "notifications"
 	TableNotificationMsgs = "notificationMsgs"
-	TableNotificationLogs = "notificationLogs"
 )
