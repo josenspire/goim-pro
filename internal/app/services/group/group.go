@@ -7,7 +7,6 @@ import (
 	"goim-pro/internal/app/models"
 	. "goim-pro/internal/app/models/errors"
 	. "goim-pro/internal/app/repos/group"
-	. "goim-pro/internal/app/repos/user"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	"goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
@@ -19,7 +18,6 @@ var (
 	logger  = logs.GetLogger("INFO")
 	mysqlDB *gorm.DB
 
-	userRepo  IUserRepo
 	groupRepo IGroupRepo
 )
 
@@ -27,7 +25,6 @@ type GroupService struct{}
 
 func New() *GroupService {
 	mysqlDB = mysqlsrv.NewMysql()
-	userRepo = NewUserRepo(mysqlDB)
 	groupRepo = NewGroupRepo(mysqlDB)
 	return &GroupService{}
 }
@@ -297,7 +294,7 @@ func buildGroupProfile(userId string, groupName string, memberIds []string) *mod
 	for i, userId := range memberIds {
 		members[i] = models.NewMember(userId, "")
 	}
-	return models.NewGroup(utils.NewULID(), userId, groupName, members)
+	return models.NewGroup(utils.NewULID(0), userId, groupName, members)
 }
 
 func buildMembersObject(groupId string, memberIds []string) (members []*models.Member) {

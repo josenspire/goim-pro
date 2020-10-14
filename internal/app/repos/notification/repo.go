@@ -15,7 +15,7 @@ type NotificationImpl Notification
 type INotificationRepo interface {
 	InsertOne(notification *Notification) (*Notification, error)
 	InsertMany(notification ...*Notification) (err error)
-	FindAll(condition interface{}) (notification []Notification, err error)
+	FindAll(userId string, fromDateStr string) (notification []Notification, err error)
 
 	// message
 	InsertMessages(messages ...*NotificationMessage) (err error)
@@ -63,8 +63,8 @@ func (n *NotificationImpl) InsertMany(notification ...*Notification) (err error)
 	return
 }
 
-func (n *NotificationImpl) FindAll(condition interface{}) (notifications []Notification, err error) {
-	db := mysqlDB.Preload("Message").Find(&notifications, condition)
+func (n *NotificationImpl) FindAll(userId string, fromDate string) (notifications []Notification, err error) {
+	db := mysqlDB.Preload("Message").Where("toUserId = ? and createdAt >= ?", userId, fromDate).Find(&notifications)
 	if db.RecordNotFound() {
 		return nil, nil
 	}
@@ -83,9 +83,9 @@ func (n *NotificationImpl) InsertMessages(messages ...*NotificationMessage) (err
 	for i, e := range messages {
 		nowDateTime := utils.TimeFormat(time.Now(), utils.MysqlDateTimeFormat)
 		if i == len(messages)-1 {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%v', '%s', '%s');", e.MessageId, e.MsgType, e.MsgContent, nowDateTime, nowDateTime))
+			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s');", e.MessageId, e.MsgType, e.MsgContent, nowDateTime, nowDateTime))
 		} else {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%v', '%s', '%s'),", e.MessageId, e.MsgType, e.MsgContent, nowDateTime, nowDateTime))
+			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s'),", e.MessageId, e.MsgType, e.MsgContent, nowDateTime, nowDateTime))
 		}
 	}
 	if err := mysqlDB.Exec(buffer.String()).Error; err != nil {

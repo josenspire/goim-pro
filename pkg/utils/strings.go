@@ -68,3 +68,16 @@ func StrArray2String(strArr []string, split string) (str string) {
 	}
 	return
 }
+
+func StrArrayDeduplication(strArr []string) (uniqStrArr []string) {
+	uniqStrArr = make([]string, 0, len(strArr))
+	var result = make(map[string]string, len(strArr))
+	for _, item := range strArr {
+		_, ok := result[item]
+		if !ok {
+			result[item] = item
+			uniqStrArr = append(uniqStrArr,  item)
+		}
+	}
+	return uniqStrArr
+}

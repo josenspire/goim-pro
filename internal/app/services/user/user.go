@@ -42,7 +42,7 @@ func (s *UserService) Register(userProfile *protos.UserProfile, password string)
 	var telephone = userProfile.Telephone
 	var email = userProfile.Email
 
-	userProfile.UserId = utils.NewULID()
+	userProfile.UserId = utils.NewULID(0)
 
 	isRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, email)
 	if err != nil {

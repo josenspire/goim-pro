@@ -27,3 +27,17 @@ func TestStrArray2String(t *testing.T) {
 		})
 	})
 }
+
+func TestStrArrayDeduplication(t *testing.T) {
+	var strArr = []string{
+		"a1", "a2", "a3", "a1", "a2",
+	}
+
+	uniqStrArr := StrArrayDeduplication(strArr)
+	Convey("should_deduplication_successful_then_return", t, func() {
+		So(len(uniqStrArr), ShouldEqual, 3)
+		So(uniqStrArr[0], ShouldEqual, "a1")
+		So(uniqStrArr[1], ShouldEqual, "a2")
+		So(uniqStrArr[2], ShouldEqual, "a3")
+	})
+}

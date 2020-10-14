@@ -237,21 +237,22 @@ func (s *contactServer) GetContactOperationMessageList(ctx context.Context, req 
 	userId := req.GetToken()
 
 	maxMessageTime := optsMessageReq.MaxMessageTime
-	contacts, tErr := contactService.GetContactOperationMessageList(userId, maxMessageTime)
+	notifications, tErr := contactService.GetContactOperationMessageList(userId, maxMessageTime)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail
 		return
 	}
-	if contacts == nil || len(contacts) == 0 {
+	if notifications == nil || len(notifications) == 0 {
 		return
 	}
 
-	getContactsResp := &protos.GetContactOperationMessageListResp{
+	getContactNotificationMsg := &protos.GetContactOperationMessageListResp{
+		MessageList:          converters.ConvertEntity2ProtoForNotificationMsg(notifications),
 	}
-	anyData, err := utils.MarshalMessageToAny(getContactsResp)
+	anyData, err := utils.MarshalMessageToAny(getContactNotificationMsg)
 	if err != nil {
-		logger.Errorf("[get contacts] response marshal message error: %s", err.Error())
+		logger.Errorf("[get contacts operations message] response marshal message error: %s", err.Error())
 		return
 	}
 	req.Data = anyData

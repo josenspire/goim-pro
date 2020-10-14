@@ -19,8 +19,6 @@ github.com/go-redis/redis/v7/internal/proto
 github.com/go-redis/redis/v7/internal/util
 # github.com/go-sql-driver/mysql v1.4.1
 github.com/go-sql-driver/mysql
-# github.com/gogo/protobuf v1.2.1
-github.com/gogo/protobuf/proto
 # github.com/golang/protobuf v1.3.5
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
@@ -53,6 +51,8 @@ github.com/konsorten/go-windows-terminal-sequences
 github.com/magiconair/properties
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
+# github.com/mozillazg/go-pinyin v0.18.0
+github.com/mozillazg/go-pinyin
 # github.com/oklog/ulid v1.3.1
 github.com/oklog/ulid
 # github.com/pelletier/go-toml v1.2.0

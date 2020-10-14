@@ -1,6 +1,8 @@
 package converters
 
 import (
+	"encoding/json"
+	"fmt"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
@@ -35,13 +37,48 @@ func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []
 				Location:    userProfile.Location,
 			},
 			RemarkInfo: &protos.ContactRemark{
-				RemarkName:           contact.RemarkName,
-				Description:          contact.Description,
-				Telephones:           strings.Split(contact.Telephone, ","),
-				Tags:                 strings.Split(contact.Tags, ","),
+				RemarkName:  contact.RemarkName,
+				Description: contact.Description,
+				Telephones:  strings.Split(contact.Telephone, ","),
+				Tags:        strings.Split(contact.Tags, ","),
 			},
 			SortId: utils.GetStringLetters(userProfile.Nickname),
 		}
 	}
 	return protoContacts
+}
+
+func ConvertEntity2ProtoForNotificationMsg(notifications []models.Notification) (protoContactNotificationMsg []*protos.ContactOperationMessage) {
+	protoContactNotificationMsg = make([]*protos.ContactOperationMessage, len(notifications))
+	for i, item := range notifications {
+		//userProfile := contact.User
+		var content = make(map[string]interface{})
+		if err := json.Unmarshal([]byte(item.Message.MsgContent), &content); err != nil {
+			fmt.Println(err)
+			return nil
+		}
+		protoContactNotificationMsg[i] = &protos.ContactOperationMessage{
+			Common: &protos.MessageCommon{
+				MessageId:    item.MessageId,
+				CreatedTime:  utils.ParseTimeToTimestamp(item.CreatedAt),
+				IsNeedRemind: item.IsNeedRemind,
+				SortId:       "",
+			},
+			TriggerProfile: &protos.UserProfile{
+				UserId:      "",
+				Telephone:   "",
+				Email:       "",
+				Nickname:    "",
+				Avatar:      "",
+				Description: "",
+				Sex:         0,
+				Birthday:    0,
+				Location:    "",
+			},
+			AddReason:    content["addReason"].(string),
+			RejectReason: content["rejectReason"].(string),
+			Type:         protos.ContactOperationMessage_OperationType(content["operationType"].(float64)),
+		}
+	}
+	return protoContactNotificationMsg
 }

@@ -108,9 +108,9 @@ func Register(t protos.UserServiceClient) {
 	registerReq := &protos.RegisterReq{
 		Password:         "1234567890",
 		Profile: &protos.UserProfile{
-			Telephone:   "13631210003",
-			Email:       "12345673@qq.com",
-			Nickname:    "JAMES03",
+			Telephone:   "13631210002",
+			Email:       "12345672@qq.com",
+			Nickname:    "JAMES02",
 			Avatar:      "https://www.baidu.com/avatar/header1.png",
 			Description: "Never settle",
 			Sex:         protos.UserProfile_MALE,

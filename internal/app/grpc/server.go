@@ -38,6 +38,7 @@ var (
 
 // server constructor
 func NewServer() *GRPCServer {
+	myRedis = redsrv.NewRedis()
 	return &GRPCServer{}
 }
 

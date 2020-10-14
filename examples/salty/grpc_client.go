@@ -124,7 +124,9 @@ func main() {
 			case "ct-fa":
 				t := protos.NewContactServiceClient(conn)
 				contact.GetContacts(t)
-
+			case "ct-nf":
+				t := protos.NewContactServiceClient(conn)
+				contact.GetContactOperationMessageList(t)
 			// groups
 			case "gp-ct":
 				t := protos.NewGroupServiceClient(conn)
@@ -173,6 +175,7 @@ func toolsIntroduce() {
 	logger.Info("** ['ct-rf']: refused contact request **")
 	logger.Info("** ['ct-udt']: update contact remark profile **")
 	logger.Info("** ['ct-fa']: get all contacts **")
+	logger.Info("** ['ct-nf']: get all notification messages **")
 
 	logger.Info("** *********************** **")
 	logger.Info("** ['gp-ct']: create new group **")
