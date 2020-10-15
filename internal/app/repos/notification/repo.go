@@ -1,10 +1,11 @@
-package ntft
+package ntf
 
 import (
 	"bytes"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	. "goim-pro/internal/app/models"
+	tbl "goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"time"
@@ -13,12 +14,15 @@ import (
 type NotificationImpl Notification
 
 type INotificationRepo interface {
+	// notifications
 	InsertOne(notification *Notification) (*Notification, error)
-	InsertMany(notification ...*Notification) (err error)
 	FindAll(userId string, fromDateStr string) (notification []Notification, err error)
+	FindOne(condition interface{}) (ntf *Notification, err error)
+	UpdateOne(condition, updated interface{}) (err error)
 
-	// message
+	// messages
 	InsertMessages(messages ...*NotificationMessage) (err error)
+	UpdateOneMessage(condition, updated interface{}) (nft *Notification, err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -40,31 +44,8 @@ func (n *NotificationImpl) InsertOne(notification *Notification) (*Notification,
 	return _db.Value.(*Notification), nil
 }
 
-func (n *NotificationImpl) InsertMany(notification ...*Notification) (err error) {
-	// BatchSave 批量插入数据
-	var buffer bytes.Buffer
-	sql := "INSERT INTO `notifications` (`notifyId`, `type`, `fromUserId`, `toUserId`, `remind`, `status`, `createdAt`, `updatedAt`) values"
-	if _, err := buffer.WriteString(sql); err != nil {
-		return err
-	}
-
-	for i, e := range notification {
-		nowDateTime := utils.TimeFormat(time.Now(), utils.MysqlDateTimeFormat)
-
-		if i == len(notification)-1 {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%v', '%s', '%s', '%s', '%s');", e.NotifyId, e.MessageId, e.NotificationType, e.IsNeedRemind, e.FromUserId, e.ToUserId, nowDateTime, nowDateTime))
-		} else {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%v', '%s', '%s', '%s', '%s'),", e.NotifyId, e.MessageId, e.NotificationType, e.IsNeedRemind, e.FromUserId, e.ToUserId, nowDateTime, nowDateTime))
-		}
-	}
-	if err = mysqlDB.Exec(buffer.String()).Error; err != nil {
-		logger.Errorf("exec insert notification notification error: %v", err)
-	}
-	return
-}
-
 func (n *NotificationImpl) FindAll(userId string, fromDate string) (notifications []Notification, err error) {
-	db := mysqlDB.Preload("Message").Where("toUserId = ? and createdAt >= ?", userId, fromDate).Find(&notifications)
+	db := mysqlDB.Preload("Message").Where("targetId = ? and createdAt >= ?", userId, fromDate).Find(&notifications)
 	if db.RecordNotFound() {
 		return nil, nil
 	}
@@ -74,18 +55,37 @@ func (n *NotificationImpl) FindAll(userId string, fromDate string) (notification
 	return notifications, nil
 }
 
+func (n *NotificationImpl) FindOne(condition interface{}) (ntf *Notification, err error) {
+	db := mysqlDB.Preload("Message").Find(&ntf, condition)
+	if db.RecordNotFound() {
+		return nil, nil
+	}
+	if err = db.Error; err != nil {
+		return nil, err
+	}
+	return ntf, nil
+}
+
+func (n *NotificationImpl) UpdateOne(condition, updated interface{}) (err error) {
+	db := mysqlDB.Table(tbl.TableNotifications).Where(condition).Update(updated)
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to update notifications: %v", err)
+	}
+	return
+}
+
 func (n *NotificationImpl) InsertMessages(messages ...*NotificationMessage) (err error) {
 	var buffer bytes.Buffer
-	sql := "INSERT INTO `notificationMsgs` (`messageId`, `msgType`, `content`, `createdAt`, `updatedAt`) values"
+	sql := "INSERT INTO `notificationMsgs` (`messageId`, `msgType`, `content`, `extra`, `createdAt`, `updatedAt`) values"
 	if _, err := buffer.WriteString(sql); err != nil {
 		return err
 	}
 	for i, e := range messages {
 		nowDateTime := utils.TimeFormat(time.Now(), utils.MysqlDateTimeFormat)
 		if i == len(messages)-1 {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s');", e.MessageId, e.MsgType, e.MsgContent, nowDateTime, nowDateTime))
+			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%d', '%s', '%s', '%s', '%s');", e.MessageId, e.MsgType, e.MsgOperation, e.MsgContent, e.MsgExtra, nowDateTime, nowDateTime))
 		} else {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%s', '%s'),", e.MessageId, e.MsgType, e.MsgContent, nowDateTime, nowDateTime))
+			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%d', '%s', '%s', '%s', '%s'),", e.MessageId, e.MsgType, e.MsgOperation, e.MsgContent, e.MsgExtra, nowDateTime, nowDateTime))
 		}
 	}
 	if err := mysqlDB.Exec(buffer.String()).Error; err != nil {
@@ -93,4 +93,12 @@ func (n *NotificationImpl) InsertMessages(messages ...*NotificationMessage) (err
 		return err
 	}
 	return nil
+}
+
+func (n *NotificationImpl) UpdateOneMessage(condition, updated interface{}) (nft *Notification, err error) {
+	db := mysqlDB.Table(tbl.TableNotificationMsgs).Where(condition).Update(updated)
+	if err = db.Error; err != nil {
+		logger.Errorf("error happened to update notification msg: %v", err)
+	}
+	return
 }

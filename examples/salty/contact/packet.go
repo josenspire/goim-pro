@@ -24,7 +24,7 @@ func RequestContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd05VTTRNRXBMU2xwR09VMVlSMVE0V0ZNeVMxYz0iLCJleHAiOjE2MDI5MTk4OTksImlhdCI6MTYwMjY2MDY5OSwiaXNzIjoic2FsdHlfaW0ifQ.2YTHp_upOI53PIIZtW2iozp5Tzrkz40qVC-xw0_joCU",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd05VTTRNRXBMU2xwR09VMVlSMVE0V0ZNeVMxYz0iLCJleHAiOjE2MDMwMDM3NDcsImlhdCI6MTYwMjc0NDU0NywiaXNzIjoic2FsdHlfaW0ifQ.bATDMIiXyMzbYegMs_gV45fOznoywNRiSdN7LhBY18I",
 		Data:     anyData,
 	}
 
@@ -46,7 +46,7 @@ func AcceptContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDI5MTk4OTksImlhdCI6MTYwMjY2MDY5OSwiaXNzIjoic2FsdHlfaW0ifQ.-3pBo2H0eW5NYLTaLN29pFDQX9EcwV85DdBddRguMTY",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDMwMDM3NDcsImlhdCI6MTYwMjc0NDU0NywiaXNzIjoic2FsdHlfaW0ifQ.LL_59Su7vWcmwYFfplDGbimldTMNUYr93KPg8A7CWOA",
 		Data:     anyData,
 	}
 
@@ -69,7 +69,7 @@ func RefusedContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDI5MTk4OTksImlhdCI6MTYwMjY2MDY5OSwiaXNzIjoic2FsdHlfaW0ifQ.-3pBo2H0eW5NYLTaLN29pFDQX9EcwV85DdBddRguMTY",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDMwMDM3NDcsImlhdCI6MTYwMjc0NDU0NywiaXNzIjoic2FsdHlfaW0ifQ.LL_59Su7vWcmwYFfplDGbimldTMNUYr93KPg8A7CWOA",
 		Data:     anyData,
 	}
 
@@ -137,7 +137,7 @@ func GetContactOperationMessageList(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDI5MTk4OTksImlhdCI6MTYwMjY2MDY5OSwiaXNzIjoic2FsdHlfaW0ifQ.-3pBo2H0eW5NYLTaLN29pFDQX9EcwV85DdBddRguMTY",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDMwMDM3NDcsImlhdCI6MTYwMjc0NDU0NywiaXNzIjoic2FsdHlfaW0ifQ.LL_59Su7vWcmwYFfplDGbimldTMNUYr93KPg8A7CWOA",
 		Data:     anyData,
 	}
 

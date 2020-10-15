@@ -25,7 +25,7 @@ func NewNotification(db *gorm.DB) INotificationLogRepo {
 func (n *NotificationLogImpl) InsertMany(notification ...*models.NotificationLog) (err error) {
 	// BatchSave 批量插入数据
 	var buffer bytes.Buffer
-	sql := "INSERT INTO `notifications` (`id`, `messageId`, `type`, `remind`, `fromUserId`, `toUserId`, `createdAt`, `updatedAt`) values"
+	sql := "INSERT INTO `notifications` (`id`, `messageId`, `type`, `remind`, `senderId`, `targetId`, `createdAt`, `updatedAt`) values"
 	if _, err := buffer.WriteString(sql); err != nil {
 		return err
 	}
@@ -34,9 +34,9 @@ func (n *NotificationLogImpl) InsertMany(notification ...*models.NotificationLog
 	//	nowDateTime := utils.TimeFormat(time.Now(), utils.MysqlDateTimeFormat)
 	//
 	//	if i == len(notification)-1 {
-	//		buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%v', '%s', '%s', '%s', '%s');", e.Id, e.MessageId, e.NotificationType, e.IsNeedRemind, e.FromUserId, e.ToUserId, nowDateTime, nowDateTime))
+	//		buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%v', '%s', '%s', '%s', '%s');", e.Id, e.MessageId, e.NotificationType, e.IsNeedRemind, e.SenderId, e.TargetId, nowDateTime, nowDateTime))
 	//	} else {
-	//		buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%v', '%s', '%s', '%s', '%s'),", e.Id, e.MessageId, e.NotificationType, e.IsNeedRemind, e.FromUserId, e.ToUserId, nowDateTime, nowDateTime))
+	//		buffer.WriteString(fmt.Sprintf("('%s', '%s', '%s', '%v', '%s', '%s', '%s', '%s'),", e.Id, e.MessageId, e.NotificationType, e.IsNeedRemind, e.SenderId, e.TargetId, nowDateTime, nowDateTime))
 	//	}
 	//}
 	//if err = mysqlDB.Exec(buffer.String()).Error; err != nil {
