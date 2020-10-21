@@ -9,6 +9,7 @@ import (
 	. "goim-pro/internal/app/repos/notification"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
+	tbl "goim-pro/pkg/db"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	"goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
@@ -107,18 +108,18 @@ func (cs *ContactService) RefusedContact(userId, contactId, refusedReason string
 	msgContent["operationType"] = protos.ContactOperationMessage_REJECT_ACTIVE // 推送给被拒绝用户
 	jsonStr, _ := utils.TransformMapToJSONString(msgContent)
 
-	ts := mysqlDB.Begin()
+	tx := mysqlDB.Begin()
 	ntlErr := dispatchNotificationMessage(userId, contactId, models.MsgTypeContactRefuse, protos.ContactOperationMessage_REJECT_ACTIVE, jsonStr, 0)
 	if ntlErr != nil {
-		ts.Callback()
+		tx.Callback()
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, ntlErr)
 	}
 	rErr := refreshNotificationMessageStatus(userId, contactId, protos.ContactOperationMessage_REQUEST_PASSIVE, models.StsReceived)
 	if rErr != nil {
-		ts.Callback()
+		tx.Callback()
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, rErr)
 	}
-	ts.Commit()
+	tx.Commit()
 	return
 }
 
@@ -310,17 +311,30 @@ func dispatchNotificationMessage(userId, contactId string, msgType string, opera
 }
 
 func refreshNotificationMessageStatus(userId string, contactId string, operation protos.ContactOperationMessage_OperationType, status string) (err error) {
-	condition := make(map[string]interface{})
-	condition["senderId"] = contactId
-	condition["targetId"] = userId
+	ntfCondition := make(map[string]interface{})
+	ntfCondition["senderId"] = contactId
+	ntfCondition["targetId"] = userId
 
-	updated := &models.Notification{
+	ntfUpdated := &models.Notification{
 		IsNeedRemind: false,
 		Status:       status,
-		Message: models.NotificationMessage{
-			MsgOperation: int32(operation),
-		},
 	}
-	err = notificationRepo.UpdateOne(condition, updated)
-	return err
+	var ntf = new(models.Notification)
+	tx := mysqlDB.Begin()
+	if err := tx.Table(tbl.TableNotifications).Where(ntfCondition).Update(ntfUpdated).First(ntf).Error; err != nil {
+		tx.Rollback()
+		logger.Errorf("error happened to update notification: %v", err)
+		return err
+	}
+	msgCondition := make(map[string]interface{})
+	msgCondition["messageId"] = ntf.MessageId
+	msgUpdated := &models.NotificationMessage{
+		MsgOperation: int32(operation),
+	}
+	if err := tx.Table(tbl.TableNotificationMsgs).Where(msgCondition).Update(msgUpdated).Error; err != nil {
+		tx.Rollback()
+		logger.Errorf("error happened to update notification msg: %v", err)
+		return err
+	}
+	return tx.Commit().Error
 }

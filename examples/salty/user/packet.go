@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	UserId = "01E07SG858N3CGV5M1APVQKZYR"
+	UserId = "01EMK01VY8820C95MH3ZGN3JXQ"
 	logger = logs.GetLogger("INFO")
 )
 
@@ -274,7 +274,7 @@ func QueryUserInfo(t protos.UserServiceClient, typeStr string) {
 	case "EMAIL":
 		queryUserInfoReq = &protos.QueryUserInfoReq{
 			TargetAccount: &protos.QueryUserInfoReq_Email{
-				Email: "12345@qq.com",
+				Email: "12345673@qq.com",
 			},
 		}
 		break
@@ -286,7 +286,7 @@ func QueryUserInfo(t protos.UserServiceClient, typeStr string) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTURkVFJ6ZzFPRTR6UTBkV05VMHhRVkJXVVV0YVdWST0iLCJleHAiOjE1ODM0MTY1MDAsImlhdCI6MTU4MzE1NzMwMCwiaXNzIjoic2FsdHlfaW0ifQ.rvvCMfds-w52BpxIBZQLIDwGUuuZyAk02zrIixVXNRM",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDM1Mjg0NjIsImlhdCI6MTYwMzI2OTI2MiwiaXNzIjoic2FsdHlfaW0ifQ.BFFlewc59OaVzAiDbVvaH0KdL1lWqttTJ0dIWT4dpE4",
 		Data:     anyData,
 	}
 
