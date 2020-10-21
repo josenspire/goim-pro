@@ -289,7 +289,7 @@ func dispatchNotificationMessage(userId, contactId string, msgType string, opera
 		ObjectName:       models.ObjectNameCustomContact, // 单用户通知
 		NotificationType: models.NotifyTypeSystem,
 		IsNeedRemind:     true,
-		Status:           models.StsPending,
+		Status:           models.StsSent,
 		Message: models.NotificationMessage{
 			MessageId:    messageId,
 			MsgType:      msgType,

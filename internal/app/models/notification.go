@@ -50,7 +50,9 @@ type Notification struct {
 	ObjectName       string              `json:"objectName" gorm:"column:objectName; type:varchar(50); not null"`
 	IsNeedRemind     bool                `json:"remind" gorm:"column:remind; type:varchar(32); not null"`
 	Status           string              `json:"status" gorm:"column:status; type:varchar(32); not null"`
-	Message          NotificationMessage
+	Message          NotificationMessage `gorm:"ForeignKey:MessageId"`
+	Sender           User                `gorm:"ForeignKey:senderId"`
+	Receiver         User                `gorm:"ForeignKey:targetId"`
 	base.BaseModel
 }
 

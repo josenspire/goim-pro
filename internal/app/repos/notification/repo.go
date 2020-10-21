@@ -45,13 +45,16 @@ func (n *NotificationImpl) InsertOne(notification *Notification) (*Notification,
 }
 
 func (n *NotificationImpl) FindAll(userId string, fromDate string) (notifications []Notification, err error) {
-	db := mysqlDB.Preload("Message").Where("targetId = ? and createdAt >= ?", userId, fromDate).Find(&notifications)
+	db := mysqlDB.Preload("Message").Preload("Sender").Find(&notifications, "targetId = ? and createdAt >= ?", userId, fromDate)
+	//mysqlDB.Find(&notifications, "targetId = ? and createdAt >= ?", userId, fromDate).Preload("User").Related(&groupProfile.Members, "Members")
+	//db := mysqlDB.Preload("Message").Where("targetId = ? and createdAt >= ?", userId, fromDate).Find(&notifications)
 	if db.RecordNotFound() {
 		return nil, nil
 	}
 	if err = db.Error; err != nil {
 		return nil, err
 	}
+
 	return notifications, nil
 }
 

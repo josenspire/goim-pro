@@ -218,7 +218,7 @@ func (s *contactServer) GetContacts(ctx context.Context, req *protos.GrpcReq) (r
 		logger.Errorf("[get contacts] response marshal message error: %s", err.Error())
 		return
 	}
-	req.Data = anyData
+	resp.Data = anyData
 	return
 }
 
@@ -255,7 +255,7 @@ func (s *contactServer) GetContactOperationMessageList(ctx context.Context, req 
 		logger.Errorf("[get contacts operations message] response marshal message error: %s", err.Error())
 		return
 	}
-	req.Data = anyData
+	resp.Data = anyData
 	return
 }
 

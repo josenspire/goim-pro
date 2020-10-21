@@ -14,7 +14,7 @@ var (
 
 func RequestContact(t protos.ContactServiceClient) {
 	reqContactReq := &protos.RequestContactReq{
-		UserId: "01EMK01VY8820C95MH3ZGN3JXQ", // 13631210001
+		UserId: "01EN0AHCMRMM3R1DGD38KV7WY8", // 13631210001
 		// UserId: "01E4QYJBERVD8E5N9SXAEGXMB8", // 13631210002
 		Reason: "你好，交个朋友！",
 	}
@@ -24,7 +24,7 @@ func RequestContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd05VTTRNRXBMU2xwR09VMVlSMVE0V0ZNeVMxYz0iLCJleHAiOjE2MDMwMDM3NDcsImlhdCI6MTYwMjc0NDU0NywiaXNzIjoic2FsdHlfaW0ifQ.bATDMIiXyMzbYegMs_gV45fOznoywNRiSdN7LhBY18I",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVGpCQlNFVkxPRnBXU0RVMVZqQlpXVk5ZV2pkRFN6az0iLCJleHAiOjE2MDM1NDEwMzIsImlhdCI6MTYwMzI4MTgzMiwiaXNzIjoic2FsdHlfaW0ifQ.IZGY-283ScV8KFSmqhn5q_BPBtC9WIVp2ZytH5XGLwU",
 		Data:     anyData,
 	}
 
@@ -38,7 +38,7 @@ func RequestContact(t protos.ContactServiceClient) {
 
 func AcceptContact(t protos.ContactServiceClient) {
 	acpContactReq := &protos.AcceptContactReq{
-		UserId: "01EMK05C80JKJZF9MXGT8XS2KW",
+		UserId: "01EN0AHEK8ZVH55V0YYSXZ7CK9",
 	}
 	anyData, _ := utils.MarshalMessageToAny(acpContactReq)
 	grpcReq := &protos.GrpcReq{
@@ -46,7 +46,7 @@ func AcceptContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDMwMDM3NDcsImlhdCI6MTYwMjc0NDU0NywiaXNzIjoic2FsdHlfaW0ifQ.LL_59Su7vWcmwYFfplDGbimldTMNUYr93KPg8A7CWOA",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVGpCQlNFTk5VazFOTTFJeFJFZEVNemhMVmpkWFdUZz0iLCJleHAiOjE2MDM1NDExNjAsImlhdCI6MTYwMzI4MTk2MCwiaXNzIjoic2FsdHlfaW0ifQ.OnXfVm9VNh4jouw4TAqi_acSW39uw5ajP_MEf8ztEsI",
 		Data:     anyData,
 	}
 
@@ -60,7 +60,7 @@ func AcceptContact(t protos.ContactServiceClient) {
 
 func RefusedContact(t protos.ContactServiceClient) {
 	refusedContactReq := &protos.RefusedContactReq{
-		UserId: "01EMK05C80JKJZF9MXGT8XS2KW",
+		UserId: "01EN0AHEK8ZVH55V0YYSXZ7CK9",
 		Reason: "我喜欢小姐姐",
 	}
 	anyData, _ := utils.MarshalMessageToAny(refusedContactReq)
@@ -69,7 +69,7 @@ func RefusedContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDMwMDM3NDcsImlhdCI6MTYwMjc0NDU0NywiaXNzIjoic2FsdHlfaW0ifQ.LL_59Su7vWcmwYFfplDGbimldTMNUYr93KPg8A7CWOA",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVGpCQlNFTk5VazFOTTFJeFJFZEVNemhMVmpkWFdUZz0iLCJleHAiOjE2MDM1NDExNjAsImlhdCI6MTYwMzI4MTk2MCwiaXNzIjoic2FsdHlfaW0ifQ.OnXfVm9VNh4jouw4TAqi_acSW39uw5ajP_MEf8ztEsI",
 		Data:     anyData,
 	}
 
@@ -137,7 +137,7 @@ func GetContactOperationMessageList(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDMwMDM3NDcsImlhdCI6MTYwMjc0NDU0NywiaXNzIjoic2FsdHlfaW0ifQ.LL_59Su7vWcmwYFfplDGbimldTMNUYr93KPg8A7CWOA",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVGpCQlNFTk5VazFOTTFJeFJFZEVNemhMVmpkWFdUZz0iLCJleHAiOjE2MDM1NDExNjAsImlhdCI6MTYwMzI4MTk2MCwiaXNzIjoic2FsdHlfaW0ifQ.OnXfVm9VNh4jouw4TAqi_acSW39uw5ajP_MEf8ztEsI",
 		Data:     anyData,
 	}
 

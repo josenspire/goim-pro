@@ -51,12 +51,12 @@ func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []
 func ConvertEntity2ProtoForNotificationMsg(notifications []models.Notification) (protoContactNotificationMsg []*protos.ContactOperationMessage) {
 	protoContactNotificationMsg = make([]*protos.ContactOperationMessage, len(notifications))
 	for i, item := range notifications {
-		//userProfile := contact.User
 		var content = make(map[string]interface{})
 		if err := json.Unmarshal([]byte(item.Message.MsgContent), &content); err != nil {
 			fmt.Println(err)
 			return nil
 		}
+		sender := item.Sender
 		protoContactNotificationMsg[i] = &protos.ContactOperationMessage{
 			Common: &protos.MessageCommon{
 				MessageId:    item.MessageId,
@@ -65,15 +65,15 @@ func ConvertEntity2ProtoForNotificationMsg(notifications []models.Notification) 
 				SortId:       "",
 			},
 			TriggerProfile: &protos.UserProfile{
-				UserId:      "",
-				Telephone:   "",
-				Email:       "",
-				Nickname:    "",
-				Avatar:      "",
-				Description: "",
-				Sex:         0,
-				Birthday:    0,
-				Location:    "",
+				UserId:      sender.UserId,
+				Telephone:   sender.Telephone,
+				Email:       sender.Email,
+				Nickname:    sender.Nickname,
+				Avatar:      sender.Avatar,
+				Description: sender.Description,
+				Sex:         consts.UserSexStringMapping[sender.Sex],
+				Birthday:    sender.Birthday,
+				Location:    sender.Location,
 			},
 			AddReason:    content["addReason"].(string),
 			RejectReason: content["rejectReason"].(string),
