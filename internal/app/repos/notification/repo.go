@@ -79,16 +79,16 @@ func (n *NotificationImpl) UpdateOne(condition, updated interface{}) (err error)
 
 func (n *NotificationImpl) InsertMessages(messages ...*NotificationMessage) (err error) {
 	var buffer bytes.Buffer
-	sql := "INSERT INTO `notificationMsgs` (`messageId`, `msgType`, `content`, `extra`, `createdAt`, `updatedAt`) values"
+	sql := "INSERT INTO `notificationMsgs` (`messageId`, `content`, `extra`, `createdAt`, `updatedAt`) values"
 	if _, err := buffer.WriteString(sql); err != nil {
 		return err
 	}
 	for i, e := range messages {
 		nowDateTime := utils.TimeFormat(time.Now(), utils.MysqlDateTimeFormat)
 		if i == len(messages)-1 {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%d', '%s', '%s', '%s', '%s');", e.MessageId, e.MsgType, e.MsgOperation, e.MsgContent, e.MsgExtra, nowDateTime, nowDateTime))
+			buffer.WriteString(fmt.Sprintf("('%s', '%d', '%s', '%s', '%s', '%s');", e.MessageId, e.MsgOperation, e.MsgContent, e.MsgExtra, nowDateTime, nowDateTime))
 		} else {
-			buffer.WriteString(fmt.Sprintf("('%s', '%s', '%d', '%s', '%s', '%s', '%s'),", e.MessageId, e.MsgType, e.MsgOperation, e.MsgContent, e.MsgExtra, nowDateTime, nowDateTime))
+			buffer.WriteString(fmt.Sprintf("('%s', '%d', '%s', '%s', '%s', '%s'),", e.MessageId, e.MsgOperation, e.MsgContent, e.MsgExtra, nowDateTime, nowDateTime))
 		}
 	}
 	if err := mysqlDB.Exec(buffer.String()).Error; err != nil {

@@ -74,7 +74,7 @@ func (cs *ContactService) RequestContact(userId, contactId, reqReason string) (t
 	msgContent["isNeedRemind"] = true
 	msgContent["operationType"] = protos.ContactOperationMessage_REQUEST_ACTIVE
 	jsonStr, _ := utils.TransformMapToJSONString(msgContent)
-	err = dispatchNotificationMessage(userId, contactId, models.MsgTypeContactRequest, protos.ContactOperationMessage_REQUEST_ACTIVE, jsonStr, 0)
+	err = dispatchNotificationMessage(userId, contactId, models.MsgTypeContactRequest, protos.ContactOperationMessage_REQUEST_ACTIVE, jsonStr, "", 0)
 	if err != nil {
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
@@ -101,25 +101,21 @@ func (cs *ContactService) RefusedContact(userId, contactId, refusedReason string
 		return NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrContactAlreadyExists)
 	}
 
+	rErr := refreshNotificationMessageStatus(userId, contactId, models.MsgTypeContactRequest, protos.ContactOperationMessage_REJECT_PASSIVE, models.StsReceived)
+	if rErr != nil {
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, rErr)
+	}
+
 	msgContent := make(map[string]interface{})
 	msgContent["addReason"] = ""
 	msgContent["rejectReason"] = refusedReason
 	msgContent["isNeedRemind"] = true
-	msgContent["operationType"] = protos.ContactOperationMessage_REJECT_ACTIVE // 推送给被拒绝用户
+	msgContent["operationType"] = protos.ContactOperationMessage_REJECT_PASSIVE // 推送给被拒绝用户
 	jsonStr, _ := utils.TransformMapToJSONString(msgContent)
-
-	tx := mysqlDB.Begin()
-	ntlErr := dispatchNotificationMessage(userId, contactId, models.MsgTypeContactRefuse, protos.ContactOperationMessage_REJECT_ACTIVE, jsonStr, 0)
+	ntlErr := dispatchNotificationMessage(userId, contactId, models.MsgTypeContactRefuse, protos.ContactOperationMessage_REJECT_ACTIVE, jsonStr, "", 0)
 	if ntlErr != nil {
-		tx.Callback()
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, ntlErr)
 	}
-	rErr := refreshNotificationMessageStatus(userId, contactId, protos.ContactOperationMessage_REQUEST_PASSIVE, models.StsReceived)
-	if rErr != nil {
-		tx.Callback()
-		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, rErr)
-	}
-	tx.Commit()
 	return
 }
 
@@ -148,14 +144,19 @@ func (cs *ContactService) AcceptContact(userId, contactId string) (tErr *TError)
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 
+	rErr := refreshNotificationMessageStatus(userId, contactId, models.MsgTypeContactAccept, protos.ContactOperationMessage_ACCEPT_PASSIVE, models.StsReceived)
+	if rErr != nil {
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, rErr)
+	}
+
 	msgContent := make(map[string]interface{})
 	msgContent["addReason"] = ""
 	msgContent["rejectReason"] = ""
 	msgContent["isNeedRemind"] = true
 	msgContent["operationType"] = protos.ContactOperationMessage_ACCEPT_PASSIVE
 	jsonStr, _ := utils.TransformMapToJSONString(msgContent)
-	err = dispatchNotificationMessage(userId, contactId, models.MsgTypeContactAccept, protos.ContactOperationMessage_REJECT_PASSIVE, jsonStr, 0) // 推送给被接受的用户
-	err = dispatchNotificationMessage(contactId, userId, models.MsgTypeContactAccept, protos.ContactOperationMessage_REJECT_ACTIVE, jsonStr, 1)  // 推送给主动接受的用户
+	err = dispatchNotificationMessage(userId, contactId, models.MsgTypeContactAccept, protos.ContactOperationMessage_REJECT_PASSIVE, jsonStr, "", 0) // 推送给被接受的用户
+	err = dispatchNotificationMessage(contactId, userId, models.MsgTypeContactAccept, protos.ContactOperationMessage_REJECT_ACTIVE, jsonStr, "", 1)  // 推送给主动接受的用户
 	if err != nil {
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
@@ -179,16 +180,16 @@ func (cs *ContactService) DeleteContact(userId, contactId string) (tErr *TError)
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 
-	msgContent := make(map[string]interface{})
-	msgContent["addReason"] = ""
-	msgContent["rejectReason"] = ""
-	msgContent["isNeedRemind"] = true
-	msgContent["operationType"] = protos.ContactOperationMessage_DELETE_ACTIVE
-	jsonStr, _ := utils.TransformMapToJSONString(msgContent)
-	err = dispatchNotificationMessage(userId, contactId, models.MsgTypeContactDelete, protos.ContactOperationMessage_DELETE_ACTIVE, jsonStr, 0) // 推送给当前用户
-	if err != nil {
-		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
-	}
+	//msgContent := make(map[string]interface{})
+	//msgContent["addReason"] = ""
+	//msgContent["rejectReason"] = ""
+	//msgContent["isNeedRemind"] = true
+	//msgContent["operationType"] = protos.ContactOperationMessage_DELETE_ACTIVE
+	//jsonStr, _ := utils.TransformMapToJSONString(msgContent)
+	//err = dispatchNotificationMessage(userId, contactId, models.MsgTypeContactDelete, protos.ContactOperationMessage_DELETE_ACTIVE, jsonStr, "", 0) // 推送给当前用户
+	//if err != nil {
+	//	return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
+	//}
 
 	return
 }
@@ -279,22 +280,23 @@ func handleUpdateContactRemark(userId string, contactId string, pbProfile *proto
 	return
 }
 
-func dispatchNotificationMessage(userId, contactId string, msgType string, operation protos.ContactOperationMessage_OperationType, strContent string, randomSeed int64) (err error) {
+func dispatchNotificationMessage(senderId, targetId, msgType string, operation protos.ContactOperationMessage_OperationType, strContent, strExtra string, randomSeed int64) (err error) {
 	messageId := utils.NewULID(randomSeed)
 	notification := &models.Notification{
 		NtfId:            utils.NewULID(randomSeed),
 		MessageId:        messageId,
-		SenderId:         userId,
-		TargetId:         contactId,
+		SenderId:         senderId,
+		TargetId:         targetId,
 		ObjectName:       models.ObjectNameCustomContact, // 单用户通知
 		NotificationType: models.NotifyTypeSystem,
+		MsgType:          msgType,
 		IsNeedRemind:     true,
 		Status:           models.StsSent,
 		Message: models.NotificationMessage{
 			MessageId:    messageId,
-			MsgType:      msgType,
 			MsgOperation: int32(operation),
 			MsgContent:   strContent,
+			MsgExtra:     strExtra,
 		},
 	}
 
@@ -310,10 +312,11 @@ func dispatchNotificationMessage(userId, contactId string, msgType string, opera
 	return nil
 }
 
-func refreshNotificationMessageStatus(userId string, contactId string, operation protos.ContactOperationMessage_OperationType, status string) (err error) {
+func refreshNotificationMessageStatus(targetId, senderId string, msgType string, operation protos.ContactOperationMessage_OperationType, status string) (err error) {
 	ntfCondition := make(map[string]interface{})
-	ntfCondition["senderId"] = contactId
-	ntfCondition["targetId"] = userId
+	ntfCondition["senderId"] = senderId
+	ntfCondition["targetId"] = targetId
+	ntfCondition["msgType"] = msgType
 
 	ntfUpdated := &models.Notification{
 		IsNeedRemind: false,
