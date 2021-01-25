@@ -2,10 +2,8 @@ syntax = "proto3";
 
 package com.salty.protos;
 
-import "google/protobuf/any.proto";
-
 service Waiter {
-    rpc SayHello (GrpcReq) returns (GrpcResp) {
+    rpc SayHello (HelloReq) returns (HelloResp) {
     }
 }
 
@@ -17,16 +15,4 @@ message HelloReq {
 //defined Res message struct
 message HelloResp {
     string message = 1;
-}
-
-// Basic Request
-message GrpcReq {
-    google.protobuf.Any data = 1;
-}
-
-// Basic Response
-message GrpcResp {
-    int32 code = 1;
-    string message = 2;
-    google.protobuf.Any data = 3;
 }

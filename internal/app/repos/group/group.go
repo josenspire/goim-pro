@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	. "goim-pro/internal/app/models"
+	tbl "goim-pro/pkg/db"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"time"
@@ -63,7 +64,8 @@ func (i *GroupImpl) FindOneGroup(condition interface{}) (*Group, error) {
 }
 
 func (i *GroupImpl) CountGroup(condition interface{}) (count int, err error) {
-	db := mysqlDB.Model(&Group{}).Where(condition).Count(&count)
+	//db := mysqlDB.Model(&Group{}).Where(condition).Count(&count)
+	db := mysqlDB.Table(tbl.TableGroups).Where(condition).Count(&count)
 	if db.RecordNotFound() {
 		return 0, nil
 	}

@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	example "goim-pro/api/protos/example"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/examples/salty/contact"
-	"goim-pro/examples/salty/demo"
 	"goim-pro/examples/salty/group"
 	"goim-pro/examples/salty/user"
 	"goim-pro/pkg/logs"
@@ -49,8 +47,8 @@ func main() {
 			_, _ = fmt.Scanln(&str)
 			switch str {
 			case "1":
-				t := example.NewWaiterClient(conn)
-				demo.SayHello(t)
+				//t := example.NewWaiterClient(conn)
+				//demo.SayHello(t)
 			case "s1":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)

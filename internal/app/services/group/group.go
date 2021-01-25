@@ -7,6 +7,7 @@ import (
 	"goim-pro/internal/app/models"
 	. "goim-pro/internal/app/models/errors"
 	. "goim-pro/internal/app/repos/group"
+	. "goim-pro/internal/app/repos/notification"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	"goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
@@ -18,7 +19,8 @@ var (
 	logger  = logs.GetLogger("INFO")
 	mysqlDB *gorm.DB
 
-	groupRepo IGroupRepo
+	groupRepo        IGroupRepo
+	notificationRepo INotificationRepo
 )
 
 type GroupService struct{}
@@ -26,6 +28,8 @@ type GroupService struct{}
 func New() *GroupService {
 	mysqlDB = mysqlsrv.NewMysql()
 	groupRepo = NewGroupRepo(mysqlDB)
+	notificationRepo = NewNotificationRepo(mysqlDB)
+
 	return &GroupService{}
 }
 
@@ -43,18 +47,22 @@ func (s *GroupService) CreateGroup(userId, groupName string, memberIds []string)
 		return nil, NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrGroupReachedLimit)
 	}
 	groupProfile := buildGroupProfile(userId, groupName, memberIds)
-	ts := mysqlDB.Begin()
-	groupProfile, err = groupRepo.CreateGroup(groupProfile)
+
+	tx := mysqlDB.Begin()
+	txGroupRepo := NewGroupRepo(tx)
+	groupProfile, err = txGroupRepo.CreateGroup(groupProfile)
 	if err != nil {
-		ts.Callback()
+		tx.Callback()
 		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
-	profile, err = groupRepo.FindOneGroup(map[string]interface{}{"groupId": groupProfile.GroupId})
+	profile, err = txGroupRepo.FindOneGroup(map[string]interface{}{"groupId": groupProfile.GroupId})
 	if err != nil {
-		ts.Callback()
+		tx.Callback()
 		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
-	ts.Commit()
+	if err := tx.Commit().Error; err != nil {
+		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
+	}
 
 	return profile, nil
 }

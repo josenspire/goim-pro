@@ -286,7 +286,7 @@ func QueryUserInfo(t protos.UserServiceClient, typeStr string) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDM1Mjg0NjIsImlhdCI6MTYwMzI2OTI2MiwiaXNzIjoic2FsdHlfaW0ifQ.BFFlewc59OaVzAiDbVvaH0KdL1lWqttTJ0dIWT4dpE4",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MDc3NjE0NDIsImlhdCI6MTYwNzUwMjI0MiwiaXNzIjoic2FsdHlfaW0ifQ.FUrlMaANtx5uJMcRMqFnYbmohpVQWcI5QEHtMsccKKg",
 		Data:     anyData,
 	}
 

@@ -22,7 +22,7 @@ type INotificationRepo interface {
 
 	// messages
 	InsertMessages(messages ...*NotificationMessage) (err error)
-	UpdateOneMessage(tx *gorm.DB, condition, updated interface{}) (err error)
+	UpdateOneMessage(condition, updated interface{}) (err error)
 }
 
 var logger = logs.GetLogger("ERROR")
@@ -59,7 +59,8 @@ func (n *NotificationImpl) FindAll(userId string, fromDate string) (notification
 }
 
 func (n *NotificationImpl) FindOne(condition interface{}) (ntf *Notification, err error) {
-	db := mysqlDB.Preload("Message").Find(&ntf, condition)
+	ntf = new(Notification)
+	db := mysqlDB.Preload("Message").First(ntf, condition)
 	if db.RecordNotFound() {
 		return nil, nil
 	}
@@ -98,12 +99,8 @@ func (n *NotificationImpl) InsertMessages(messages ...*NotificationMessage) (err
 	return nil
 }
 
-func (n *NotificationImpl) UpdateOneMessage(tx *gorm.DB, condition, updated interface{}) (err error) {
-	db := mysqlDB
-	if tx != nil {
-		db = tx
-	}
-	db = db.Table(tbl.TableNotificationMsgs).Where(condition).Update(updated)
+func (n *NotificationImpl) UpdateOneMessage(condition, updated interface{}) (err error) {
+	db := mysqlDB.Table(tbl.TableNotificationMsgs).Where(condition).Update(updated)
 	if err = db.Error; err != nil {
 		logger.Errorf("error happened to update notification msg: %v", err)
 	}

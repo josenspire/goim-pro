@@ -78,7 +78,7 @@ func TestGroupImpl_FindOneGroup(t *testing.T) {
 func TestGroupImpl_CountGroup(t *testing.T) {
 	mysqlDB = mysqlsrv.NewMysql()
 	db := mysqlsrv.NewMysql()
-	NewGroupRepo(db)
+	groupRepo := NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
@@ -90,34 +90,36 @@ func TestGroupImpl_CountGroup(t *testing.T) {
 	groupProfile1 := models.NewGroup("TEST_GROUP_01", "TEST005", "TEST_GROUP_001", members)
 	groupProfile2 := models.NewGroup("TEST_GROUP_02", "TEST005", "TEST_GROUP_002", members)
 	var err error
-	s := &GroupImpl{}
 
-	ts := db.Begin()
-	_, err = s.CreateGroup(groupProfile1)
+	tx := db.Begin()
+	txRepo := NewGroupRepo(tx)
+	_, err = txRepo.CreateGroup(groupProfile1)
 	if err != nil {
-		ts.Rollback()
+		tx.Rollback()
 		t.FailNow()
 	}
-	_, err = s.CreateGroup(groupProfile2)
+	_, err = txRepo.CreateGroup(groupProfile2)
 	if err != nil {
-		ts.Rollback()
+		tx.Rollback()
 		t.FailNow()
 	}
-	ts.Commit()
+	if err := tx.Commit().Error; err != nil {
+		t.FailNow()
+	}
 
 	Convey("Test_CountGroup", t, func() {
 		Convey("should_return_2_with_nil_error", func() {
 			condition := map[string]interface{}{
 				"ownerUserId": "TEST005",
 			}
-			count, err := s.CountGroup(condition)
+			count, err := groupRepo.CountGroup(condition)
 
-			ShouldBeNil(err)
+			So(err, ShouldBeNil)
 			So(count, ShouldEqual, 2)
 		})
 	})
-	_ = s.RemoveGroupByGroupId("TEST_GROUP_01", true)
-	_ = s.RemoveGroupByGroupId("TEST_GROUP_02", true)
+	_ = groupRepo.RemoveGroupByGroupId("TEST_GROUP_01", true)
+	_ = groupRepo.RemoveGroupByGroupId("TEST_GROUP_02", true)
 }
 
 func TestGroupImpl_FindOneGroupAndUpdate(t *testing.T) {
