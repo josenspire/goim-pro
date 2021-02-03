@@ -144,7 +144,7 @@ func (cs *ContactService) AcceptContact(userId, contactId string) (tErr *TError)
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
 
-	rErr := refreshNotificationMessageStatus(userId, contactId, models.MsgTypeContactAccept, protos.ContactOperationMessage_ACCEPT, models.StsReceived)
+	rErr := refreshNotificationMessageStatus(userId, contactId, models.MsgTypeContactRequest, protos.ContactOperationMessage_ACCEPT, models.StsReceived)
 	if rErr != nil {
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, rErr)
 	}
@@ -361,7 +361,7 @@ func refreshNotificationMessageStatus(targetId, senderId string, msgType string,
 func refreshNotificationMessage(ntfCondition interface{}, msgUpdated interface{}) (ntf *models.Notification, err error) {
 	ntf, err = notificationRepo.FindOne(ntfCondition)
 	if err != nil {
-		logger.Errorf("error happened to update notification: %v", err)
+		logger.Errorf("error happened to update notification message: %v", err)
 		return nil, err
 	}
 	if ntf == nil {
