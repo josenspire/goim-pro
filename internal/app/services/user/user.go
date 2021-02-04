@@ -305,11 +305,12 @@ func loginWithVerificationCode(isTelephone bool, telephone, email, verificationC
 }
 
 func isNeedToSMSVerify(deviceId string, osVersion protos.GrpcReq_OS, orgUser *models.User) bool {
-	if deviceId == "" || deviceId != orgUser.DeviceId {
-		return true
+	// special for local dev
+	if deviceId == "LOCAL_DEV" {
+		return false
 	}
 
-	return false
+	return deviceId == "" || deviceId != orgUser.DeviceId
 
 	//switch osVersion {
 	//case protos.GrpcReq_ANDROID:

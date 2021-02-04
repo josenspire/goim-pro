@@ -88,7 +88,7 @@ func ResetPasswordByTelephone(t protos.UserServiceClient, channel string) {
 
 	anyData, _ := utils.MarshalMessageToAny(resetPasswordReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -120,7 +120,7 @@ func Register(t protos.UserServiceClient) {
 	}
 	anyData, _ := utils.MarshalMessageToAny(registerReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -158,7 +158,7 @@ func Login(t protos.UserServiceClient, typeStr string, index int) {
 
 	anyData, _ := utils.MarshalMessageToAny(loginReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "XiaoMi 10",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -195,7 +195,7 @@ func LoginWithCode(t protos.UserServiceClient, typeStr string) {
 
 	anyData, _ := utils.MarshalMessageToAny(loginReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "XiaoMi 10",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -220,7 +220,7 @@ func Logout(t protos.UserServiceClient) {
 
 	anyData, _ := utils.MarshalMessageToAny(logoutReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -245,7 +245,7 @@ func GetUserInfo(t protos.UserServiceClient) {
 
 	anyData, _ := utils.MarshalMessageToAny(getUserInfoReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -282,7 +282,7 @@ func QueryUserInfo(t protos.UserServiceClient, typeStr string) {
 
 	anyData, _ := utils.MarshalMessageToAny(queryUserInfoReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -315,7 +315,7 @@ func UpdateUserInfo(t protos.UserServiceClient) {
 	}
 	anyData, _ := utils.MarshalMessageToAny(updateUserInfoReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,

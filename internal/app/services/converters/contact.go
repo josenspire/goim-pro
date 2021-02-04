@@ -77,7 +77,7 @@ func ConvertEntity2ProtoForNotificationMsg(notifications []models.Notification) 
 			},
 			AddReason:    content["addReason"].(string),
 			RejectReason: content["rejectReason"].(string),
-			Type:         protos.ContactOperationMessage_OperationType(content["operationType"].(float64)),
+			Type:         protos.ContactOperationMessage_OperationType(item.Message.MsgOperation),
 		}
 	}
 	return protoContactNotificationMsg

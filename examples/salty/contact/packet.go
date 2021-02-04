@@ -14,17 +14,17 @@ var (
 
 func RequestContact(t protos.ContactServiceClient) {
 	reqContactReq := &protos.RequestContactReq{
-		UserId: "01EMK01VY8820C95MH3ZGN3JXQ", // 13631210001
+		UserId: "01EMK05C80JKJZF9MXGT8XS2KW", // 13631210001
 		// UserId: "01E4QYJBERVD8E5N9SXAEGXMB8", // 13631210002
 		Reason: "我是德玛西亚人，来交个朋友！",
 	}
 	anyData, _ := utils.MarshalMessageToAny(reqContactReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd05VTTRNRXBMU2xwR09VMVlSMVE0V0ZNeVMxYz0iLCJleHAiOjE2MTI1MjExMTksImlhdCI6MTYxMjI2MTkxOSwiaXNzIjoic2FsdHlfaW0ifQ.HYBuJnqhUZw-Mw3Rw1v0LiCAomrPQiM1rDYkjZ8B0Pg",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRXNURTlEUVV4ZlJFVlciLCJleHAiOjE2MTI3MDg3NTAsImlhdCI6MTYxMjQ0OTU1MCwiaXNzIjoic2FsdHlfaW0ifQ.n8w-rS3iAL2ieQb35_t8n9-i72GlLCsSrEfOBtEO0e8",
 		Data:     anyData,
 	}
 
@@ -38,15 +38,15 @@ func RequestContact(t protos.ContactServiceClient) {
 
 func AcceptContact(t protos.ContactServiceClient) {
 	acpContactReq := &protos.AcceptContactReq{
-		UserId: "01EMK05C80JKJZF9MXGT8XS2KW",
+		UserId: "01EMK01VY8820C95MH3ZGN3JXQ",
 	}
 	anyData, _ := utils.MarshalMessageToAny(acpContactReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRT0iLCJleHAiOjE2MTI1MjExMTksImlhdCI6MTYxMjI2MTkxOSwiaXNzIjoic2FsdHlfaW0ifQ.b5QM_0iFrAv-3pFCEKtoH5W_r2wwrVmwgaPbrGSvshw",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd05VTTRNRXBMU2xwR09VMVlSMVE0V0ZNeVMxY3NURTlEUVV4ZlJFVlciLCJleHAiOjE2MTI3MDg3NTAsImlhdCI6MTYxMjQ0OTU1MCwiaXNzIjoic2FsdHlfaW0ifQ.5kizBTqxf9lydrxSA0B5p2ysD_WO9zX9ayVmMzqM6F4",
 		Data:     anyData,
 	}
 
@@ -65,7 +65,7 @@ func RefusedContact(t protos.ContactServiceClient) {
 	}
 	anyData, _ := utils.MarshalMessageToAny(refusedContactReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -93,7 +93,7 @@ func UpdateRemarkInfo(t protos.ContactServiceClient) {
 	}
 	anyData, _ := utils.MarshalMessageToAny(updateRemarkInfoReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -111,7 +111,7 @@ func UpdateRemarkInfo(t protos.ContactServiceClient) {
 
 func GetContacts(t protos.ContactServiceClient) {
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,
@@ -133,7 +133,7 @@ func GetContactOperationMessageList(t protos.ContactServiceClient) {
 	}
 	anyData, _ := utils.MarshalMessageToAny(acpContactReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "",
+		DeviceId: "LOCAL_DEV",
 		Version:  "",
 		Language: 0,
 		Os:       0,

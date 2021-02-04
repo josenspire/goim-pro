@@ -124,7 +124,10 @@ func (gs *GRPCServer) StartGRPCServer() {
 			}
 
 			payloadArr := strings.Split(string(payload), ",")
-			userId, orgDeviceId := payloadArr[0], payloadArr[1]
+			var userId, orgDeviceId = "", ""
+			if len(payloadArr) > 1 {
+				userId, orgDeviceId = payloadArr[0], payloadArr[1]
+			}
 
 			redisToken := myRedis.RGet(fmt.Sprintf("TK-%s", string(userId)))
 			if redisToken == "" {
