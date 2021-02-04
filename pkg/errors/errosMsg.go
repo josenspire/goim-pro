@@ -23,6 +23,7 @@ var (
 	ErrAccountOrPwdInvalid         = errors.New("account or password is incorrect")
 	ErrPwdInvalid                  = errors.New("account's password is incorrect")
 	ErrRepeatPassword              = errors.New("the new password cannot be the same as the old one")
+	ErrAbnormalDeviceInfo		   = errors.New("abnormal device information")
 
 	// contact
 	ErrContactNotExists       = errors.New("contact not exists")

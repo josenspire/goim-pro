@@ -26,7 +26,7 @@ var (
 
 type IAuthService interface {
 	ObtainSMSCode(telephone string, operationType protos.SMSOperationType) (code string, tErr *TError)
-	VerifySMSCode(telephone string, operationType protos.SMSOperationType, codeStr string) (isPass bool, tErr *TError)
+	VerifySMSCode(telephone string, operationType protos.SMSOperationType, codeStr, deviceId string) (isPass bool, tErr *TError)
 }
 
 type AuthService struct {
@@ -92,7 +92,7 @@ func (s *AuthService) ObtainSMSCode(telephone string, operationType protos.SMSOp
 }
 
 // VerifySMSCode - verify sms code
-func (s *AuthService) VerifySMSCode(telephone string, operationType protos.SMSOperationType, codeStr string) (isPass bool, tErr *TError) {
+func (s *AuthService) VerifySMSCode(telephone string, operationType protos.SMSOperationType, codeStr, deviceId string) (isPass bool, tErr *TError) {
 	codeKey := fmt.Sprintf("%d-%s", operationType, telephone)
 
 	code := myRedis.RGet(codeKey)
@@ -104,7 +104,31 @@ func (s *AuthService) VerifySMSCode(telephone string, operationType protos.SMSOp
 		return false, NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrInvalidVerificationCode)
 	}
 
-	myRedis.RDel(codeKey)
+	if operationType == protos.SMSOperationType_LOGIN {
+		if deviceId == "" {
+			return false, NewTError(protos.StatusCode_STATUS_ABNORMAL_DEVICE_INFO, errmsg.ErrAbnormalDeviceInfo)
+		}
+		err := refreshUserProfileWithDeviceId(telephone, deviceId)
+		if err == gorm.ErrRecordNotFound {
+			return false, NewTError(protos.StatusCode_STATUS_BAD_REQUEST, errmsg.ErrTelephoneNotExists)
+		} else if err != nil {
+			return false, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, errmsg.ErrSystemUncheckException)
+		}
+	}
 
+	myRedis.RDel(codeKey)
 	return true, nil
+}
+
+func refreshUserProfileWithDeviceId(telephone, deviceId string) (err error) {
+	var userCriteria = map[string]interface{}{
+		"Telephone": telephone,
+	}
+	var updated = map[string]interface{}{
+		"DeviceId": deviceId,
+	}
+	if err := userRepo.FindOneAndUpdateProfile(userCriteria, updated); err != nil {
+		return err
+	}
+	return nil
 }

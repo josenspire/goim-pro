@@ -75,7 +75,7 @@ func (s *UserService) Login(telephone, email, enPassword, deviceId string, osVer
 		return nil, "", NewTError(protos.StatusCode_STATUS_ACCOUNT_AUTHORIZED_REQUIRED, errmsg.ErrAccountSecurityVerification)
 	}
 	// gen and save token
-	token = utils.NewToken([]byte(user.UserId))
+	token = utils.NewToken([]byte(fmt.Sprintf("%s,%s", user.UserId, user.DeviceId)))
 	if err = myRedis.RSet(fmt.Sprintf("TK-%s", user.UserId), token, ThreeDays); err != nil {
 		logger.Errorf("redis save token error: %v", err)
 		return nil, "", NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
@@ -262,9 +262,8 @@ func accountLogin(telephone, email, enPassword, deviceId string, osVersion proto
 	if user == nil {
 		return false, nil, errmsg.ErrAccountOrPwdInvalid
 	}
-	// TODO: need to had previous verify function
-	//return isNeedToSMSVerify(deviceId, osVersion, user), user, nil
-	return false, user, nil
+	// TODO:
+	return isNeedToSMSVerify(deviceId, osVersion, user), user, nil
 }
 
 func isProfileNothing2Update(originProfile, newProfile *models.UserProfile) bool {
@@ -306,7 +305,6 @@ func loginWithVerificationCode(isTelephone bool, telephone, email, verificationC
 }
 
 func isNeedToSMSVerify(deviceId string, osVersion protos.GrpcReq_OS, orgUser *models.User) bool {
-	// TODO: should divide strategy by platform
 	if deviceId == "" || deviceId != orgUser.DeviceId {
 		return true
 	}

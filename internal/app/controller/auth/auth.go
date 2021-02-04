@@ -82,6 +82,7 @@ func (a *authServer) VerifyTelephoneSMSCode(ctx context.Context, req *protos.Grp
 	operationType := verifyReq.GetOperationType()
 	telephone := strings.Trim(verifyReq.GetTelephone(), "")
 	codeStr := strings.Trim(verifyReq.SmsCode, "")
+	deviceId := strings.Trim(req.GetDeviceId(), "")
 
 	if utils.IsContainEmptyString(telephone, codeStr) {
 		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
@@ -89,7 +90,7 @@ func (a *authServer) VerifyTelephoneSMSCode(ctx context.Context, req *protos.Grp
 		return
 	}
 
-	_, tErr := authService.VerifySMSCode(telephone, operationType, codeStr)
+	_, tErr := authService.VerifySMSCode(telephone, operationType, codeStr, deviceId)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail

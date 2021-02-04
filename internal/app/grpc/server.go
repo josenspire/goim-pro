@@ -15,6 +15,7 @@ import (
 	"goim-pro/internal/app/services"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
+	errmsg "goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"google.golang.org/grpc"
@@ -22,6 +23,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
+	"strings"
 	"time"
 )
 
@@ -38,12 +40,12 @@ var (
 
 // server constructor
 func NewServer() *GRPCServer {
-	myRedis = redsrv.NewRedis()
 	return &GRPCServer{}
 }
 
 // initialize server config and db
 func (gs *GRPCServer) InitServer() {
+	myRedis = redsrv.NewRedis()
 	mysqlDB := mysqlsrv.NewMysql()
 	if err := mysqlDB.Error; err != nil {
 		logger.Errorf("mysql connect error: %v", err)
@@ -52,8 +54,7 @@ func (gs *GRPCServer) InitServer() {
 			logger.Fatalf("mysql tables initialization fail: %s", err)
 		}
 	}
-	redisClient := redsrv.NewRedis()
-	if _, err := redisClient.RPing(); err != nil {
+	if _, err := myRedis.RPing(); err != nil {
 		logger.Errorf("[redis] pong failed, %s", err.Error())
 	} else {
 		logger.Info("[redis] pong successfully!")
@@ -112,7 +113,7 @@ func (gs *GRPCServer) StartGRPCServer() {
 		} else {
 			// TODO: maybe remove token verify logic and only query from redis
 			isValid, payload, err := utils.TokenVerify(token)
-			logger.Infof("[userID]: %s", string(payload))
+			logger.Infof("[userId,deviceId]: %s", string(payload))
 			if err != nil {
 				resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, nil, err.Error())
 				return resp, nil
@@ -122,12 +123,22 @@ func (gs *GRPCServer) StartGRPCServer() {
 				return resp, nil
 			}
 
-			redisToken := myRedis.RGet(fmt.Sprintf("TK-%s", string(payload)))
+			payloadArr := strings.Split(string(payload), ",")
+			userId, orgDeviceId := payloadArr[0], payloadArr[1]
+
+			redisToken := myRedis.RGet(fmt.Sprintf("TK-%s", string(userId)))
 			if redisToken == "" {
-				resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_UNAUTHORIZED, nil, "the token has expired")
+				resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_TOKEN_EXPIRED, nil, "the token has expired")
 				return resp, nil
 			}
-			gRPCReq.Token = string(payload)
+
+			// verify device id
+			if orgDeviceId != gRPCReq.GetDeviceId() {
+				resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_ABNORMAL_DEVICE_INFO, nil, errmsg.ErrAbnormalDeviceInfo.Error())
+				return resp, nil
+			}
+
+			gRPCReq.Token = string(userId)
 			return handler(ctx, req)
 		}
 	}

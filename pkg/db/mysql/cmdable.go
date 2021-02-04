@@ -25,7 +25,8 @@ func newBaseMysql(options *mysqlOptions) *gorm.DB {
 	connUrl := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", options.dbUserName, options.dbPassword, options.dbUri, options.dbPort, options.dbName)
 	mysqlDB, err := gorm.Open("mysql", connUrl)
 	if err != nil {
-		return nil
+		logger.Errorf("mysql connect fail: %v", err)
+		return mysqlDB
 	}
 	logger.Infof("[mysql] connect successful: %s", connUrl)
 
