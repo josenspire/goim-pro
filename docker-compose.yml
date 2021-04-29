@@ -29,7 +29,7 @@ services:
     command: redis-server --port 6379 --requirepass Password1@
   database:
     container_name: dk-mysql
-    image: mysql:latest
+    image: mysql:8.0
     restart: always
     ports:
       - 53306:3306
@@ -45,7 +45,7 @@ services:
       TZ: "Asia/Shanghai"
       MYSQL_ROOT_HOST: "%"
       MYSQL_DATABASE: goim
-      MYSQL_USER: root
+      MYSQL_USER: goimroot
       MYSQL_ROOT_PASSWORD: Password1!
       MYSQL_PASSWORD: Password1!
     volumes:

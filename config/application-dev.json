@@ -5,7 +5,7 @@
     "appLogLevel": "DEBUG"
   },
   "mysqlProfile": {
-    "dbUserName": "root",
+    "dbUserName": "goimroot",
     "dbPassword": "Password1!",
     "dbUri": "database",
     "dbPort": "3306",

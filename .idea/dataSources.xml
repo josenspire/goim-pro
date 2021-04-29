@@ -7,5 +7,11 @@
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://localhost:3306/goim</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="dkMysql" uuid="e87eb00b-2d72-463e-8339-08fcd60bc770">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:53306/goim</jdbc-url>
+    </data-source>
   </component>
 </project>
