@@ -15,3 +15,5 @@
 # vendor/
 
 *.prof
+
+pkg/db/mysql/data/*

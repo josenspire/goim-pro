@@ -40,7 +40,7 @@ func main() {
 
 	exitChan := make(chan int)
 	go signalHandler(exitChan)
-	go commandHandler(exitChan)
+	// go commandHandler(exitChan)
 
 	code := <-exitChan
 	server.GracefulStopGRPCServer()
@@ -86,6 +86,7 @@ func commandHandler(exitChan chan int) {
 		reader := bufio.NewReader(os.Stdin)
 		char, _, _ := reader.ReadRune()
 		str := string(char)
+		logger.Info("===========", str)
 		switch str {
 		case "q":
 			logger.Infoln("server is starting to disconnect...")
