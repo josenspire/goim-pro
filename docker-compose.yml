@@ -9,21 +9,23 @@ services:
       - 9090:9090
     environment:
       - APP_ENV=DEV
-    networks:
-      - custom_net
+      - PORT=9090
+#    networks:
+#      - custom_net
     depends_on:
       - redis
       - database
+    command: ["./wait-for-it.sh", "database:3306", "--", "./main"]
   redis:
     container_name: dk-redis
     image: redis:latest
     restart: always
     ports:
       - 6797:6379
-    networks:
-      - custom_net
+#    networks:
+#      - custom_net
     volumes:
-      - /data:/var/redis/data
+      - ./pkg/db/redis/data:/var/lib/redis
     command: redis-server --port 6379 --requirepass Password1@
   database:
     container_name: dk-mysql
@@ -31,8 +33,8 @@ services:
     restart: always
     ports:
       - 53306:3306
-    networks:
-      - custom_net
+#    networks:
+#      - custom_net
     command:
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
@@ -52,7 +54,7 @@ services:
       - ./pkg/db/mysql/init:/docker-entrypoint-initdb.d/
       - ./pkg/db/mysql/logs:/logs
 
-networks:
-  custom_net:
-    external:
-      name: app_net
+#networks:
+#  custom_net:
+#    external:
+#      name: app_net

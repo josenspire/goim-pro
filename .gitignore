@@ -17,3 +17,7 @@
 *.prof
 
 pkg/db/mysql/data/*
+pkg/db/mysql/logs/*
+
+pkg/db/redis/data/*
+

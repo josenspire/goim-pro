@@ -5,6 +5,8 @@ MAINTAINER JAMES YANG "josenspire@gmail.com"
 WORKDIR /$GOPATH/src/
 COPY . .
 
+RUN apk update && apk add bash
+
 RUN go build -mod=vendor -v cmd/main.go
 
 EXPOSE 9090
