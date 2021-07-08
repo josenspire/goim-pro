@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	// address = "111.231.238.209:9090"
-	address = "127.0.0.1:9090"
+	address = "47.102.149.231:9090"
+	//address = "127.0.0.1:9090"
 )
 
 var logger = logs.GetLogger("INFO")
@@ -121,10 +121,10 @@ func main() {
 				contact.UpdateRemarkInfo(t)
 			case "ct-fa":
 				t := protos.NewContactServiceClient(conn)
-				contact.GetContacts(t)
+				contact.GetContactList(t)
 			case "ct-nf":
 				t := protos.NewContactServiceClient(conn)
-				contact.GetContactOperationMessageList(t)
+				contact.GetContactOperationList(t)
 			// groups
 			case "gp-ct":
 				t := protos.NewGroupServiceClient(conn)

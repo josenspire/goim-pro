@@ -109,7 +109,7 @@ func UpdateRemarkInfo(t protos.ContactServiceClient) {
 	}
 }
 
-func GetContacts(t protos.ContactServiceClient) {
+func GetContactList(t protos.ContactServiceClient) {
 	grpcReq := &protos.GrpcReq{
 		DeviceId: "LOCAL_DEV",
 		Version:  "",
@@ -119,7 +119,7 @@ func GetContacts(t protos.ContactServiceClient) {
 		Data:     nil,
 	}
 
-	tr, err := t.GetContacts(context.Background(), grpcReq)
+	tr, err := t.GetContactList(context.Background(), grpcReq)
 	if err != nil {
 		logger.Errorf("get contacts info error: %s", err.Error())
 	} else {
@@ -127,21 +127,22 @@ func GetContacts(t protos.ContactServiceClient) {
 	}
 }
 
-func GetContactOperationMessageList(t protos.ContactServiceClient) {
-	acpContactReq := &protos.GetContactOperationMessageListReq{
-		MaxMessageTime:       1602605419,
+func GetContactOperationList(t protos.ContactServiceClient) {
+	acpContactReq := &protos.GetContactOperationListReq{
+		StartDateTime: 1602605419,
+		EndDateTime:   1602605419,
 	}
 	anyData, _ := utils.MarshalMessageToAny(acpContactReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "LOCAL_DEV",
+		DeviceId: "f9b5f73048f3867e",
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVGpCQlNFTk5VazFOTTFJeFJFZEVNemhMVmpkWFdUZz0iLCJleHAiOjE2MDM1NDExNjAsImlhdCI6MTYwMzI4MTk2MCwiaXNzIjoic2FsdHlfaW0ifQ.OnXfVm9VNh4jouw4TAqi_acSW39uw5ajP_MEf8ztEsI",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZHTkVkVE5GSkZNRWM1VGpNMlVsazJWRlExUkV0Qk1sa3NaamxpTldZM016QTBPR1l6T0RZM1pRPT0iLCJleHAiOjE2MjYwMDc3NzcsImlhdCI6MTYyNTc0ODU3NywiaXNzIjoic2FsdHlfaW0ifQ.nA6_Rm8y6KOTc6gTuLtYB6jku5f5XoHlP-8zAxhWmaM",
 		Data:     anyData,
 	}
 
-	tr, err := t.GetContactOperationMessageList(context.Background(), grpcReq)
+	tr, err := t.GetContactOperationList(context.Background(), grpcReq)
 	if err != nil {
 		logger.Errorf("get notification messages info error: %s", err.Error())
 	} else {

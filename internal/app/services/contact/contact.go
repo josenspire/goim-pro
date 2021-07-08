@@ -1,6 +1,7 @@
 package contactsrv
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/models"
@@ -31,8 +32,8 @@ type IContactService interface {
 	AcceptContact(userId, contactId string) (tErr *TError)
 	DeleteContact(userId, contactId string) (tErr *TError)
 	UpdateRemarkInfo(userId, contactId string, contactRemark *protos.ContactRemark) (tErr *TError)
-	GetContacts(userId string) (contacts []models.Contact, tErr *TError)
-	GetContactOperationMessageList(userId string, maxMessageTime int64) (contactOptsList []models.Notification, tErr *TError)
+	GetContactList(userId string) (contacts []models.Contact, tErr *TError)
+	GetContactOperationList(userId string, startDateTime, endDateTime int64) (contactOptsList []models.Notification, tErr *TError)
 }
 
 type ContactService struct {
@@ -213,7 +214,7 @@ func (cs *ContactService) UpdateRemarkInfo(userId, contactId string, contactRema
 }
 
 // query user's contact list
-func (cs *ContactService) GetContacts(userId string) (contacts []models.Contact, tErr *TError) {
+func (cs *ContactService) GetContactList(userId string) (contacts []models.Contact, tErr *TError) {
 	// TODO: should consider the black list function
 	criteria := map[string]interface{}{
 		"userId": userId,
@@ -227,9 +228,11 @@ func (cs *ContactService) GetContacts(userId string) (contacts []models.Contact,
 	return contacts, nil
 }
 
-func (cs *ContactService) GetContactOperationMessageList(userId string, maxMessageTime int64) (notifications []models.Notification, tErr *TError) {
-	fromDateStr := utils.ParseTimestampToDateTimeStr(maxMessageTime, utils.MysqlDateTimeFormat)
-	notifications, err := notificationRepo.FindAll(userId, fromDateStr)
+func (cs *ContactService) GetContactOperationList(userId string, startDateTime, endDateTime int64) (notifications []models.Notification, tErr *TError) {
+	startDateStr := utils.ParseTimestampToDateTimeStr(startDateTime, utils.MysqlDateTimeFormat)
+	endDateStr := utils.ParseTimestampToDateTimeStr(endDateTime, utils.MysqlDateTimeFormat)
+	condition := fmt.Sprintf("targetId = %s and createdAt >= %s and createdAt < %s", userId, startDateStr, endDateStr)
+	notifications, err := notificationRepo.FindAll(condition)
 	if err != nil {
 		logger.Errorf("query user contacts error: %s", err.Error())
 		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)

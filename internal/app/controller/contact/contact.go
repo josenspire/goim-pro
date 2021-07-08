@@ -196,11 +196,11 @@ func (s *contactServer) UpdateRemarkInfo(ctx context.Context, req *protos.GrpcRe
 	return
 }
 
-func (s *contactServer) GetContacts(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *contactServer) GetContactList(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 	userId := req.GetToken()
 
-	contacts, tErr := contactService.GetContacts(userId)
+	contacts, tErr := contactService.GetContactList(userId)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail
@@ -210,10 +210,10 @@ func (s *contactServer) GetContacts(ctx context.Context, req *protos.GrpcReq) (r
 		return
 	}
 
-	getContactsResp := &protos.GetContactsResp{
+	getContactListResp := &protos.GetContactListResp{
 		Contacts: converters.ConvertEntity2ProtoForContacts(contacts),
 	}
-	anyData, err := utils.MarshalMessageToAny(getContactsResp)
+	anyData, err := utils.MarshalMessageToAny(getContactListResp)
 	if err != nil {
 		logger.Errorf("[get contacts] response marshal message error: %s", err.Error())
 		return
@@ -222,11 +222,11 @@ func (s *contactServer) GetContacts(ctx context.Context, req *protos.GrpcReq) (r
 	return
 }
 
-func (s *contactServer) GetContactOperationMessageList(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
+func (s *contactServer) GetContactOperationList(ctx context.Context, req *protos.GrpcReq) (resp *protos.GrpcResp, gRPCErr error) {
 	resp, _ = utils.NewGRPCResp(protos.StatusCode_STATUS_OK, nil, "")
 
 	var err error
-	var optsMessageReq protos.GetContactOperationMessageListReq
+	var optsMessageReq protos.GetContactOperationListReq
 	if err = utils.UnmarshalGRPCReq(req, &optsMessageReq); err != nil {
 		resp.Code = protos.StatusCode_STATUS_BAD_REQUEST
 		resp.Message = err.Error()
@@ -236,8 +236,10 @@ func (s *contactServer) GetContactOperationMessageList(ctx context.Context, req 
 
 	userId := req.GetToken()
 
-	maxMessageTime := optsMessageReq.MaxMessageTime
-	notifications, tErr := contactService.GetContactOperationMessageList(userId, maxMessageTime)
+	startDateTime := optsMessageReq.StartDateTime
+	endDateTime := optsMessageReq.EndDateTime
+
+	notifications, tErr := contactService.GetContactOperationList(userId, startDateTime, endDateTime)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail
@@ -247,7 +249,7 @@ func (s *contactServer) GetContactOperationMessageList(ctx context.Context, req 
 		return
 	}
 
-	getContactNotificationMsg := &protos.GetContactOperationMessageListResp{
+	getContactNotificationMsg := &protos.GetContactOperationListResp{
 		MessageList:          converters.ConvertEntity2ProtoForNotificationMsg(notifications),
 	}
 	anyData, err := utils.MarshalMessageToAny(getContactNotificationMsg)

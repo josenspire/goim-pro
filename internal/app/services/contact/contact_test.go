@@ -305,7 +305,7 @@ func Test_contactService_UpdateRemarkInfo(t *testing.T) {
 	})
 }
 
-func Test_contactService_GetContacts(t *testing.T) {
+func Test_contactService_GetContactList(t *testing.T) {
 	mysqlDB = mysqlsrv.NewMysql()
 
 	var contacts = make([]models.Contact, 5)
@@ -318,19 +318,19 @@ func Test_contactService_GetContacts(t *testing.T) {
 
 	Convey("Test_DeleteContact", t, func() {
 		Convey("should_find_all_user's_contacts_then_return", func() {
-			contacts, tErr := cs.GetContacts("TEST001")
+			contacts, tErr := cs.GetContactList("TEST001")
 			So(tErr, ShouldBeNil)
 			So(len(contacts), ShouldEqual, 5)
 		})
 		Convey("should_not_found_contacts_when_given_invalid_userId", func() {
-			contacts, tErr := cs.GetContacts("TEST002")
+			contacts, tErr := cs.GetContactList("TEST002")
 			So(tErr, ShouldBeNil)
 			So(contacts, ShouldBeNil)
 		})
 	})
 }
 
-func TestContactService_GetContactOperationMessageList(t *testing.T) {
+func TestContactService_GetContactOperationList(t *testing.T) {
 	mysqlDB = mysqlsrv.NewMysql()
 
 	var contacts = make([]models.Contact, 5)
@@ -343,12 +343,12 @@ func TestContactService_GetContactOperationMessageList(t *testing.T) {
 
 	Convey("Test_DeleteContact", t, func() {
 		Convey("should_find_all_user's_contacts_then_return", func() {
-			contacts, tErr := cs.GetContacts("TEST001")
+			contacts, tErr := cs.GetContactList("TEST001")
 			So(tErr, ShouldBeNil)
 			So(len(contacts), ShouldEqual, 5)
 		})
 		Convey("should_not_found_contacts_when_given_invalid_userId", func() {
-			contacts, tErr := cs.GetContacts("TEST002")
+			contacts, tErr := cs.GetContactList("TEST002")
 			So(tErr, ShouldBeNil)
 			So(contacts, ShouldBeNil)
 		})
