@@ -1,7 +1,6 @@
 package contactsrv
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/internal/app/models"
@@ -157,7 +156,7 @@ func (cs *ContactService) AcceptContact(userId, contactId string) (tErr *TError)
 	msgContent["operationType"] = protos.ContactOperationMessage_ACCEPT
 	jsonStr, _ := utils.TransformMapToJSONString(msgContent)
 	err = dispatchNotificationMessage(userId, contactId, models.MsgTypeContactAccept, protos.ContactOperationMessage_ACCEPT, jsonStr, "", 0) // 推送给被接受的用户
-	err = dispatchNotificationMessage(contactId, userId, models.MsgTypeContactAccept, protos.ContactOperationMessage_ACCEPT, jsonStr, "", 1)  // 推送给主动接受的用户
+	err = dispatchNotificationMessage(contactId, userId, models.MsgTypeContactAccept, protos.ContactOperationMessage_ACCEPT, jsonStr, "", 1) // 推送给主动接受的用户
 	if err != nil {
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
@@ -229,10 +228,14 @@ func (cs *ContactService) GetContactList(userId string) (contacts []models.Conta
 }
 
 func (cs *ContactService) GetContactOperationList(userId string, startDateTime, endDateTime int64) (notifications []models.Notification, tErr *TError) {
-	startDateStr := utils.ParseTimestampToDateTimeStr(startDateTime, utils.MysqlDateTimeFormat)
-	endDateStr := utils.ParseTimestampToDateTimeStr(endDateTime, utils.MysqlDateTimeFormat)
-	condition := fmt.Sprintf("targetId = %s and createdAt >= %s and createdAt < %s", userId, startDateStr, endDateStr)
-	notifications, err := notificationRepo.FindAll(condition)
+	var err error
+	if startDateTime == endDateTime && startDateTime == -1 {
+		notifications, err = notificationRepo.FindAll(map[string]interface{}{"targetId": userId})
+	} else {
+		startDateStr := utils.ParseTimestampToDateTimeStr(startDateTime, utils.MysqlDateTimeFormat)
+		endDateStr := utils.ParseTimestampToDateTimeStr(endDateTime, utils.MysqlDateTimeFormat)
+		notifications, err = notificationRepo.FindAllByTimeRange(userId, startDateStr, endDateStr)
+	}
 	if err != nil {
 		logger.Errorf("query user contacts error: %s", err.Error())
 		return nil, NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)

@@ -211,7 +211,7 @@ func (s *contactServer) GetContactList(ctx context.Context, req *protos.GrpcReq)
 	}
 
 	getContactListResp := &protos.GetContactListResp{
-		Contacts: converters.ConvertEntity2ProtoForContacts(contacts),
+		ContactList: converters.ConvertEntity2ProtoForContacts(contacts),
 	}
 	anyData, err := utils.MarshalMessageToAny(getContactListResp)
 	if err != nil {

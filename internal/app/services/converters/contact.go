@@ -12,12 +12,17 @@ import (
 
 // convert proto to entity for contact remark profile
 func ConvertProto2EntityForRemarkProfile(profile *protos.ContactRemark) models.RemarkProfile {
-	return models.RemarkProfile{
+	remarkProfile := models.RemarkProfile{
 		RemarkName:  profile.RemarkName,
-		Telephone:   strings.Join(profile.Telephones, ","),
 		Description: profile.Description,
-		Tags:        strings.Join(profile.Tags, ","),
 	}
+	if profile.Telephones != nil && len(profile.Telephones) > 0 {
+		remarkProfile.Telephone = strings.Join(profile.Telephones, ",")
+	}
+	if profile.Tags != nil && len(profile.Tags) > 0 {
+		remarkProfile.Tags = strings.Join(profile.Tags, ",")
+	}
+	return remarkProfile
 }
 
 func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []*protos.ContactProfile) {

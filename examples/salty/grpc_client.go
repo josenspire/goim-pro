@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	address = "47.102.149.231:9090"
-	//address = "127.0.0.1:9090"
+	//address = "47.102.149.231:9090"
+	address = "127.0.0.1:9090"
 )
 
 var logger = logs.GetLogger("INFO")

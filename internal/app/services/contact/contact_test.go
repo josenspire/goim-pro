@@ -310,8 +310,8 @@ func Test_contactService_GetContactList(t *testing.T) {
 
 	var contacts = make([]models.Contact, 5)
 	mc := &MockContactRepo{}
-	mc.On("FindAll", map[string]interface{}{"userId": "TEST001"}).Return(contacts, nil)
-	mc.On("FindAll", map[string]interface{}{"userId": "TEST002"}).Return(nil, nil)
+	mc.On("FindAllByTimeRange", map[string]interface{}{"userId": "TEST001"}).Return(contacts, nil)
+	mc.On("FindAllByTimeRange", map[string]interface{}{"userId": "TEST002"}).Return(nil, nil)
 
 	cs := new(ContactService)
 	contactRepo = mc
@@ -335,8 +335,8 @@ func TestContactService_GetContactOperationList(t *testing.T) {
 
 	var contacts = make([]models.Contact, 5)
 	mc := &MockContactRepo{}
-	mc.On("FindAll", map[string]interface{}{"userId": "TEST001"}).Return(contacts, nil)
-	mc.On("FindAll", map[string]interface{}{"userId": "TEST002"}).Return(nil, nil)
+	mc.On("FindAllByTimeRange", map[string]interface{}{"userId": "TEST001"}).Return(contacts, nil)
+	mc.On("FindAllByTimeRange", map[string]interface{}{"userId": "TEST002"}).Return(nil, nil)
 
 	cs := new(ContactService)
 	contactRepo = mc
