@@ -1,0 +1,60 @@
+version: "3.7"
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: dockerfile
+    ports:
+      - 9090:9090
+    environment:
+      - APP_ENV=DEV
+      - PORT=9090
+#    networks:
+#      - custom_net
+    depends_on:
+      - redis
+      - database
+    command: ["./wait-for-it.sh", "database:3306", "--", "./main"]
+  redis:
+    container_name: dk-redis
+    image: redis:latest
+    restart: always
+    ports:
+      - 6797:6379
+#    networks:
+#      - custom_net
+    volumes:
+      - ./pkg/db/redis/data:/var/lib/redis
+    command: redis-server --port 6379 --requirepass Password1@
+  database:
+    container_name: dk-mysql
+    image: mysql:8.0
+    restart: always
+    ports:
+      - 53306:3306
+#    networks:
+#      - custom_net
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      # --lower_case_table_names=1
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: goim
+      MYSQL_USER: goimroot
+      MYSQL_ROOT_PASSWORD: Password1!
+      MYSQL_PASSWORD: Password1!
+    volumes:
+      - ./pkg/db/mysql/data:/var/lib/mysql
+      - ./pkg/db/mysql/conf:/etc/mysql/conf.cnf
+      - ./pkg/db/mysql/init:/docker-entrypoint-initdb.d/
+      - ./pkg/db/mysql/logs:/logs
+
+#networks:
+#  custom_net:
+#    external:
+#      name: app_net

@@ -23,7 +23,7 @@ func init() {
 
 func NewWUID() string {
 	newDB := func() (*sql.DB, bool, error) {
-		db := mysqlsrv.NewMysqlConnection().GetMysqlInstance().DB()
+		db := mysqlsrv.NewMysql().DB()
 		return db, false, nil
 	}
 	// setup

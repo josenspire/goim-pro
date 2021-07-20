@@ -2,7 +2,7 @@ package converters
 
 import (
 	protos "goim-pro/api/protos/salty"
-	"goim-pro/internal/app/repos/user"
+	"goim-pro/internal/app/models"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -12,7 +12,6 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 	var pbUser1 = &protos.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
-		Username:    "JAMES01",
 		Nickname:    "JAMES01",
 		Avatar:      "www.baidu.com/1.png",
 		Description: "Never settle",
@@ -20,10 +19,9 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 		Birthday:    1578903121862,
 		Location:    "",
 	}
-	var expectation = &user.UserProfile{
+	var expectation = &models.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
-		Username:    "JAMES01",
 		Nickname:    "JAMES01",
 		Avatar:      "www.baidu.com/1.png",
 		Description: "Never settle",
@@ -33,7 +31,7 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 	}
 	Convey("Testing_ConvertRegisterUserProfile", t, func() {
 		Convey("should return UserProfile entity data", func() {
-			actual := ConvertRegisterUserProfile(pbUser1)
+			actual := ConvertProto2EntityForUserProfile(pbUser1)
 			So(actual.Telephone, ShouldEqual, expectation.Telephone)
 			So(actual.Sex, ShouldEqual, expectation.Sex)
 			So(actual.Birthday, ShouldEqual, expectation.Birthday)
@@ -42,10 +40,9 @@ func TestConvertRegisterUserProfile(t *testing.T) {
 }
 
 func TestConvertLoginResp(t *testing.T) {
-	var userProfile = &user.UserProfile{
+	var userProfile = &models.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
-		Username:    "JAMES01",
 		Nickname:    "JAMES01",
 		Avatar:      "www.baidu.com/1.png",
 		Description: "Never settle",
@@ -56,7 +53,6 @@ func TestConvertLoginResp(t *testing.T) {
 	var pbUser = &protos.UserProfile{
 		Telephone:   "13631210000",
 		Email:       "123456@qq.com",
-		Username:    "JAMES01",
 		Nickname:    "JAMES01",
 		Avatar:      "www.baidu.com/1.png",
 		Description: "Never settle",
@@ -66,7 +62,7 @@ func TestConvertLoginResp(t *testing.T) {
 	}
 
 	Convey("Testing_ConvertLoginResp", t, func() {
-		actual := ConvertLoginResp(userProfile)
+		actual := ConvertEntity2ProtoForUserProfile(userProfile)
 		So(actual.Telephone, ShouldEqual, pbUser.Telephone)
 		So(actual.Sex, ShouldEqual, pbUser.Sex)
 	})

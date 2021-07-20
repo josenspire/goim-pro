@@ -10,6 +10,7 @@ var loc *time.Location
 const (
 	DefaultTimeZoneName   = "Asia/Shanghai" // default time zone as Asia/Shanghai (+08:00)
 	DefaultDateTimeFormat = "2006-01-02T15:04:05+08:00"
+	MysqlDateTimeFormat   = "2006-01-02 15:04:05" // mysql date time format
 )
 
 func init() {
@@ -57,4 +58,14 @@ func ParseDateTimeStrToTimestamp(dateTimeFormat string, dateTimeStr string) (int
 // make current date time timestamp
 func MakeTimestamp() int64 {
 	return time.Now().In(loc).UnixNano() / int64(time.Millisecond)
+}
+
+// parse Go time to timestamp
+func ParseTimeToTimestamp(dateTime time.Time) int64 {
+	return dateTime.Unix() / int64(time.Millisecond)
+}
+
+// TimeFormat - given a time and format, return the standard string representation
+func TimeFormat(t time.Time, format string) string {
+	return t.Format(format)
 }

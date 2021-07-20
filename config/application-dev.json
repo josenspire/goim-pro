@@ -1,14 +1,14 @@
 {
   "appProfile": {
-    "appHost": "127.0.0.1",
+    "appHost": "0.0.0.0",
     "appPort": "9090",
     "appLogLevel": "DEBUG"
   },
   "mysqlProfile": {
-    "dbUserName": "root",
+    "dbUserName": "goimroot",
     "dbPassword": "Password1!",
-    "dbUri": "0.0.0.0",
-    "dbPort": "3306",
+    "dbUri": "47.102.149.231",
+    "dbPort": "53306",
     "dbName": "goim",
     "dbEngine": "InnoDB",
     "dbMaxIdleConns": "10",
@@ -16,9 +16,9 @@
     "dbEnableLogMode": "true"
   },
   "redisProfile": {
-    "dbHost": "0.0.0.0",
-    "dbPort": "6379",
-    "dbPassword": "",
+    "dbHost": "47.102.149.231",
+    "dbPort": "6797",
+    "dbPassword": "Password1@",
     "dbNum": "1",
     "dbKey": "SaltyIMPro"
   },

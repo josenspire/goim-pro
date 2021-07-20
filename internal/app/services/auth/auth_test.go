@@ -1,57 +1,97 @@
 package authsrv
 
 import (
-	"context"
-	. "github.com/smartystreets/goconvey/convey"
+	"fmt"
 	protos "goim-pro/api/protos/salty"
-	"goim-pro/pkg/utils"
+	consts "goim-pro/internal/app/constants"
+	"goim-pro/internal/app/repos/user"
+	mysqlsrv "goim-pro/pkg/db/mysql"
+	redsrv "goim-pro/pkg/db/redis"
+	errmsg "goim-pro/pkg/errors"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-func Test_smsServer_ObtainSMSCode(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		req *protos.GrpcResp
-	}
-	smsReq1 := &protos.SMSReq{
-		CodeType: 0,
-		TargetAccount: &protos.SMSReq_Telephone{
-			Telephone: "13631210000",
-		},
-	}
-	smsReq2 := &protos.SMSReq{
-		CodeType: 3,
-		TargetAccount: &protos.SMSReq_Telephone{
-			Telephone: "13631210000",
-		},
-	}
-	ctx := context.Background()
-	any1, _ := utils.MarshalMessageToAny(smsReq1)
-	req1 := &protos.GrpcReq{
-		Data: any1,
-	}
-	any2, _ := utils.MarshalMessageToAny(smsReq2)
-	req2 := &protos.GrpcReq{
-		Data: any2,
-	}
-	Convey("obtain_sms_code", t, func() {
-		Convey("testing_for_obtain_sms_code_of_register", func() {
-			s := &smsServer{}
-			gotRes, err := s.ObtainSMSCode(ctx, req1)
-			if err != nil {
-				t.Errorf("ObtainSMSCode() error = %v", err)
-				return
-			}
-			So(gotRes.GetMessage(), ShouldEqual, "sending sms code success: 123456")
+func TestAuthService_ObtainSMSCode(t *testing.T) {
+	_ = mysqlsrv.NewMysql()
+
+	m := &user.MockUserRepo{}
+	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(false, nil)
+	m.On("IsTelephoneOrEmailRegistered", "13631210002", "").Return(true, nil)
+	m.On("IsTelephoneOrEmailRegistered", "13631210003", "").Return(false, nil)
+
+	var registerKey = fmt.Sprintf("%d-%s", protos.SMSOperationType_REGISTER, "13631210001")
+	var loginKey = fmt.Sprintf("%d-%s", protos.SMSOperationType_LOGIN, "13631210002")
+	var resetPasswordKey = fmt.Sprintf("%d-%s", protos.SMSOperationType_RESET_PASSWORD, "13631210003")
+
+	r := new(redsrv.MockCmdable)
+	r.On("RSet", registerKey, "123401", consts.MinuteOf15).Return(nil)
+	r.On("RSet", loginKey, "123402", consts.MinuteOf15).Return(nil)
+	r.On("RSet", resetPasswordKey, "123403", consts.MinuteOf15).Return(nil)
+
+	authServer := new(AuthService)
+	userRepo = m
+	myRedis = r
+
+	Convey("testing_ObtainSMSCode", t, func() {
+		Convey("should_return_correct_sms_code_for_register", func() {
+			actualCode, err := authServer.ObtainSMSCode("13631210001", protos.SMSOperationType_REGISTER)
+
+			fmt.Println(actualCode)
+
+			So(err, ShouldBeNil)
+			So(actualCode, ShouldEqual, "123401")
 		})
-		Convey("testing_for_invalid_code_type", func() {
-			s := &smsServer{}
-			gotRes, err := s.ObtainSMSCode(ctx, req2)
-			if err != nil {
-				t.Errorf("ObtainSMSCode() error = %v", err)
-				return
-			}
-			So(gotRes.GetMessage(), ShouldEqual, "invalid request code type")
+		Convey("should_return_correct_sms_code_for_login", func() {
+			actualCode, err := authServer.ObtainSMSCode("13631210002", protos.SMSOperationType_LOGIN)
+
+			fmt.Println(actualCode)
+
+			So(err, ShouldBeNil)
+			So(actualCode, ShouldEqual, "123402")
+		})
+		Convey("should_not_return_reset_password_code_by_telephone_unExist_error", func() {
+			actualCode, err := authServer.ObtainSMSCode("13631210003", protos.SMSOperationType_RESET_PASSWORD)
+
+			fmt.Println(actualCode)
+
+			So(err, ShouldNotBeNil)
+			So(err.Detail, ShouldEqual, errmsg.ErrAccountNotExists.Error())
+		})
+	})
+}
+
+func TestAuthService_VerifySMSCode(t *testing.T) {
+	_ = mysqlsrv.NewMysql()
+
+	m := &user.MockUserRepo{}
+	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(true, nil)
+
+	var registerKey = fmt.Sprintf("%d-%s", protos.SMSOperationType_REGISTER, "13631210001")
+
+	r := new(redsrv.MockCmdable)
+	r.On("RGet", registerKey).Return("123401")
+
+	r.On("RDel", registerKey).Return(0)
+
+	authServer := new(AuthService)
+	userRepo = m
+	myRedis = r
+
+	Convey("testing_VerifySMSCode", t, func() {
+		Convey("should_verify_password_when_given_correct_type_and_code_then_delete_the_code_cache", func() {
+			isPass, err := authServer.VerifySMSCode("13631210001", protos.SMSOperationType_REGISTER, "123401")
+
+			So(err, ShouldBeNil)
+			So(isPass, ShouldBeTrue)
+		})
+		Convey("should_verify_failed_when_given_incorrect_code", func() {
+			isPass, err := authServer.VerifySMSCode("13631210001", protos.SMSOperationType_REGISTER, "123402")
+
+			So(isPass, ShouldBeFalse)
+			So(err, ShouldNotBeNil)
+			So(err.Detail, ShouldEqual, errmsg.ErrInvalidVerificationCode.Error())
 		})
 	})
 }

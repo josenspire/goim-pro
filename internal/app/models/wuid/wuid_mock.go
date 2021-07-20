@@ -1,6 +1,6 @@
 package wuid
 
-import "github.com/stretchr/testify/mock"
+import "goim-pro/vendor/github.com/stretchr/testify/mock"
 
 type MockWuid struct {
 	mock.Mock

@@ -6,6 +6,7 @@ import (
 )
 
 func TestNewULID(t *testing.T) {
-	ulid := NewULID()
-	fmt.Println(ulid)
+	ulid1 := NewULID(0)
+	ulid2 := NewULID(1)
+	fmt.Println(ulid1, ulid2)
 }

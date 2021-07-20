@@ -4,31 +4,26 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 )
 
 const (
 	iv = "0102030405060708"
 )
 
-type ICrypto interface {
-	AESEncrypt(encodeStr string, secretKeyStr string) (string, error)
-	AESDecrypt(decodeStr string, secretKeyStr string) (string, error)
+// NewSHA256 - create
+func NewSHA256(data string, salt string) string {
+	h := hmac.New(sha256.New, []byte(salt))
+	h.Write([]byte(data))
+
+	return hex.EncodeToString(h.Sum(nil))
 }
 
-type Crypto struct {
-	SecretKey  string
-	OriginData interface{}
-}
-
-func NewCrypto() ICrypto {
-	return &Crypto{}
-}
-
-func (ct *Crypto) CreateAESSecretKey(size int) string {
-	rs := GenerateRandString(16)
-	ct.SecretKey = rs
-	return rs
+func CreateAESSecretKey(size int) string {
+	return GenerateRandString(16)
 }
 
 // AES加密的具体算法为: AES-128-CBC，输出格式为 base64
@@ -37,7 +32,7 @@ func (ct *Crypto) CreateAESSecretKey(size int) string {
 // either 16, 24, or 32 bytes to select
 // AES-128, AES-192, or AES-256.
 // https://github.com/darknessomi/musicbox/wiki/%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90%E6%96%B0%E7%99%BB%E5%BD%95API%E5%88%86%E6%9E%90
-func (ct *Crypto) AESEncrypt(encodeStr string, secretKeyStr string) (string, error) {
+func AESEncrypt(encodeStr string, secretKeyStr string) (string, error) {
 	secretKey := []byte(secretKeyStr)
 	encodeBytes := []byte(encodeStr)
 
@@ -57,7 +52,7 @@ func (ct *Crypto) AESEncrypt(encodeStr string, secretKeyStr string) (string, err
 	return base64.StdEncoding.EncodeToString(cipherText), nil
 }
 
-func (ct *Crypto) AESDecrypt(decodeStr string, secretKeyStr string) (string, error) {
+func AESDecrypt(decodeStr string, secretKeyStr string) (string, error) {
 	// decode base64
 	decodeBytes, _ := base64.StdEncoding.DecodeString(decodeStr)
 

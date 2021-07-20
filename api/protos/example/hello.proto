@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package com.salty.protos;
+
+service Waiter {
+    rpc SayHello (HelloReq) returns (HelloResp) {
+    }
+}
+
+// defined Req message struct
+message HelloReq {
+    string name = 1;
+}
+
+//defined Res message struct
+message HelloResp {
+    string message = 1;
+}

@@ -2,10 +2,14 @@ package utils
 
 import (
 	"math/rand"
+	"strings"
 	"time"
 )
 
-const StrSource string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const (
+	strSource string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	numSource string = "0123456789"
+)
 
 var r *rand.Rand
 
@@ -14,7 +18,7 @@ func init() {
 }
 
 func GenerateRandString(length int) string {
-	bytes := []byte(StrSource)
+	bytes := []byte(strSource)
 	var result []byte
 	for i := 0; i < length; i++ {
 		result = append(result, bytes[r.Intn(len(bytes))])
@@ -42,4 +46,38 @@ func IsContainEmptyString(strArgs ...string) bool {
 		}
 	}
 	return result
+}
+
+// generate random number string
+// {int} numSize
+func GenerateRandomNum(numSize int) string {
+	bytes := []byte(numSource)
+	var result []byte
+	for i := 0; i < numSize; i++ {
+		result = append(result, bytes[r.Intn(len(bytes))])
+	}
+	return string(result)
+}
+
+func StrArray2String(strArr []string, split string) (str string) {
+	for i, item := range strArr {
+		str += strings.Trim(item, "")
+		if i != len(strArr)-1 {
+			str += split
+		}
+	}
+	return
+}
+
+func StrArrayDeduplication(strArr []string) (uniqStrArr []string) {
+	uniqStrArr = make([]string, 0, len(strArr))
+	var result = make(map[string]string, len(strArr))
+	for _, item := range strArr {
+		_, ok := result[item]
+		if !ok {
+			result[item] = item
+			uniqStrArr = append(uniqStrArr,  item)
+		}
+	}
+	return uniqStrArr
 }

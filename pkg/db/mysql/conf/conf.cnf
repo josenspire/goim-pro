@@ -1,0 +1,12 @@
+[mysqld]
+user=mysql
+default-storage-engine=INNODB
+character-set-server=utf8mb4
+# 8.0版本自适应参数【很重要的配置】
+innodb_dedicated_server=on
+# 导入文件限制
+max_allowed_packet=1024M
+[client]
+default-character-set=utf8mb4
+[mysql]
+default-character-set=utf8mb4

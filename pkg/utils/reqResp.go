@@ -16,7 +16,7 @@ func UnmarshalGRPCReq(clientReq *protos.GrpcReq, pb proto.Message) (err error) {
 }
 
 // marshal response
-func MarshalGRPCRespWithBytes(code int32, bytes []byte, message string) *protos.GrpcResp {
+func MarshalGRPCRespWithBytes(code protos.StatusCode, bytes []byte, message string) *protos.GrpcResp {
 	return &protos.GrpcResp{
 		Code: code,
 		Data: &any.Any{
@@ -28,7 +28,7 @@ func MarshalGRPCRespWithBytes(code int32, bytes []byte, message string) *protos.
 }
 
 // marshal response
-func NewGRPCResp(code int32, pb proto.Message, message string) (gRPCResp *protos.GrpcResp, err error) {
+func NewGRPCResp(code protos.StatusCode, pb proto.Message, message string) (gRPCResp *protos.GrpcResp, err error) {
 	var anyData *any.Any
 	if pb != nil {
 		if anyData, err = MarshalMessageToAny(pb); err != nil {

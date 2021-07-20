@@ -1,4 +1,4 @@
-package constants
+package consts
 
 type CodeType int32
 
@@ -6,6 +6,10 @@ const (
 	StatusInactive = "INACTIVE"
 	StatusActive   = "ACTIVE"
 
-	CodeTypeRegister CodeType = 0
-	CodeTypeLogin    CodeType = 1
+	CodeTypeRegister      CodeType = 1
+	CodeTypeLogin         CodeType = 2
+	CodeTypeResetPassword CodeType = 3
+
+	MaximumNumberOfGroups       int = 10
+	MaximumNumberOfGroupMembers int = 500
 )

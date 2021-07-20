@@ -1,73 +1,137 @@
 package main
 
 import (
-	"bufio"
-	"context"
-	"github.com/golang/protobuf/proto"
+	"fmt"
 	protos "goim-pro/api/protos/salty"
+	"goim-pro/examples/salty/contact"
+	"goim-pro/examples/salty/group"
+	"goim-pro/examples/salty/user"
 	"goim-pro/pkg/logs"
 	"google.golang.org/grpc"
 	"log"
-	"os"
 )
 
 const (
-	//address = "111.231.238.209:9090"
+	//address = "47.102.149.231:9090"
 	address = "127.0.0.1:9090"
 )
 
 var logger = logs.GetLogger("INFO")
 
 func main() {
-	interceptor := grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		logger.Info(req)
-		pb := req.(proto.Message)
-		logger.Info(pb)
-		//gprcReq := protos.GrpcReq{
-		//	DeviceID: "",
-		//	Version:  "",
-		//	Language: 0,
-		//	Os:       0,
-		//	Token:    "",
-		//	Data:     *any.Any{},
-		//}
-		return nil
-	})
+	//interceptor := grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	//	logger.Info(req)
+	//	pb := req.(proto.Message)
+	//	logger.Info(pb)
+	//	//gprcReq := protos.GrpcReq{
+	//	//	DeviceID: "",
+	//	//	Version:  "",
+	//	//	Language: 0,
+	//	//	Os:       0,
+	//	//	Token:    "",
+	//	//	Data:     *any.Any{},
+	//	//}
+	//	return nil
+	//})
 
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), interceptor)
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("grpc connect fail: %v", err)
 	}
 	defer conn.Close()
 
 	exitChain := make(chan string)
+	var str string
 	go func() {
 		for {
-			reader := bufio.NewReader(os.Stdin)
-			char, _, _ := reader.ReadRune()
-			var str string = string(char)
+			_, _ = fmt.Scanln(&str)
 			switch str {
-			case "s":
+			case "1":
+				//t := example.NewWaiterClient(conn)
+				//demo.SayHello(t)
+			case "s1":
 				// create Writer service's client
 				t := protos.NewSMSServiceClient(conn)
-				obtainSMSCode(t)
-				break
+				for i := 1; i <= 3; i++ {
+					user.ObtainSMSCode(t, protos.SMSOperationType_REGISTER, i)
+				}
+			case "s2":
+				// create Writer service's client
+				t := protos.NewSMSServiceClient(conn)
+				user.ObtainSMSCode(t, protos.SMSOperationType_LOGIN, 3)
+			case "s3":
+				t := protos.NewSMSServiceClient(conn)
+				user.ObtainSMSCode(t, protos.SMSOperationType_RESET_PASSWORD, 3)
+			case "v1":
+				t := protos.NewSMSServiceClient(conn)
+				user.VerifyCode(t)
+			case "rst1":
+				t := protos.NewUserServiceClient(conn)
+				user.ResetPasswordByTelephone(t, "OLD_PASSWORD")
+			case "rst2":
+				t := protos.NewUserServiceClient(conn)
+				user.ResetPasswordByTelephone(t, "VERIFICATION")
 			case "r":
 				t := protos.NewUserServiceClient(conn)
-				register(t)
-				break
-			case "t":
+				user.Register(t)
+			case "lt":
 				t := protos.NewUserServiceClient(conn)
-				login(t, "TELEPHONE")
-				break
-			case "e":
+				for i := 1; i <= 3; i++ {
+					user.Login(t, "TELEPHONE", i)
+				}
+			case "lt2":
 				t := protos.NewUserServiceClient(conn)
-				login(t, "EMAIL")
-				break
+				user.Login(t, "TELEPHONE", 3)
+			case "lt3":
+				t := protos.NewUserServiceClient(conn)
+				user.LoginWithCode(t, "TELEPHONE")
+			case "le":
+				t := protos.NewUserServiceClient(conn)
+				for i := 1; i <= 3; i++ {
+					user.Login(t, "EMAIL", i)
+				}
+			case "lq":
+				t := protos.NewUserServiceClient(conn)
+				user.Logout(t)
+			case "gu":
+				t := protos.NewUserServiceClient(conn)
+				user.GetUserInfo(t)
+			case "qt":
+				t := protos.NewUserServiceClient(conn)
+				user.QueryUserInfo(t, "TELEPHONE")
+			case "qe":
+				t := protos.NewUserServiceClient(conn)
+				user.QueryUserInfo(t, "EMAIL")
+			case "ud":
+				t := protos.NewUserServiceClient(conn)
+				user.UpdateUserInfo(t)
+
+			// contacts
+			case "ct-rq":
+				t := protos.NewContactServiceClient(conn)
+				contact.RequestContact(t)
+			case "ct-acp":
+				t := protos.NewContactServiceClient(conn)
+				contact.AcceptContact(t)
+			case "ct-rf":
+				t := protos.NewContactServiceClient(conn)
+				contact.RefusedContact(t)
+			case "ct-udt":
+				t := protos.NewContactServiceClient(conn)
+				contact.UpdateRemarkInfo(t)
+			case "ct-fa":
+				t := protos.NewContactServiceClient(conn)
+				contact.GetContactList(t)
+			case "ct-nf":
+				t := protos.NewContactServiceClient(conn)
+				contact.GetContactOperationList(t)
+			// groups
+			case "gp-ct":
+				t := protos.NewGroupServiceClient(conn)
+				group.CreateGroup(t)
 			case "q":
 				logger.Infoln("grpc client disconnected!")
 				exitChain <- str
-				break
 			default:
 				logger.Info("server continue to listen...")
 			}
@@ -85,10 +149,34 @@ func toolsIntroduce() {
 	logger.Info("********************************************")
 	logger.Info("**** Welcome to [GRPC] client tools ****")
 	logger.Info("**** Can input the commons to test ****")
-	logger.Info("** ['s']: obtainSMSCode **")
+	logger.Info("** ['1']: sayHello **")
+	logger.Info("** ['s1']: obtainSMSCode - register**")
+	logger.Info("** ['s2']: obtainSMSCode - login**")
+	logger.Info("** ['s3']: obtainSMSCode - resetPassword**")
+	logger.Info("** ['v1']: verifySMSCode - login**")
+	logger.Info("** ['rst1']: resetPassword by telephone with oldPassword**")
+	logger.Info("** ['rst2']: resetPassword by telephone with verification**")
 	logger.Info("** ['r']: register **")
-	logger.Info("** ['l1']: login by telephone **")
-	logger.Info("** ['l2']: login by email **")
+	logger.Info("** ['lt']: login by telephone **")
+	logger.Info("** ['lt2']: login by telephone with diff deviceId **")
+	logger.Info("** [lt3]: login by telephone with sms code **")
+	logger.Info("** ['le']: login by email **")
+	logger.Info("** ['lq']: user logout **")
+	logger.Info("** ['gu']: get user info by userId **")
+	logger.Info("** ['qt']: query user info by telephone **")
+	logger.Info("** ['qe']: query user info by email **")
+	logger.Info("** ['ud']: update user profile **")
+
+	logger.Info("** *********************** **")
+	logger.Info("** ['ct-rq']: request add contact **")
+	logger.Info("** ['ct-acp']: accept add contact **")
+	logger.Info("** ['ct-rf']: refused contact request **")
+	logger.Info("** ['ct-udt']: update contact remark profile **")
+	logger.Info("** ['ct-fa']: get all contacts **")
+	logger.Info("** ['ct-nf']: get all notification messages **")
+
+	logger.Info("** *********************** **")
+	logger.Info("** ['gp-ct']: create new group **")
 
 	logger.Info("** ['q']: exist [GRPC] client **")
 }

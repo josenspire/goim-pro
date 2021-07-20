@@ -1,17 +1,17 @@
 package address
 
+import "goim-pro/internal/app/models"
+
+type Address models.Address
+
 type IAddress interface {
-	QueryUserAddressList(userID string) []interface{}
-}
-
-type AddressImpl struct {
-
+	QueryUserAddressList(userId string) []interface{}
 }
 
 func New() IAddress {
-	return &AddressImpl{}
+	return &Address{}
 }
 
-func (ad *AddressImpl) QueryUserAddressList(userID string) []interface{} {
+func (ad *Address) QueryUserAddressList(userId string) []interface{} {
 	return make([]interface{}, 4)
 }

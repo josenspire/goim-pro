@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package com.salty.protos;
+
+import "entity.proto";
+
+option java_multiple_files = true;
+
+/* [USER] */
+// user service
+service NotificationService {
+    //请求添加好友
+    rpc SendPrivateNotification (GrpcReq) returns (stream GrpcResp) {
+    }
+}
+
+// 私有发送
+message PrivateSendReq {
+    string senderId = 1; // 发送人 Id
+    string targetId = 2; // 接收人 Id
+    oneof objectName { // 消息类型, 分为两类
+       string internal = 3; // 内置消息类型
+       string custom = 4; //自定义消息类型
+    }
+    MessageContent msgContent = 5; // 消息内容
+    bool isIncludeSender = 6; // 发送者自己是否接收此条消息, 0: 不接收, 1: 接收, 默认: 0
+}
+
+message PrivateSendResp {
+    string code = 1;    // 接收状态：200/400/500...
+}
+
+message MessageContent {
+    string operation = 1;
+    string message = 2;
+    MessageExtra extra = 3;
+
+    message MessageExtra {
+        string sourceUserNickname = 1;
+        string version = 2;
+        bytes others = 3;
+    }
+}

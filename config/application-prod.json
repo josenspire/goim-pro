@@ -7,7 +7,7 @@
   "mysqlProfile": {
     "dbUserName": "root",
     "dbPassword": "Password1!",
-    "dbUri": "111.231.238.209",
+    "dbUri": "0.0.0.0",
     "dbPort": "3306",
     "dbName": "goim",
     "dbEngine": "InnoDB",
@@ -16,9 +16,9 @@
     "dbEnableLogMode": "true"
   },
   "redisProfile": {
-    "dbHost": "111.231.238.209",
-    "dbPort": "6379",
-    "dbPassword": "",
+    "dbHost": "0.0.0.0",
+    "dbPort": "6397",
+    "dbPassword": "Password1@",
     "dbNum": "1",
     "dbKey": "SaltyIMPro"
   },
