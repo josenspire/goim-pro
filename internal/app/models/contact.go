@@ -18,9 +18,9 @@ type Contact struct {
 
 type RemarkProfile struct {
 	RemarkName  string `json:"remarkName" gorm:"column:remarkName; type:varchar(16)"`
-	Telephone   string `json:"telephone" gorm:"column:telephone; type:varchar(255)"` // can support multiple tel, split by `;`
+	Telephone   string `json:"telephone" gorm:"column:telephone; type:varchar(255)"` // can support multiple tel, split by `,`
 	Description string `json:"description" gorm:"column:description; type:varchar(255)"`
-	Tags        string `json:"tags" gorm:"column:tags; type:varchar(255)"` // can support multiple tag, split by `;`
+	Tags        string `json:"tags" gorm:"column:tags; type:varchar(255)"` // can support multiple tag, split by `,`
 }
 
 func (Contact) TableName() string {

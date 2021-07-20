@@ -2,13 +2,14 @@ package contact
 
 import (
 	"context"
+	"github.com/golang/protobuf/proto"
 	protos "goim-pro/api/protos/salty"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 )
 
 var (
-	UserId = "01E4QYBXD0BVQYMYBTEDTRF9A4" // 13631210008
+	UserId = "01EMK05C80JKJZF9MXGT8XS2KW" // 13631210008
 	logger = logs.GetLogger("INFO")
 )
 
@@ -32,7 +33,8 @@ func RequestContact(t protos.ContactServiceClient) {
 	if err != nil {
 		logger.Errorf("login error: %s", err.Error())
 	} else {
-		printResp(tr)
+		var resp = &protos.RequestContactResp{}
+		printResp(tr, resp)
 	}
 }
 
@@ -54,7 +56,8 @@ func AcceptContact(t protos.ContactServiceClient) {
 	if err != nil {
 		logger.Errorf("accept contact error: %s", err.Error())
 	} else {
-		printResp(tr)
+		var resp = &protos.AcceptContactResp{}
+		printResp(tr, resp)
 	}
 }
 
@@ -77,7 +80,8 @@ func RefusedContact(t protos.ContactServiceClient) {
 	if err != nil {
 		logger.Errorf("refused contact request error: %s", err.Error())
 	} else {
-		printResp(tr)
+		var resp = &protos.RefusedContactResp{}
+		printResp(tr, resp)
 	}
 }
 
@@ -87,7 +91,7 @@ func UpdateRemarkInfo(t protos.ContactServiceClient) {
 		RemarkInfo: &protos.ContactRemark{
 			RemarkName:  "喜洋洋",
 			Description: "He's a crazy boy.",
-			Telephones:  []string{"1361231222", "1369990440"},
+			Telephones:  []string{""},
 			Tags:        []string{"Friend", "Boy"},
 		},
 	}
@@ -97,7 +101,7 @@ func UpdateRemarkInfo(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGTkZGWlIwcFVPRFpMTWxCVE9FTkVTRlpZVXpCSE9UVT0iLCJleHAiOjE1ODU5MDYzMjYsImlhdCI6MTU4NTY0NzEyNiwiaXNzIjoic2FsdHlfaW0ifQ.Ld7RNW5PhyGXtxYqe9eGs79Da9mNQYa79hy6R6K638M",
+		Token:    "1234567890",
 		Data:     anyData,
 	}
 
@@ -105,7 +109,8 @@ func UpdateRemarkInfo(t protos.ContactServiceClient) {
 	if err != nil {
 		logger.Errorf("update remark info error: %s", err.Error())
 	} else {
-		printResp(tr)
+		var resp = &protos.UpdateRemarkInfoResp{}
+		printResp(tr, resp)
 	}
 }
 
@@ -123,7 +128,8 @@ func GetContactList(t protos.ContactServiceClient) {
 	if err != nil {
 		logger.Errorf("get contacts info error: %s", err.Error())
 	} else {
-		printResp(tr)
+		var resp = &protos.GetContactListResp{}
+		printResp(tr, resp)
 	}
 }
 
@@ -146,12 +152,16 @@ func GetContactOperationList(t protos.ContactServiceClient) {
 	if err != nil {
 		logger.Errorf("get notification messages info error: %s", err.Error())
 	} else {
-		printResp(tr)
+		var resp = &protos.GetContactOperationListResp{}
+		printResp(tr, resp)
 	}
 }
 
-func printResp(resp *protos.GrpcResp) {
+func printResp(resp *protos.GrpcResp, pb proto.Message) {
+	if err := utils.UnMarshalAnyToMessage(resp.GetData(), pb); err != nil {
+		logger.Error("unmarshal failed: %v", err)
+	}
 	logger.Infof("[code]: %d", resp.GetCode())
-	logger.Infof("[data]: %s", resp.GetData().GetValue())
+	logger.Infof("[data]: %v", pb.String())
 	logger.Infof("[message]: %s", resp.GetMessage())
 }

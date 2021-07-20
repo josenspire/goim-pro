@@ -18,9 +18,13 @@ func ConvertProto2EntityForRemarkProfile(profile *protos.ContactRemark) models.R
 	}
 	if profile.Telephones != nil && len(profile.Telephones) > 0 {
 		remarkProfile.Telephone = strings.Join(profile.Telephones, ",")
+	} else {
+		remarkProfile.Telephone = ""
 	}
 	if profile.Tags != nil && len(profile.Tags) > 0 {
 		remarkProfile.Tags = strings.Join(profile.Tags, ",")
+	} else {
+		remarkProfile.Tags = ""
 	}
 	return remarkProfile
 }
@@ -29,7 +33,7 @@ func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []
 	protoContacts = make([]*protos.ContactProfile, len(contacts))
 	for i, contact := range contacts {
 		userProfile := contact.User
-		protoContacts[i] = &protos.ContactProfile{
+		contactProfile := &protos.ContactProfile{
 			UserProfile: &protos.UserProfile{
 				UserId:      contact.UserId,
 				Telephone:   contact.Telephone,
@@ -44,11 +48,18 @@ func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []
 			RemarkInfo: &protos.ContactRemark{
 				RemarkName:  contact.RemarkName,
 				Description: contact.Description,
-				Telephones:  strings.Split(contact.Telephone, ","),
-				Tags:        strings.Split(contact.Tags, ","),
+				Telephones:  []string{""},
+				Tags:        []string{""},
 			},
 			SortId: utils.GetStringLetters(userProfile.Nickname),
 		}
+		if !utils.IsEmptyStrings(strings.Trim(contact.Telephone, "")) {
+			contactProfile.RemarkInfo.Telephones = strings.Split(contact.Telephone, ",")
+		}
+		if !utils.IsEmptyStrings(strings.Trim(contact.Tags, "")) {
+			contactProfile.RemarkInfo.Tags = strings.Split(contact.Tags, ",")
+		}
+		protoContacts[i] = contactProfile
 	}
 	return protoContacts
 }
