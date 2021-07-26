@@ -105,7 +105,7 @@ func (gs *GRPCServer) StartGRPCServer() {
 
 		// TODO: for local demo
 		if token == "1234567890" {
-			gRPCReq.Token = "01E07SG858N3CGV5M1APVQKZYR"
+			gRPCReq.Token = "01EMK01VY8820C95MH3ZGN3JXQ"
 			return handler(ctx, req)
 		}
 		if utils.IsEmptyStrings(token) {
