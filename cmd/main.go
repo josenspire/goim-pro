@@ -86,7 +86,6 @@ func commandHandler(exitChan chan int) {
 		reader := bufio.NewReader(os.Stdin)
 		char, _, _ := reader.ReadRune()
 		str := string(char)
-		logger.Info("===========", str)
 		switch str {
 		case "q":
 			logger.Infoln("server is starting to disconnect...")

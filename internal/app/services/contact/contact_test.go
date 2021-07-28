@@ -5,8 +5,8 @@ import (
 	consts "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/repos/user"
-	mysqlsrv "goim-pro/pkg/db/mysql"
-	redsrv "goim-pro/pkg/db/redis"
+	mysqlsrv "goim-pro/internal/db/mysql"
+	redsrv "goim-pro/internal/db/redis"
 	errmsg "goim-pro/pkg/errors"
 	"testing"
 

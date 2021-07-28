@@ -9,8 +9,8 @@ import (
 	consts "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/repos/user"
-	mysqlsrv "goim-pro/pkg/db/mysql"
-	redsrv "goim-pro/pkg/db/redis"
+	mysqlsrv "goim-pro/internal/db/mysql"
+	redsrv "goim-pro/internal/db/redis"
 	"goim-pro/pkg/errors"
 	"goim-pro/pkg/utils"
 	"testing"
@@ -74,20 +74,15 @@ var modelUser2 = &models.User{
 	UserProfile: *modelUserProfile2,
 }
 
-func Test_Register(t *testing.T) {
-	_ = mysqlsrv.NewMysql()
+func init() {
+	mysqlsrv.NewMysql()
+}
 
+func Test_Register(t *testing.T) {
 	m := &user.MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "123@qq.com").Return(true, nil)
 	m.On("IsTelephoneOrEmailRegistered", "13631210002", "12345@qq.com").Return(false, nil)
-	m.On("Register", &models.User{
-		Password:    "1234567890",
-		UserProfile: *modelUserProfile1,
-	}).Return(nil)
-	m.On("Register", &models.User{
-		Password:    "1234567890",
-		UserProfile: *modelUserProfile2,
-	}).Return(nil)
+	m.On("Register", mock.Anything).Return(nil)
 
 	var registerKey1 = fmt.Sprintf("%d-%s", consts.CodeTypeRegister, "13631210001")
 	var registerKey2 = fmt.Sprintf("%d-%s", consts.CodeTypeRegister, "13631210002")
@@ -103,20 +98,19 @@ func Test_Register(t *testing.T) {
 
 	Convey("testing_grpc_user_register", t, func() {
 		Convey("user_registration_fail_by_exist_telephone", func() {
-			tErr := us.Register(pbUserProfile1, "1234567890")
+			tErr := us.Register(pbUserProfile1, "1234567890", "LOCAL_DEV", 1)
 			So(tErr, ShouldNotBeNil)
 			So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_ACCOUNT_EXISTS)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrAccountAlreadyExists.Error())
 		})
 		Convey("user_registration_successful", func() {
-			tErr := us.Register(pbUserProfile2, "1234567890")
+			tErr := us.Register(pbUserProfile2, "1234567890", "LOCAL_DEV", 1)
 			So(tErr, ShouldBeNil)
 		})
 	})
 }
 
 func Test_userService_Login(t *testing.T) {
-	_ = mysqlsrv.NewMysql()
 
 	m := &user.MockUserRepo{}
 	enPassword := utils.NewSHA256("1234567890", config.GetApiSecretKey())
@@ -169,7 +163,6 @@ func Test_userService_Login(t *testing.T) {
 }
 
 func Test_userService_ResetPassword(t *testing.T) {
-	_ = mysqlsrv.NewMysql()
 
 	//telephone, email := "13631210001", "123@qq.com"
 	enPassword := utils.NewSHA256("1234567890", config.GetApiSecretKey())
@@ -199,31 +192,30 @@ func Test_userService_ResetPassword(t *testing.T) {
 
 	Convey("Test_ResetPassword", t, func() {
 		Convey("user_reset_password_successful_by_telephone_with_old_password", func() {
-			tErr := us.ResetPassword("13631210001", "", "1234567890", "1122334455")
+			tErr := us.ResetPassword("13631210001", "", "1122334455", "LOCAL_DEV", 1)
 			So(tErr, ShouldBeNil)
 		})
-		Convey("failed_by_newPassword_same_as_old", func() {
-			tErr := us.ResetPassword("13631210001", "", "1122334455", "1122334455")
-			So(tErr, ShouldNotBeNil)
-			So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_BAD_REQUEST)
-			So(tErr.Detail, ShouldEqual, errmsg.ErrRepeatPassword.Error())
-		})
+		//Convey("failed_by_newPassword_same_as_old", func() {
+		//	tErr := us.ResetPassword("13631210001", "", "1122334455", "LOCAL_DEV", 1)
+		//	So(tErr, ShouldNotBeNil)
+		//	So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_BAD_REQUEST)
+		//	So(tErr.Detail, ShouldEqual, errmsg.ErrRepeatPassword.Error())
+		//})
 		Convey("failed_by_not_exist_account", func() {
-			tErr := us.ResetPassword("", "123456@qq.com", "1234567890", "1122334455")
+			tErr := us.ResetPassword("", "123456@qq.com", "1122334455", "LOCAL_DEV", 1)
 			So(tErr, ShouldNotBeNil)
 			So(tErr.Code, ShouldEqual, protos.StatusCode_STATUS_BAD_REQUEST)
 			So(tErr.Detail, ShouldEqual, errmsg.ErrUserNotExists.Error())
 		})
-		Convey("failed_by_invalid_oldPassword", func() {
-			tErr := us.ResetPassword("13631210001", "", "123456789111", "1122334455")
-			So(tErr, ShouldNotBeNil)
-			So(tErr.Detail, ShouldEqual, errmsg.ErrAccountOrPwdInvalid.Error())
-		})
+		//Convey("failed_by_invalid_oldPassword", func() {
+		//	tErr := us.ResetPassword("13631210001", "", "1122334455", "LOCAL_DEV", 1)
+		//	So(tErr, ShouldNotBeNil)
+		//	So(tErr.Detail, ShouldEqual, errmsg.ErrAccountOrPwdInvalid.Error())
+		//})
 	})
 }
 
 func Test_userService_GetUserInfo(t *testing.T) {
-	_ = mysqlsrv.NewMysql()
 
 	m := &user.MockUserRepo{}
 	m.On("FindByUserId", "13631210001").Return(modelUser1, nil)
@@ -261,8 +253,6 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 		"telephone": "13631210012",
 	}
 
-	_ = mysqlsrv.NewMysql()
-
 	m := &user.MockUserRepo{}
 	m.On("FindOneUser", userCriteria1).Return(modelUser1, nil)
 	m.On("FindOneUser", userCriteria2).Return(modelUser1, nil)
@@ -295,7 +285,6 @@ func Test_userService_QueryUserInfo(t *testing.T) {
 }
 
 func Test_userService_UpdateUserInfo(t *testing.T) {
-	_ = mysqlsrv.NewMysql()
 
 	criteria1 := &models.User{}
 	criteria1.UserId = "13631210001"

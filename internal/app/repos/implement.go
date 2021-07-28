@@ -1,7 +1,7 @@
 package repos
 
 import (
-	. "goim-pro/pkg/db/mysql"
+	. "goim-pro/internal/db/mysql"
 )
 
 type GormRepoImpl struct {

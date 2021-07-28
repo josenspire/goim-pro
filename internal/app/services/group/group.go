@@ -8,7 +8,7 @@ import (
 	. "goim-pro/internal/app/models/errors"
 	. "goim-pro/internal/app/repos/group"
 	. "goim-pro/internal/app/repos/notification"
-	mysqlsrv "goim-pro/pkg/db/mysql"
+	mysqlsrv "goim-pro/internal/db/mysql"
 	"goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -26,7 +26,7 @@ var (
 type GroupService struct{}
 
 func New() *GroupService {
-	mysqlDB = mysqlsrv.NewMysql()
+	mysqlDB = mysqlsrv.GetMysql()
 	groupRepo = NewGroupRepo(mysqlDB)
 	notificationRepo = NewNotificationRepo(mysqlDB)
 

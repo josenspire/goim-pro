@@ -6,27 +6,16 @@ import (
 	"goim-pro/config"
 	"goim-pro/pkg/logs"
 	"strconv"
-	"sync"
 )
 
 var (
 	logger = logs.GetLogger("INFO")
 
-	// use `sync.Once` aim to control the instance will only use once on multiple thread environment
-	mysqlOnce sync.Once
-	mysqlDB   *gorm.DB
+	mysqlDB *gorm.DB
 )
 
-/* to get mysql connect from pool as single case */
-func NewMysql() *gorm.DB {
-	mysqlOnce.Do(func() {
-		mysqlDB = connect()
-	})
-	return mysqlDB
-}
-
 /* the method to init mysql connection pool */
-func connect() *gorm.DB {
+func NewMysql() {
 	dbMaxIdleConns, _ := strconv.Atoi(config.GetMysqlDBMaxIdleConns())
 	dbMaxOpenConns, _ := strconv.Atoi(config.GetMysqlDBMaxOpenConns())
 
@@ -41,5 +30,10 @@ func connect() *gorm.DB {
 		dbMaxOpenConns:  dbMaxOpenConns,
 		dbEnableLogMode: config.GetMysqlDBEnableLogMode(),
 	}
-	return newBaseMysql(options)
+	mysqlDB = newBaseMysql(options)
+}
+
+/* to get mysql connect from pool as single case */
+func GetMysql() *gorm.DB {
+	return mysqlDB
 }

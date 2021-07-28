@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/models"
-	"goim-pro/pkg/db"
+	"goim-pro/internal/db"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
 	"time"

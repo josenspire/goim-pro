@@ -5,17 +5,19 @@ import (
 	protos "goim-pro/api/protos/salty"
 	consts "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/repos/user"
-	mysqlsrv "goim-pro/pkg/db/mysql"
-	redsrv "goim-pro/pkg/db/redis"
+	mysqlsrv "goim-pro/internal/db/mysql"
+	redsrv "goim-pro/internal/db/redis"
 	errmsg "goim-pro/pkg/errors"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestAuthService_ObtainSMSCode(t *testing.T) {
-	_ = mysqlsrv.NewMysql()
+func init() {
+	mysqlsrv.NewMysql()
+}
 
+func TestAuthService_ObtainSMSCode(t *testing.T) {
 	m := &user.MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(false, nil)
 	m.On("IsTelephoneOrEmailRegistered", "13631210002", "").Return(true, nil)
@@ -63,8 +65,6 @@ func TestAuthService_ObtainSMSCode(t *testing.T) {
 }
 
 func TestAuthService_VerifySMSCode(t *testing.T) {
-	_ = mysqlsrv.NewMysql()
-
 	m := &user.MockUserRepo{}
 	m.On("IsTelephoneOrEmailRegistered", "13631210001", "").Return(true, nil)
 
@@ -81,13 +81,13 @@ func TestAuthService_VerifySMSCode(t *testing.T) {
 
 	Convey("testing_VerifySMSCode", t, func() {
 		Convey("should_verify_password_when_given_correct_type_and_code_then_delete_the_code_cache", func() {
-			isPass, err := authServer.VerifySMSCode("13631210001", protos.SMSOperationType_REGISTER, "123401")
+			isPass, err := authServer.VerifySMSCode("13631210001", protos.SMSOperationType_REGISTER, "123401", "LOCAL_DEV")
 
 			So(err, ShouldBeNil)
 			So(isPass, ShouldBeTrue)
 		})
 		Convey("should_verify_failed_when_given_incorrect_code", func() {
-			isPass, err := authServer.VerifySMSCode("13631210001", protos.SMSOperationType_REGISTER, "123402")
+			isPass, err := authServer.VerifySMSCode("13631210001", protos.SMSOperationType_REGISTER, "123402", "LOCAL_DEV")
 
 			So(isPass, ShouldBeFalse)
 			So(err, ShouldNotBeNil)

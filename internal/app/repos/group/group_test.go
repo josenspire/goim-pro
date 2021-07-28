@@ -1,16 +1,23 @@
 package group
 
 import (
+	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/models"
-	mysqlsrv "goim-pro/pkg/db/mysql"
+	mysqlsrv "goim-pro/internal/db/mysql"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+var db *gorm.DB
+
+func init() {
+	mysqlsrv.NewMysql()
+	db = mysqlsrv.GetMysql()
+}
+
 func TestGroupImpl_CreateGroup(t *testing.T) {
-	mysqlDB = mysqlsrv.NewMysql()
-	s := NewGroupRepo(mysqlsrv.NewMysql())
+	s := NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
@@ -33,8 +40,7 @@ func TestGroupImpl_CreateGroup(t *testing.T) {
 }
 
 func TestGroupImpl_FindOneGroup(t *testing.T) {
-	mysqlDB = mysqlsrv.NewMysql()
-	NewGroupRepo(mysqlsrv.NewMysql())
+	NewGroupRepo(db)
 
 	newMember1 := models.NewMember("01E59Z8HMG8SK8C65XV42M33QP", "JAMES_TEST_001")
 	newMember2 := models.NewMember("01E59ZNYB8KDNW0W3NHGDZDD6V", "JAMES_TEST_002")
@@ -76,8 +82,6 @@ func TestGroupImpl_FindOneGroup(t *testing.T) {
 }
 
 func TestGroupImpl_CountGroup(t *testing.T) {
-	mysqlDB = mysqlsrv.NewMysql()
-	db := mysqlsrv.NewMysql()
 	groupRepo := NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
@@ -123,8 +127,6 @@ func TestGroupImpl_CountGroup(t *testing.T) {
 }
 
 func TestGroupImpl_FindOneGroupAndUpdate(t *testing.T) {
-	mysqlDB = mysqlsrv.NewMysql()
-	db := mysqlsrv.NewMysql()
 	NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
@@ -173,8 +175,7 @@ func TestGroupImpl_FindOneGroupAndUpdate(t *testing.T) {
 }
 
 func TestGroupImpl_FindOneMember(t *testing.T) {
-	mysqlDB = mysqlsrv.NewMysql()
-	NewGroupRepo(mysqlsrv.NewMysql())
+	NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
@@ -217,8 +218,7 @@ func TestGroupImpl_FindOneMember(t *testing.T) {
 }
 
 func TestGroupImpl_InsertMembers(t *testing.T) {
-	mysqlDB = mysqlsrv.NewMysql()
-	NewGroupRepo(mysqlsrv.NewMysql())
+	NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
@@ -259,8 +259,7 @@ func TestGroupImpl_InsertMembers(t *testing.T) {
 }
 
 func TestGroupImpl_RemoveMembers(t *testing.T) {
-	mysqlDB = mysqlsrv.NewMysql()
-	NewGroupRepo(mysqlsrv.NewMysql())
+	NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")
 	newMember2 := models.NewMember("TEST002", "JAMES_TEST_002")
@@ -301,8 +300,6 @@ func TestGroupImpl_RemoveMembers(t *testing.T) {
 }
 
 func TestGroupImpl_FindOneMemberAndUpdate(t *testing.T) {
-	mysqlDB = mysqlsrv.NewMysql()
-	db := mysqlsrv.NewMysql()
 	NewGroupRepo(db)
 
 	newMember1 := models.NewMember("TEST001", "JAMES_TEST_001")

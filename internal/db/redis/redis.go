@@ -5,11 +5,9 @@ import (
 	"github.com/go-redis/redis/v7"
 	"goim-pro/config"
 	"goim-pro/pkg/logs"
-	"sync"
 )
 
 var logger = logs.GetLogger("INFO")
-var redisOnce sync.Once
 var redisClient IMyRedis
 
 var (
@@ -19,14 +17,7 @@ var (
 	dbNum    = 1
 )
 
-func NewRedis() IMyRedis {
-	redisOnce.Do(func() {
-		redisClient = connect()
-	})
-	return redisClient
-}
-
-func connect() *BaseClient {
+func NewRedis() {
 	host = config.GetRedisDBHost()
 	port = config.GetRedisDBPort()
 	password = config.GetRedisDBPassword()
@@ -44,6 +35,9 @@ func connect() *BaseClient {
 		PoolTimeout:  0,
 		IdleTimeout:  0,
 	}
-	baseClient := newBaseClient(opts)
-	return baseClient
+	redisClient = newBaseClient(opts)
+}
+
+func GetRedis() IMyRedis {
+	return redisClient
 }

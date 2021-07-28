@@ -2,7 +2,7 @@ package models
 
 import (
 	"goim-pro/internal/app/repos/base"
-	tbl "goim-pro/pkg/db"
+	tbl "goim-pro/internal/db"
 )
 
 type Contact struct {

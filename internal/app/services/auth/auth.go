@@ -7,8 +7,8 @@ import (
 	. "goim-pro/internal/app/constants"
 	. "goim-pro/internal/app/models/errors"
 	. "goim-pro/internal/app/repos/user"
-	mysqlsrv "goim-pro/pkg/db/mysql"
-	redsrv "goim-pro/pkg/db/redis"
+	mysqlsrv "goim-pro/internal/db/mysql"
+	redsrv "goim-pro/internal/db/redis"
 	"goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -33,8 +33,8 @@ type AuthService struct {
 }
 
 func New() IAuthService {
-	myRedis = redsrv.NewRedis()
-	mysqlDB = mysqlsrv.NewMysql()
+	myRedis = redsrv.GetRedis()
+	mysqlDB = mysqlsrv.GetMysql()
 	userRepo = NewUserRepo(mysqlDB)
 	return &AuthService{}
 }

@@ -13,8 +13,8 @@ import (
 	"goim-pro/config"
 	"goim-pro/internal/app/models"
 	"goim-pro/internal/app/services"
-	mysqlsrv "goim-pro/pkg/db/mysql"
-	redsrv "goim-pro/pkg/db/redis"
+	mysqlsrv "goim-pro/internal/db/mysql"
+	redsrv "goim-pro/internal/db/redis"
 	errmsg "goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -45,14 +45,16 @@ func NewServer() *GRPCServer {
 
 // initialize server config and db
 func (gs *GRPCServer) InitServer() {
-	myRedis = redsrv.NewRedis()
+	redsrv.NewRedis()
+	myRedis := redsrv.GetRedis()
 	if _, err := myRedis.RPing(); err != nil {
 		logger.Errorf("[redis] pong failed, %s", err.Error())
 	} else {
 		logger.Info("[redis] pong successfully!")
 	}
 
-	mysqlDB := mysqlsrv.NewMysql()
+	mysqlsrv.NewMysql()
+	mysqlDB := mysqlsrv.GetMysql()
 	if err := mysqlDB.Error; err != nil {
 		logger.Errorf("mysql connect error: %v", err)
 	} else {

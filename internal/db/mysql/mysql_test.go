@@ -1,7 +1,6 @@
 package mysqlsrv
 
 import (
-	"github.com/jinzhu/gorm"
 	"testing"
 )
 

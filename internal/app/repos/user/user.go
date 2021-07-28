@@ -3,7 +3,7 @@ package user
 import (
 	"github.com/jinzhu/gorm"
 	"goim-pro/internal/app/models"
-	tbl "goim-pro/pkg/db"
+	tbl "goim-pro/internal/db"
 	"goim-pro/pkg/logs"
 )
 

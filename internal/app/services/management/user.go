@@ -6,7 +6,7 @@ import (
 	"goim-pro/config"
 	cserr "goim-pro/internal/app/models/errors"
 	"goim-pro/internal/app/repos/user"
-	redsrv "goim-pro/pkg/db/redis"
+	redsrv "goim-pro/internal/db/redis"
 	errmsg "goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"

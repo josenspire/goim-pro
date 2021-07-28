@@ -3,7 +3,7 @@ package wuid
 import (
 	"database/sql"
 	"github.com/edwingeng/wuid/mysql/wuid"
-	mysqlsrv "goim-pro/pkg/db/mysql"
+	mysqlsrv "goim-pro/internal/db/mysql"
 	"goim-pro/pkg/logs"
 	"strconv"
 )
@@ -23,7 +23,7 @@ func init() {
 
 func NewWUID() string {
 	newDB := func() (*sql.DB, bool, error) {
-		db := mysqlsrv.NewMysql().DB()
+		db := mysqlsrv.GetMysql().DB()
 		return db, false, nil
 	}
 	// setup

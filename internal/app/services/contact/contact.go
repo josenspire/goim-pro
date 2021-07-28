@@ -9,8 +9,8 @@ import (
 	. "goim-pro/internal/app/repos/notification"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
-	tbl "goim-pro/pkg/db"
-	mysqlsrv "goim-pro/pkg/db/mysql"
+	tbl "goim-pro/internal/db"
+	mysqlsrv "goim-pro/internal/db/mysql"
 	"goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -39,7 +39,7 @@ type ContactService struct {
 }
 
 func New() IContactService {
-	mysqlDB = mysqlsrv.NewMysql()
+	mysqlDB = mysqlsrv.GetMysql()
 
 	userRepo = NewUserRepo(mysqlDB)
 	contactRepo = NewContactRepo(mysqlDB)

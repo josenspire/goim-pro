@@ -6,17 +6,21 @@ import (
 	"time"
 )
 
+func init() {
+	NewRedis()
+}
+
 func TestRedisServiceConnection_GetRedisClient(t *testing.T) {
-	redisDB := NewRedis()
+	myRedis := GetRedis()
 
 	Convey("TestRedis", t, func() {
 		Convey("should_set_and_get_data", func() {
-			err := redisDB.RSet("TEST_01", "ASDFGHJKL", time.Duration(2)*time.Second)
+			err := myRedis.RSet("TEST_01", "ASDFGHJKL", time.Duration(2)*time.Second)
 			So(err, ShouldBeNil)
-			value := redisDB.RGet("TEST_01")
+			value := myRedis.RGet("TEST_01")
 			So(value, ShouldEqual, "ASDFGHJKL")
 
-			redisDB.RDel("TEST_01")
+			myRedis.RDel("TEST_01")
 		})
 	})
 }

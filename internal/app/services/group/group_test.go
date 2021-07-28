@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	consts "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
-	mysqlsrv "goim-pro/pkg/db/mysql"
+	mysqlsrv "goim-pro/internal/db/mysql"
 	errmsg "goim-pro/pkg/errors"
 	"testing"
 )

@@ -10,8 +10,8 @@ import (
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
 	manage "goim-pro/internal/app/services/management"
-	mysqlsrv "goim-pro/pkg/db/mysql"
-	redsrv "goim-pro/pkg/db/redis"
+	mysqlsrv "goim-pro/internal/db/mysql"
+	redsrv "goim-pro/internal/db/redis"
 	"goim-pro/pkg/errors"
 	"goim-pro/pkg/logs"
 	"goim-pro/pkg/utils"
@@ -30,8 +30,8 @@ type UserService struct {
 }
 
 func New() *UserService {
-	myRedis = redsrv.NewRedis()
-	mysqlDB = mysqlsrv.NewMysql()
+	myRedis = redsrv.GetRedis()
+	mysqlDB = mysqlsrv.GetMysql()
 	userRepo = NewUserRepo(mysqlDB)
 
 	return &UserService{}
