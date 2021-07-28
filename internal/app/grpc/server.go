@@ -46,7 +46,7 @@ func NewServer() *GRPCServer {
 // initialize server config and db
 func (gs *GRPCServer) InitServer() {
 	redsrv.NewRedis()
-	myRedis := redsrv.GetRedis()
+	myRedis = redsrv.GetRedis()
 	if _, err := myRedis.RPing(); err != nil {
 		logger.Errorf("[redis] pong failed, %s", err.Error())
 	} else {

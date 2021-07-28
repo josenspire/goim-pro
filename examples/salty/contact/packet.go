@@ -21,11 +21,11 @@ func RequestContact(t protos.ContactServiceClient) {
 	}
 	anyData, _ := utils.MarshalMessageToAny(reqContactReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "LOCAL_DEV",
+		DeviceId: "LOCAL_DEV_123",
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRXNURTlEUVV4ZlJFVlciLCJleHAiOjE2MTI3MDg3NTAsImlhdCI6MTYxMjQ0OTU1MCwiaXNzIjoic2FsdHlfaW0ifQ.n8w-rS3iAL2ieQb35_t8n9-i72GlLCsSrEfOBtEO0e8",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRXNURTlEUVV4ZlJFVldYekV5TXc9PSIsImV4cCI6MTYyNzcxNjQ0MCwiaWF0IjoxNjI3NDU3MjQwLCJpc3MiOiJzYWx0eV9pbSJ9.7NlwZYFTLY2q8bVW5Z9toLKRhVuaAV4UwHN2zB2YCy0",
 		Data:     anyData,
 	}
 
@@ -48,7 +48,7 @@ func AcceptContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd05VTTRNRXBMU2xwR09VMVlSMVE0V0ZNeVMxY3NURTlEUVV4ZlJFVlciLCJleHAiOjE2MTI3MDg3NTAsImlhdCI6MTYxMjQ0OTU1MCwiaXNzIjoic2FsdHlfaW0ifQ.5kizBTqxf9lydrxSA0B5p2ysD_WO9zX9ayVmMzqM6F4",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd05VTTRNRXBMU2xwR09VMVlSMVE0V0ZNeVMxY3NURTlEUVV4ZlJFVlciLCJleHAiOjE2Mjc3MTY0NDAsImlhdCI6MTYyNzQ1NzI0MCwiaXNzIjoic2FsdHlfaW0ifQ.9DQlkRov-xFv5rO6xr_khwlQs9zqjX5QlHBysfSkbhU",
 		Data:     anyData,
 	}
 
@@ -63,7 +63,7 @@ func AcceptContact(t protos.ContactServiceClient) {
 
 func RefusedContact(t protos.ContactServiceClient) {
 	refusedContactReq := &protos.RefusedContactReq{
-		UserId: "01EN0AHEK8ZVH55V0YYSXZ7CK9",
+		UserId: "01EMK01VY8820C95MH3ZGN3JXQ",
 		Reason: "我喜欢小姐姐",
 	}
 	anyData, _ := utils.MarshalMessageToAny(refusedContactReq)
@@ -72,7 +72,7 @@ func RefusedContact(t protos.ContactServiceClient) {
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVGpCQlNFTk5VazFOTTFJeFJFZEVNemhMVmpkWFdUZz0iLCJleHAiOjE2MDM1NDExNjAsImlhdCI6MTYwMzI4MTk2MCwiaXNzIjoic2FsdHlfaW0ifQ.OnXfVm9VNh4jouw4TAqi_acSW39uw5ajP_MEf8ztEsI",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd05UQklNRGcxUkRaWVRsUkJNa0ZDTWtFNFFUZ3NURTlEUVV4ZlJFVlciLCJleHAiOjE2Mjc3MTY0NzMsImlhdCI6MTYyNzQ1NzI3MywiaXNzIjoic2FsdHlfaW0ifQ.BhqiD-mdT9-_HA5ucdDHnE2YM_8unzYZjVD52r3UgNc",
 		Data:     anyData,
 	}
 
@@ -135,16 +135,16 @@ func GetContactList(t protos.ContactServiceClient) {
 
 func GetContactOperationList(t protos.ContactServiceClient) {
 	acpContactReq := &protos.GetContactOperationListReq{
-		StartDateTime: 1602605419,
-		EndDateTime:   1602605419,
+		StartDateTime: -1,
+		EndDateTime:   -1,
 	}
 	anyData, _ := utils.MarshalMessageToAny(acpContactReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "f9b5f73048f3867e",
+		DeviceId: "LOCAL_DEV_123",
 		Version:  "",
 		Language: 0,
 		Os:       0,
-		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZHTkVkVE5GSkZNRWM1VGpNMlVsazJWRlExUkV0Qk1sa3NaamxpTldZM016QTBPR1l6T0RZM1pRPT0iLCJleHAiOjE2MjYwMDc3NzcsImlhdCI6MTYyNTc0ODU3NywiaXNzIjoic2FsdHlfaW0ifQ.nA6_Rm8y6KOTc6gTuLtYB6jku5f5XoHlP-8zAxhWmaM",
+		Token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJNREZGVFVzd01WWlpPRGd5TUVNNU5VMUlNMXBIVGpOS1dGRXNURTlEUVV4ZlJFVldYekV5TXc9PSIsImV4cCI6MTYyNzcxNjQ0MCwiaWF0IjoxNjI3NDU3MjQwLCJpc3MiOiJzYWx0eV9pbSJ9.7NlwZYFTLY2q8bVW5Z9toLKRhVuaAV4UwHN2zB2YCy0",
 		Data:     anyData,
 	}
 

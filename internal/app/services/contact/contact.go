@@ -230,7 +230,7 @@ func (cs *ContactService) GetContactList(userId string) (contacts []models.Conta
 func (cs *ContactService) GetContactOperationList(userId string, startDateTime, endDateTime int64) (notifications []models.Notification, tErr *TError) {
 	var err error
 	if startDateTime == endDateTime && startDateTime == -1 {
-		notifications, err = notificationRepo.FindAll(map[string]interface{}{"targetId": userId})
+		notifications, err = notificationRepo.FindAllOperations(userId)
 	} else {
 		startDateStr := utils.ParseTimestampToDateTimeStr(startDateTime, utils.MysqlDateTimeFormat)
 		endDateStr := utils.ParseTimestampToDateTimeStr(endDateTime, utils.MysqlDateTimeFormat)

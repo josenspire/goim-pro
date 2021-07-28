@@ -16,7 +16,7 @@ type NotificationImpl Notification
 type INotificationRepo interface {
 	// notifications
 	InsertOne(notification *Notification) (*Notification, error)
-	FindAll(condition map[string]interface{}) (notifications []Notification, err error)
+	FindAllOperations(targetId string) (notifications []Notification, err error)
 	FindAllByTimeRange(userId string, startDateTime, endDateTime string) (notification []Notification, err error)
 	FindOne(condition interface{}) (ntf *Notification, err error)
 	UpdateOne(condition, updated interface{}) (err error)
@@ -45,8 +45,8 @@ func (n *NotificationImpl) InsertOne(notification *Notification) (*Notification,
 	return _db.Value.(*Notification), nil
 }
 
-func (n *NotificationImpl) FindAll(condition map[string]interface{}) (notifications []Notification, err error) {
-	db := mysqlDB.Preload("Message").Preload("Sender").Find(&notifications, condition)
+func (n *NotificationImpl) FindAllOperations(targetId string) (notifications []Notification, err error) {
+	db := mysqlDB.Preload("Message").Preload("Sender").Find(&notifications, "targetId = ? or senderId = ?", targetId, targetId)
 	if db.RecordNotFound() {
 		return nil, nil
 	}
