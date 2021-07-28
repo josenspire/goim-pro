@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/oklog/ulid"
 	"math/rand"
 	"time"
@@ -16,4 +17,8 @@ func NewULID(seed int64) (newULID string) {
 	newULID = ulid.MustNew(ulid.Timestamp(t), entropy).String()
 	logger.Infof("[ulid]: %s", newULID)
 	return
+}
+
+func NewUserULID(seed int64) string {
+	return fmt.Sprintf("salty_%s", NewULID(seed))
 }

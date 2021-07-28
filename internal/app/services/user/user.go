@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	protos "goim-pro/api/protos/salty"
-	"goim-pro/config"
 	. "goim-pro/internal/app/constants"
 	"goim-pro/internal/app/models"
 	. "goim-pro/internal/app/models/errors"
 	. "goim-pro/internal/app/repos/user"
 	"goim-pro/internal/app/services/converters"
+	manage "goim-pro/internal/app/services/management"
 	mysqlsrv "goim-pro/pkg/db/mysql"
 	redsrv "goim-pro/pkg/db/redis"
 	"goim-pro/pkg/errors"
@@ -38,11 +38,11 @@ func New() *UserService {
 }
 
 // Register - register service, accept base user profile and password{string}
-func (s *UserService) Register(userProfile *protos.UserProfile, password string) (tErr *TError) {
+func (s *UserService) Register(userProfile *protos.UserProfile, password, deviceId string, osVersion protos.GrpcReq_OS) (tErr *TError) {
 	var telephone = userProfile.Telephone
 	var email = userProfile.Email
 
-	userProfile.UserId = utils.NewULID(0)
+	userProfile.UserId = utils.NewUserULID(0)
 
 	isRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, email)
 	if err != nil {
@@ -55,6 +55,8 @@ func (s *UserService) Register(userProfile *protos.UserProfile, password string)
 	if err = userRepo.Register(&models.User{
 		Password:    password,
 		UserProfile: converters.ConvertProto2EntityForUserProfile(userProfile),
+		DeviceId:    deviceId,
+		OsVersion:   osVersion.String(),
 	}); err != nil {
 		logger.Errorf("register user error: %v", err.Error())
 		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
@@ -143,7 +145,7 @@ func (s *UserService) UpdateUserInfo(userId string, userProfile *models.UserProf
 }
 
 // ResetPassword - reset user's password by verification code
-func (s *UserService) ResetPassword(telephone, email, newPassword string) (tErr *TError) {
+func (s *UserService) ResetPassword(telephone, email, newPassword, deviceId string, osVersion protos.GrpcReq_OS) (tErr *TError) {
 	isRegistered, err := userRepo.IsTelephoneOrEmailRegistered(telephone, email)
 	if err != nil {
 		logger.Errorf("reset password error: %s", err.Error())
@@ -200,20 +202,10 @@ func (s *UserService) ResetPassword(telephone, email, newPassword string) (tErr 
 	//	}
 	//}
 
-	enNewPassword := utils.NewSHA256(newPassword, config.GetApiSecretKey())
-	if telephone != "" {
-		if err = userRepo.ResetPasswordByTelephone(telephone, enNewPassword); err != nil {
-			logger.Errorf("reset password error: %s", err.Error())
-			return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
-		}
-		//myRedis.RDel(fmt.Sprintf("%d-%s", CodeTypeResetPassword, telephone))
-	} else {
-		if err = userRepo.ResetPasswordByEmail(email, enNewPassword); err != nil {
-			logger.Errorf("reset password error: %s", err.Error())
-			return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
-		}
+	manageService := manage.NewManageService(mysqlDB)
+	if err := manageService.ResetPasswordAndUpdateUserProfile(telephone, email, newPassword, deviceId, osVersion); err != nil {
+		return NewTError(protos.StatusCode_STATUS_INTERNAL_SERVER_ERROR, err)
 	}
-
 	return nil
 }
 

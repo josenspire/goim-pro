@@ -96,7 +96,7 @@ func (gs *GRPCServer) StartGRPCServer() {
 	interceptor = func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		logger.Info(req, info.FullMethod)
 		gRPCReq := req.(*protos.GrpcReq)
-		token := gRPCReq.GetToken()
+		token := strings.Trim(gRPCReq.GetToken(), "")
 
 		// handle method on white list
 		if isOnWhiteList(info.FullMethod) {

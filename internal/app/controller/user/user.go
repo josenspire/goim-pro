@@ -42,10 +42,14 @@ func (u *userServer) Register(ctx context.Context, req *protos.GrpcReq) (resp *p
 		return
 	}
 
-	userProfile := registerReq.GetProfile()
-	password := registerReq.Password
+	var (
+		userProfile = registerReq.GetProfile()
+		password = registerReq.Password
+		deviceId = req.DeviceId
+		osVersion = req.Os
+	)
 
-	tErr := userService.Register(userProfile, password)
+	tErr := userService.Register(userProfile, password, deviceId, osVersion)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail
@@ -186,7 +190,11 @@ func (u *userServer) ResetPassword(ctx context.Context, req *protos.GrpcReq) (re
 		return
 	}
 
-	tErr := userService.ResetPassword(telephone, email, newPassword)
+	var (
+		deviceId = req.DeviceId
+		osVersion = req.Os
+	)
+	tErr := userService.ResetPassword(telephone, email, newPassword, deviceId, osVersion)
 	if tErr != nil {
 		resp.Code = tErr.Code
 		resp.Message = tErr.Detail

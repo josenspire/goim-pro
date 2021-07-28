@@ -35,7 +35,7 @@ func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []
 		userProfile := contact.User
 		contactProfile := &protos.ContactProfile{
 			UserProfile: &protos.UserProfile{
-				UserId:      contact.UserId,
+				UserId:      contact.ContactId,
 				Telephone:   contact.Telephone,
 				Email:       userProfile.Email,
 				Nickname:    userProfile.Nickname,
@@ -48,8 +48,6 @@ func ConvertEntity2ProtoForContacts(contacts []models.Contact) (protoContacts []
 			RemarkInfo: &protos.ContactRemark{
 				RemarkName:  contact.RemarkName,
 				Description: contact.Description,
-				Telephones:  []string{""},
-				Tags:        []string{""},
 			},
 			SortId: utils.GetStringLetters(userProfile.Nickname),
 		}

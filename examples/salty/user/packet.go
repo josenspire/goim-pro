@@ -88,7 +88,7 @@ func ResetPasswordByTelephone(t protos.UserServiceClient, channel string) {
 
 	anyData, _ := utils.MarshalMessageToAny(resetPasswordReq)
 	grpcReq := &protos.GrpcReq{
-		DeviceId: "LOCAL_DEV",
+		DeviceId: "LOCAL_DEV_123",
 		Version:  "",
 		Language: 0,
 		Os:       0,
